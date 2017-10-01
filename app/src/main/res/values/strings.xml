@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Phoenix</string>
+
+    <string name="settings">Настройки</string>
+    <string name="navigation_drawer_open">Открыть Navigation Drawer</string>
+    <string name="navigation_drawer_close">Закрыть Navigation Drawer</string>
+    <string name="records_management">Управление записями</string>
+    <string name="logout">Выйти</string>
 </resources>
