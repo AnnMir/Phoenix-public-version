@@ -1,4 +1,4 @@
-package nsu.fit.g14201.kmarchenko.phoenix.ui.activity;
+package nsu.fit.g14201.marchenko.phoenix.ui.activity;
 
 
 import android.os.Bundle;
@@ -11,7 +11,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
-import nsu.fit.g14201.kmarchenko.phoenix.R;
+import nsu.fit.g14201.marchenko.phoenix.R;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -60,7 +60,7 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
-    int getLayoutId() {
+    public int getLayoutId() {
         return R.layout.activity_main;
     }
 

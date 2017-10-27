@@ -1,4 +1,4 @@
-package nsu.fit.g14201.kmarchenko.phoenix.ui.fragment;
+package nsu.fit.g14201.marchenko.phoenix.ui.fragment;
 
 
 import android.os.Bundle;
@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import nsu.fit.g14201.kmarchenko.phoenix.ui.activity.BaseActivity;
+import nsu.fit.g14201.marchenko.phoenix.ui.activity.BaseActivity;
 
 public abstract class BaseFragment extends Fragment {
     private Unbinder unbinder;

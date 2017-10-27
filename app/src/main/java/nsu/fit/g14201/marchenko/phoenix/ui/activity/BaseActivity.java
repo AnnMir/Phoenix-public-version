@@ -1,4 +1,4 @@
-package nsu.fit.g14201.kmarchenko.phoenix.ui.activity;
+package nsu.fit.g14201.marchenko.phoenix.ui.activity;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -20,7 +20,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         ButterKnife.bind(this);
     }
 
-    abstract int getLayoutId();
+    public abstract int getLayoutId();
 
     public void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
