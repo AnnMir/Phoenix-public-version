@@ -42,4 +42,6 @@ public class RegistrationActivity extends BaseActivity {
 
         authorizationPresenter.start();
     }
+
+    //TODO Добавить сохранение при повороте
 }

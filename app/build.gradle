@@ -51,7 +51,9 @@ dependencies {
     }
 
     // Dependency for Google Sign-In
-    compile 'com.google.android.gms:play-services-auth:11.4.0'
+    def playServicesVersion = '11.4.0'
+    compile "com.google.android.gms:play-services-auth:$playServicesVersion"
+    compile "com.google.android.gms:play-services-drive:$playServicesVersion"
 }
 
 apply plugin: 'com.google.gms.google-services'

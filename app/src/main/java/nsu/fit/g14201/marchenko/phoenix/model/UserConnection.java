@@ -18,6 +18,13 @@ public class UserConnection implements GoogleApiClient.OnConnectionFailedListene
     private GoogleApiClient googleApiClient;
     private GoogleSignInAccount googleSignInAccount;
 
+    private UserConnection() {
+    }
+
+    public static UserConnection getInstance() {
+        return SingletonHelper.INSTANCE;
+    }
+
     public void createClient(FragmentActivity fragmentActivity) {
         GoogleSignInOptions googleSignInOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -54,5 +61,9 @@ public class UserConnection implements GoogleApiClient.OnConnectionFailedListene
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d("TAG", "Oops! Connection failed"); //FIXME
+    }
+
+    private static class SingletonHelper {
+        private static final UserConnection INSTANCE = new UserConnection();
     }
 }

@@ -19,7 +19,7 @@ class AuthorizationPresenter implements AuthorizationContract.Presenter {
 
     @Override
     public void start() {
-        userConnection = new UserConnection(); //TODO move somewhere
+        userConnection = UserConnection.getInstance();
         userConnection.createClient(authView.getAuthorizationActivity());
     }
 
