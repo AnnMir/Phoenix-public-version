@@ -3,7 +3,9 @@ package nsu.fit.g14201.marchenko.phoenix.googledrive;
 
 import android.content.Intent;
 import android.content.IntentSender;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -14,7 +16,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -25,12 +29,20 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.ui.activity.BaseActivity;
 
@@ -39,15 +51,21 @@ public class GoogleDriveActivity extends BaseActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         NavigationView.OnNavigationItemSelectedListener {
 
-    /**
-     * Request code for auto Google Play Services error resolution.
-     */
     protected static final int REQUEST_CODE_RESOLUTION = 1;
+    protected static final int REQUEST_VIDEO_CAPTURE = 2;
     private static final String TAG = "Christina";
     private static final String FOLDER_NAME = "Phoenix";
+    private static final String TEST_FILE_NAME = "Test file";
+
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
     private TextView loginTextView;
+    private VideoView videoView;
+    private Button uploadButton;
+    private Uri videoUri;
+    private DriveId appFolderId;
+    //TODO
+//    private boolean waitToCreateFile = false;
 
     private GoogleApiClient googleApiClient;
 
@@ -56,6 +74,8 @@ public class GoogleDriveActivity extends BaseActivity implements
         super.onCreate(savedInstanceState);
 
         configureToolbarAndNavigationView();
+        uploadButton = findViewById(R.id.upload_button);
+        uploadButton.setClickable(false);
     }
 
     @Override
@@ -101,6 +121,20 @@ public class GoogleDriveActivity extends BaseActivity implements
     protected void onActivityResult(int requestCode, int resultCode,
                                     Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_VIDEO_CAPTURE) {
+            if (resultCode == RESULT_OK) {
+                videoUri = data.getData();
+                uploadButton.setClickable(true);
+                videoView = findViewById(R.id.video_view);
+                videoView.setVisibility(View.VISIBLE);
+                videoView.setVideoURI(videoUri);
+                videoView.start();
+            } else {
+                showToast("Failed to record video");
+            }
+            return;
+        }
 
         GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
         if (result.isSuccess()) {
@@ -175,6 +209,62 @@ public class GoogleDriveActivity extends BaseActivity implements
         return true;
     }
 
+    @OnClick(R.id.record_button)
+    void onRecordClick() {
+        videoUri = null;
+        videoView = findViewById(R.id.video_view);
+        videoView.setVisibility(View.GONE);
+        uploadButton.setClickable(false);
+
+        Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+        if (takeVideoIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);
+        }
+    }
+
+    @OnClick(R.id.upload_button)
+    void onUploadClick() {
+        Drive.DriveApi.newDriveContents(googleApiClient)
+                .setResultCallback(result -> {
+                    if (!result.getStatus().isSuccess()) {
+                        Log.d(TAG, "Error while trying to create new file contents");
+                        return;
+                    }
+                    final DriveContents driveContents = result.getDriveContents();
+
+                    // Perform I/O off the UI thread.
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            // write content to DriveContents
+                            OutputStream outputStream = driveContents.getOutputStream();
+                            Writer writer = new OutputStreamWriter(outputStream);
+                            try {
+                                writer.write("Hello World!");
+                                writer.close();
+                            } catch (IOException e) {
+                                Log.e(TAG, e.getMessage());
+                            }
+
+                            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                                    .setTitle(TEST_FILE_NAME)
+                                    .setMimeType("text/plain")
+                                    .build();
+
+                            appFolderId.asDriveFolder()
+                                    .createFile(googleApiClient, changeSet, driveContents)
+                                    .setResultCallback(result -> {
+                                        if (!result.getStatus().isSuccess()) {
+                                            Log.d(TAG, "Error while trying to create the file");
+                                            return;
+                                        }
+                                        Log.d(TAG, "Created a file with content: " + result.getDriveFile().getDriveId());
+                                    });
+                        }
+                    }.start();
+                });
+    }
+
     private void configureToolbarAndNavigationView() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -195,6 +285,7 @@ public class GoogleDriveActivity extends BaseActivity implements
     private void createAppFolderIfNotExists() {
         Query query = new Query.Builder()
                 .addFilter(Filters.and(
+                        Filters.eq(SearchableField.MIME_TYPE, "application/vnd.google-apps.folder"),
                         Filters.eq(SearchableField.TITLE, FOLDER_NAME),
                         Filters.eq(SearchableField.TRASHED, false)))
                 .build();
@@ -208,6 +299,7 @@ public class GoogleDriveActivity extends BaseActivity implements
                         for (Metadata metadata : result.getMetadataBuffer()) {
                             if (metadata.getTitle().equals(FOLDER_NAME)) {
                                 Log.d(TAG, "Folder already exists");
+                                appFolderId = metadata.getDriveId();
                                 return;
                             }
                         }
@@ -229,8 +321,8 @@ public class GoogleDriveActivity extends BaseActivity implements
                         Log.d(TAG, "Error while trying to create the folder");
                         return;
                     }
-                    Log.d(TAG, "Created a folder: " +
-                            driveFolderResult.getDriveFolder().getDriveId().toString());
+                    appFolderId = driveFolderResult.getDriveFolder().getDriveId();
+                    Log.d(TAG, "Created a folder: " + appFolderId.toString());
                 });
     }
 }
