@@ -1,14 +1,18 @@
 package nsu.fit.g14201.marchenko.phoenix.googledrive;
 
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -37,10 +41,11 @@ import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 
 import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
@@ -53,6 +58,7 @@ public class GoogleDriveActivity extends BaseActivity implements
 
     protected static final int REQUEST_CODE_RESOLUTION = 1;
     protected static final int REQUEST_VIDEO_CAPTURE = 2;
+    protected static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 3;
     private static final String TAG = "Christina";
     private static final String FOLDER_NAME = "Phoenix";
     private static final String TEST_FILE_NAME = "Test file";
@@ -224,6 +230,7 @@ public class GoogleDriveActivity extends BaseActivity implements
 
     @OnClick(R.id.upload_button)
     void onUploadClick() {
+//        Log.d(TAG, videoUri.getPath());
         Drive.DriveApi.newDriveContents(googleApiClient)
                 .setResultCallback(result -> {
                     if (!result.getStatus().isSuccess()) {
@@ -232,37 +239,110 @@ public class GoogleDriveActivity extends BaseActivity implements
                     }
                     final DriveContents driveContents = result.getDriveContents();
 
-                    // Perform I/O off the UI thread.
-                    new Thread() {
-                        @Override
-                        public void run() {
-                            // write content to DriveContents
-                            OutputStream outputStream = driveContents.getOutputStream();
-                            Writer writer = new OutputStreamWriter(outputStream);
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+                    } else {
+                        saveFileToDrive();
+                    }
+                });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    saveFileToDrive();
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+        }
+    }
+
+    private void saveFileToDrive() {
+        new Thread() {
+            @Override
+            public void run() {
+                // Start by creating a new contents, and setting a callback.
+                Drive.DriveApi.newDriveContents(googleApiClient).setResultCallback(
+                        result -> {
+                            // If the operation was not successful, we cannot do
+                            // anything and must fail.
+                            if (!result.getStatus().isSuccess()) {
+                                Log.d(TAG, "Failed to create new contents.");
+                                return;
+                            }
+                            Log.d(TAG, "Connection successful, creating new contents...");
+                            // Otherwise, we can write our data to the new contents.
+                            // Get an output stream for the contents.
+                            OutputStream outputStream = result.getDriveContents()
+                                    .getOutputStream();
+                            FileInputStream fileInputStream = null;
+
                             try {
-                                writer.write("Hello World!");
-                                writer.close();
-                            } catch (IOException e) {
-                                Log.e(TAG, e.getMessage());
+                                final String realPath = VideoUtils.getRealPathFromURI(
+                                        getBaseContext(), videoUri);
+                                Log.d(TAG, "Path: " + realPath);
+//                        File video = new File(realPath);
+                                fileInputStream = new FileInputStream(realPath);
+                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                byte[] buf = new byte[1024];
+                                int n;
+                                while (-1 != (n = fileInputStream.read(buf)))
+                                    baos.write(buf, 0, n);
+                                byte[] photoBytes = baos.toByteArray();
+                                outputStream.write(photoBytes);
+                            } catch (FileNotFoundException e) {
+                                Log.d(TAG, "FileNotFoundException: " + e.getMessage());
+                            } catch (IOException e1) {
+                                Log.d(TAG, "Unable to write file contents." + e1.getMessage());
+                            } finally {
+                                try {
+                                    if (outputStream != null) {
+                                        outputStream.close();
+                                    }
+                                } catch (IOException e) {
+                                    Log.d(TAG, e.getMessage());
+                                }
+                                try {
+                                    if (fileInputStream != null) {
+                                        fileInputStream.close();
+                                    }
+                                } catch (IOException e) {
+                                    Log.d(TAG, e.getMessage());
+                                }
                             }
 
+                            Log.i(TAG, "Creating new video on Drive");
+
                             MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                                    .setMimeType("video/mp4")
                                     .setTitle(TEST_FILE_NAME)
-                                    .setMimeType("text/plain")
                                     .build();
 
                             appFolderId.asDriveFolder()
-                                    .createFile(googleApiClient, changeSet, driveContents)
-                                    .setResultCallback(result -> {
-                                        if (!result.getStatus().isSuccess()) {
+                                    .createFile(googleApiClient, changeSet, result.getDriveContents())
+                                    .setResultCallback(createFileResult -> {
+                                        if (!createFileResult.getStatus().isSuccess()) {
                                             Log.d(TAG, "Error while trying to create the file");
                                             return;
                                         }
-                                        Log.d(TAG, "Created a file with content: " + result.getDriveFile().getDriveId());
+                                        Log.d(TAG, "Created a file with content: " + createFileResult.getDriveFile().getDriveId());
                                     });
-                        }
-                    }.start();
-                });
+
+                        });
+            }
+        }.start();
     }
 
     private void configureToolbarAndNavigationView() {
