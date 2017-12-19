@@ -18,6 +18,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    flavorDimensions "lang"
+
+    productFlavors{
+        english {
+            dimension "lang"
+        }
+        russian {
+            dimension "lang"
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -40,14 +51,12 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 
-    annotationProcessor "org.projectlombok:lombok:1.16.18"
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
-    compile('com.github.tony19:logback-android-classic:1.1.1-6') {
-        exclude group: 'com.google.android', module: 'android'
-    }
+    annotationProcessor 'org.projectlombok:lombok:1.16.18'
+    compile 'org.projectlombok:lombok:1.16.18'
 
-    // Dependency for Google Sign-In
-    compile 'com.google.android.gms:play-services-auth:11.6.2'
+    def googlePlayServicesVersion = '11.8.0'
+    compile "com.google.android.gms:play-services-auth:$googlePlayServicesVersion"
+    compile "com.google.android.gms:play-services-drive:$googlePlayServicesVersion"
 }
 
 apply plugin: 'com.google.gms.google-services'

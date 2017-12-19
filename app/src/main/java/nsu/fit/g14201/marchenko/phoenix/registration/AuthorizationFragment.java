@@ -4,7 +4,6 @@ package nsu.fit.g14201.marchenko.phoenix.registration;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.TextView;
 
@@ -16,7 +15,7 @@ import nsu.fit.g14201.marchenko.phoenix.ui.fragment.BaseFragment;
 
 public class AuthorizationFragment extends BaseFragment implements
         AuthorizationContract.View {
-    private static final int PICK_SIGN_IN = 1;
+    private static final int REQUEST_CODE_SIGN_IN = 0;
 
     private AuthorizationContract.Presenter presenter;
 
@@ -27,7 +26,6 @@ public class AuthorizationFragment extends BaseFragment implements
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         SignInButton signInButton = getView().findViewById(R.id.sign_in_button);
         signInButton.setSize(SignInButton.SIZE_WIDE);
     }
@@ -36,7 +34,7 @@ public class AuthorizationFragment extends BaseFragment implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_SIGN_IN) {
+        if (requestCode == REQUEST_CODE_SIGN_IN) {
             presenter.handleSignInResult(resultCode, data);
         }
     }
@@ -52,13 +50,8 @@ public class AuthorizationFragment extends BaseFragment implements
     }
 
     @Override
-    public FragmentActivity getAuthorizationActivity() {
-        return getActivity();
-    }
-
-    @Override
     public void startSignInActivity(Intent intent) {
-        startActivityForResult(intent, PICK_SIGN_IN);
+        startActivityForResult(intent, REQUEST_CODE_SIGN_IN);
     }
 
     @Override

@@ -32,7 +32,8 @@ public class RegistrationActivity extends BaseActivity {
                     authorizationFragment,
                     R.id.contentFrame);
 
-            authorizationPresenter = new AuthorizationPresenter(authorizationFragment);
+            authorizationPresenter = new AuthorizationPresenter(
+                    getApplicationContext(), authorizationFragment);
         }
     }
 

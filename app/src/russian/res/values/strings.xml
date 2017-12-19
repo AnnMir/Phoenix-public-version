@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="already_signed_in">Пользователь уже авторизован</string>
+    <string name="already_signed_out">Пользователь уже деавторизован</string>
+    <string name="signed_out">Пользователь деавторизован</string>
+    <string name="sign_in_failure">Не удалось авторизоваться</string>
+    <string name="sign_out_failure">Не удалось деавторизоваться</string>
+    <string name="signed_in_as">Авторизован как %1$s</string>
+</resources>
