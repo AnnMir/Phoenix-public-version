@@ -16,7 +16,6 @@ import com.google.android.gms.tasks.Task;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.model.connection.SignInException;
-import nsu.fit.g14201.marchenko.phoenix.model.connection.UserConnection;
 import nsu.fit.g14201.marchenko.phoenix.model.connection.UserConnectionImpl;
 
 import static android.app.Activity.RESULT_OK;
@@ -25,7 +24,7 @@ class AuthorizationPresenter implements AuthorizationContract.Presenter,
         OnCompleteListener<Void> {
     private final AuthorizationContract.View authView;
     private final Context context;
-    private UserConnection userConnection;
+    private UserConnectionImpl userConnection;
 
     AuthorizationPresenter(Context applicationContext, AuthorizationContract.View authView) {
         context = applicationContext;
@@ -35,7 +34,10 @@ class AuthorizationPresenter implements AuthorizationContract.Presenter,
 
     @Override
     public void start() {
-        userConnection = new UserConnectionImpl(); //TODO entry point for UserConnectionImpl
+        userConnection = UserConnectionImpl.getInstance();
+        if (userConnection.isSignedIn(context)) {
+            authView.startNextView(); //FIXME Remove
+        }
     }
 
     @Override
@@ -63,6 +65,15 @@ class AuthorizationPresenter implements AuthorizationContract.Presenter,
                     "null" :
                     googleSignInAccount.getDisplayName();
             authView.showSnack(context.getString(R.string.signed_in_as, displayedName));
+            authView.startNextView();
+
+            //TODO move Drive code
+            /*// Use the last signed in account here since it already have a Drive scope.
+            mDriveClient = Drive.getDriveClient(this, GoogleSignIn.getLastSignedInAccount(this));
+            // Build a drive resource client.
+            mDriveResourceClient =
+                    Drive.getDriveResourceClient(this, GoogleSignIn.getLastSignedInAccount(this));
+            */
         } else {
             Log.e(App.getTag(), "FAILED TO SIGN IN");
             int resultStatusCode = Auth.GoogleSignInApi

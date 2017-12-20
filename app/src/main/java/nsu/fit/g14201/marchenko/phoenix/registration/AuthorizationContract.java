@@ -13,6 +13,8 @@ interface AuthorizationContract {
         void showSnack(String message);
 
         void showMessage(String message);
+
+        void startNextView();
     }
 
     interface Presenter extends BasePresenter {

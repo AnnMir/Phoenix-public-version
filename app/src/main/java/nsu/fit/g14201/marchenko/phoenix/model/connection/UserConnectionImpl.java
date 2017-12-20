@@ -13,6 +13,16 @@ import com.google.android.gms.tasks.OnCompleteListener;
 public class UserConnectionImpl implements UserConnection {
     private GoogleSignInClient googleSignInClient;
 
+    private UserConnectionImpl() {}
+
+    private static class SingletonHelper {
+        private static final UserConnectionImpl INSTANCE = new UserConnectionImpl();
+    }
+
+    public static UserConnectionImpl getInstance(){
+        return SingletonHelper.INSTANCE;
+    }
+
     @Override
     public Intent startSignInAndGetIntent(Context context) throws SignInException {
         if (isSignedIn(context)) {

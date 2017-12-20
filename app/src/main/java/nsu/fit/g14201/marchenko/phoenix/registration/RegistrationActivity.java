@@ -1,14 +1,19 @@
 package nsu.fit.g14201.marchenko.phoenix.registration;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
+import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
-import nsu.fit.g14201.marchenko.phoenix.ui.activity.BaseActivity;
+import nsu.fit.g14201.marchenko.phoenix.coordination.Coordinator;
+import nsu.fit.g14201.marchenko.phoenix.coordination.CoordinatorImpl;
+import nsu.fit.g14201.marchenko.phoenix.coordination.SuperiorActivity;
+import nsu.fit.g14201.marchenko.phoenix.ui.BaseActivity;
 import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
 
-public class RegistrationActivity extends BaseActivity {
+public class RegistrationActivity extends BaseActivity implements SuperiorActivity {
     private AuthorizationPresenter authorizationPresenter;
 
     @Override
@@ -31,10 +36,11 @@ public class RegistrationActivity extends BaseActivity {
                     getSupportFragmentManager(),
                     authorizationFragment,
                     R.id.contentFrame);
-
-            authorizationPresenter = new AuthorizationPresenter(
-                    getApplicationContext(), authorizationFragment);
         }
+
+        authorizationFragment.setSuperiorActivity(this);
+        authorizationPresenter = new AuthorizationPresenter(
+                getApplicationContext(), authorizationFragment);
     }
 
     @Override
@@ -42,5 +48,15 @@ public class RegistrationActivity extends BaseActivity {
         super.onStart();
 
         authorizationPresenter.start();
+    }
+
+    @Override
+    public void goToNextView() {
+        Coordinator coordinator = new CoordinatorImpl();
+        Intent intent = new Intent(
+                this,
+                coordinator.getNextClass(Coordinator.View.REGISTRATION));
+        intent.putExtra(App.getExtraCoordinator(), coordinator);
+        startActivity(intent);
     }
 }

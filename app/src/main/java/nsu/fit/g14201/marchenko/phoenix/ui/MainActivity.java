@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.ui.activity;
+package nsu.fit.g14201.marchenko.phoenix.ui;
 
 
 import android.os.Bundle;
@@ -11,19 +11,30 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
+import nsu.fit.g14201.marchenko.phoenix.coordination.Coordinator;
+import nsu.fit.g14201.marchenko.phoenix.coordination.SuperiorActivity;
+import nsu.fit.g14201.marchenko.phoenix.recording.RecordingContract;
+import nsu.fit.g14201.marchenko.phoenix.recording.RecordingFragment;
+import nsu.fit.g14201.marchenko.phoenix.recording.RecordingPresenter;
+import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
 
 public class MainActivity extends BaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, SuperiorActivity {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
 
-    @Override
+    private Coordinator coordinator;
+    private RecordingContract.Presenter recordingPresenter;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         configureToolbarAndNavigationView();
+        coordinator = getIntent().getParcelableExtra(App.getExtraCoordinator());
+        configureRecordingBlock();
     }
 
     @Override
@@ -31,6 +42,13 @@ public class MainActivity extends BaseActivity
         super.onPostCreate(savedInstanceState);
 
         toggle.syncState();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        recordingPresenter.start();
     }
 
     @Override
@@ -75,5 +93,29 @@ public class MainActivity extends BaseActivity
 
         NavigationView navigationView = findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void configureRecordingBlock() {
+        RecordingFragment recordingFragment =
+                (RecordingFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.main_content);
+
+        if (recordingFragment == null) {
+            recordingFragment = RecordingFragment.newInstance();
+
+            ActivityUtils.addFragmentToActivity(
+                    getSupportFragmentManager(),
+                    recordingFragment,
+                    R.id.main_content);
+        }
+
+        recordingFragment.setSuperiorActivity(this);
+
+        recordingPresenter = new RecordingPresenter(getApplicationContext(), recordingFragment);
+    }
+
+    @Override
+    public void goToNextView() {
+
     }
 }

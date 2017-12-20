@@ -3,4 +3,5 @@
     <dimen name="drawer_header_height">160dp</dimen>
     <dimen name="header_horizontal_margin">16dp</dimen>
     <dimen name="header_vertical_margin">16dp</dimen>
+    <dimen name="non_video_area">112dp</dimen>
 </resources>
