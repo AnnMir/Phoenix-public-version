@@ -25,7 +25,9 @@ public class RegistrationActivity extends BaseActivity implements SuperiorActivi
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        AuthorizationFragment authorizationFragment =
+        goToNextView(); //TODO Temp
+
+        /*AuthorizationFragment authorizationFragment =
                 (AuthorizationFragment) getSupportFragmentManager()
                         .findFragmentById(R.id.contentFrame);
 
@@ -40,14 +42,15 @@ public class RegistrationActivity extends BaseActivity implements SuperiorActivi
 
         authorizationFragment.setSuperiorActivity(this);
         authorizationPresenter = new AuthorizationPresenter(
-                getApplicationContext(), authorizationFragment);
+                getApplicationContext(), authorizationFragment);*/
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        authorizationPresenter.start();
+        //TODO Temp 2
+//        authorizationPresenter.start();
     }
 
     @Override

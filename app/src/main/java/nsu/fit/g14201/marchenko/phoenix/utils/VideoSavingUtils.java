@@ -18,22 +18,31 @@ public class VideoSavingUtils {
     /**
      * Create a file Uri for saving video
      */
-    public static Uri getOutputMediaFileUri() {
+    public static Uri getOutputMediaFileUri() throws SDCardNotReadyException {
         return Uri.fromFile(getOutputMediaFile());
     }
 
     /**
      * Create a File for saving  video
      */
-    public static File getOutputMediaFile() {
-        //TODO
-        // To be safe, check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
+    public static File getOutputMediaFile() throws SDCardNotReadyException {
+        if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            throw new SDCardNotReadyException(Environment.getExternalStorageState());
+        }
+
+//        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+//                Environment.DIRECTORY_PICTURES), App.APP_NAME);
+
+
+        File path = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+
+        Log.d(App.getTag(), path.toString());
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), App.APP_NAME);
+        Log.d(App.getTag(), mediaStorageDir == null ? "null!" : "not null!");
 
-        // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Log.d(App.getTag(), "failed to create directory");
