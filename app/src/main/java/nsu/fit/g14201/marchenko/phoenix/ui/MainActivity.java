@@ -22,11 +22,14 @@ import nsu.fit.g14201.marchenko.phoenix.coordination.SuperiorActivity;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingContract;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingFragment;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingPresenter;
+import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.FatalErrorDialog;
 import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, SuperiorActivity {
+    private static final String FRAGMENT_DIALOG = "dialog"; //FIXME NOW tag
     private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 0;
+    private static final int PERMISSIONS_REQUEST_CAMERA = 1;
 
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
@@ -38,7 +41,7 @@ public class MainActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        requestNecessaryPermissions();
+        requestCameraPermission();
         configureToolbarAndNavigationView();
         coordinator = getIntent().getParcelableExtra(App.getExtraCoordinator());
         configureRecordingBlock();
@@ -93,13 +96,24 @@ public class MainActivity extends BaseActivity
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[],
                                            @NonNull int[] grantResults) {
+        if (grantResults.length == 0) {
+            return; //FIXME
+        }
+
         switch (requestCode) {
-            case PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE: {
+            case PERMISSIONS_REQUEST_CAMERA:
+                if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    FatalErrorDialog.newInstance(null, getString(R.string.no_camera_no_app))
+                            .show(getSupportFragmentManager(), FRAGMENT_DIALOG);
+                } else {
+                    requestWriteExternalStoragePermission();
+                }
+                break;
+            case PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE:
                 if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                     // TODO Выдать ошибку: без этого разрешения никак нельзя
                     showSnack("The app was not allowed to write in your storage");
                 }
-            }
         }
     }
 
@@ -108,7 +122,16 @@ public class MainActivity extends BaseActivity
 
     }
 
-    private void requestNecessaryPermissions() {
+    private void requestCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    PERMISSIONS_REQUEST_CAMERA);
+        }
+    }
+
+    private void requestWriteExternalStoragePermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
