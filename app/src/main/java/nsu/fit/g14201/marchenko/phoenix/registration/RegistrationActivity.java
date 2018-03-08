@@ -5,15 +5,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
-import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
-import nsu.fit.g14201.marchenko.phoenix.coordination.Coordinator;
-import nsu.fit.g14201.marchenko.phoenix.coordination.CoordinatorImpl;
-import nsu.fit.g14201.marchenko.phoenix.coordination.SuperiorActivity;
 import nsu.fit.g14201.marchenko.phoenix.ui.BaseActivity;
-import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
+import nsu.fit.g14201.marchenko.phoenix.camerapermission.RequiredPermissionsActivity;
 
-public class RegistrationActivity extends BaseActivity implements SuperiorActivity {
+public class RegistrationActivity extends BaseActivity {
     private AuthorizationPresenter authorizationPresenter;
 
     @Override
@@ -25,7 +21,8 @@ public class RegistrationActivity extends BaseActivity implements SuperiorActivi
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        goToNextView(); //TODO Temp
+        Intent intent = new Intent(this, RequiredPermissionsActivity.class);
+        startActivity(intent); //TODO Temp
 
         /*AuthorizationFragment authorizationFragment =
                 (AuthorizationFragment) getSupportFragmentManager()
@@ -51,15 +48,5 @@ public class RegistrationActivity extends BaseActivity implements SuperiorActivi
 
         //TODO Temp 2
 //        authorizationPresenter.start();
-    }
-
-    @Override
-    public void goToNextView() {
-        Coordinator coordinator = new CoordinatorImpl();
-        Intent intent = new Intent(
-                this,
-                coordinator.getNextClass(Coordinator.View.REGISTRATION));
-        intent.putExtra(App.getExtraCoordinator(), coordinator);
-        startActivity(intent);
     }
 }

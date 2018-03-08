@@ -3,9 +3,10 @@
     package="nsu.fit.g14201.marchenko.phoenix">
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera"
+    <uses-feature
+        android:name="android.hardware.camera"
         android:required="true" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".App"
@@ -14,7 +15,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="nsu.fit.g14201.marchenko.phoenix.registration.RegistrationActivity"
+        <activity
+            android:name="nsu.fit.g14201.marchenko.phoenix.registration.RegistrationActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,6 +24,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".camerapermission.RequiredPermissionsActivity" />
         <activity android:name="nsu.fit.g14201.marchenko.phoenix.ui.MainActivity" />
     </application>
 

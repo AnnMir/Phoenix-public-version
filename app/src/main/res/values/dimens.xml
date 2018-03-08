@@ -4,4 +4,12 @@
     <dimen name="header_horizontal_margin">16dp</dimen>
     <dimen name="header_vertical_margin">16dp</dimen>
     <dimen name="non_video_area">112dp</dimen>
+
+    <dimen name="camera_permission_padding">20dp</dimen>
+    <dimen name="need_for_camera_explanation_top_margin">12dp</dimen>
+    <dimen name="grant_camera_access_top_margin">52dp</dimen>
+
+    <dimen name="grant_camera_access_font">24dp</dimen>
+    <dimen name="need_for_camera_explanation_font">18dp</dimen>
+    <dimen name="camera_access_settings_button_font">12dp</dimen>
 </resources>

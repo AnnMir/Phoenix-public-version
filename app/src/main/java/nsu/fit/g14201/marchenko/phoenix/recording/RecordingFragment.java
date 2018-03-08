@@ -1,19 +1,43 @@
 package nsu.fit.g14201.marchenko.phoenix.recording;
 
 
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.util.Log;
+import android.view.View;
+
+import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
-import nsu.fit.g14201.marchenko.phoenix.coordination.InferiorFragment;
+import nsu.fit.g14201.marchenko.phoenix.ui.BaseFragment;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.CorrigibleErrorDialog;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.FatalErrorDialog;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.IncorrigibleErrorDialog;
 
-public class RecordingFragment extends InferiorFragment
+public class RecordingFragment extends BaseFragment
         implements RecordingContract.View {
     private static final String FRAGMENT_DIALOG = "dialog"; //FIXME NOW tag
     private RecordingContract.Presenter presenter;
 
     public static RecordingFragment newInstance() {
         return new RecordingFragment();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        presenter.setOutputForVideo(getView().findViewById(R.id.texture));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        presenter.doOnResumeActions();
+    }
+
+    @Override
+    public void onPause() {
+        presenter.doOnPauseActions();
+        super.onPause();
     }
 
     @Override

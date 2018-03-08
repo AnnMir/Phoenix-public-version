@@ -15,4 +15,12 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="TextAppearance">
+        <item name="android:fontFamily">@font/comfortaa</item>
+    </style>
+
+    <style name="CameraPermissionActivityTextAppearance" parent="TextAppearance">
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
 </resources>

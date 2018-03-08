@@ -6,6 +6,7 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.view.TextureView;
 
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
@@ -19,6 +20,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
 
     private CameraHandler backCamera;
     private CameraHandler frontCamera;
+    private CameraHandler selectedCamera;
 
     public RecordingPresenter(Context applicationContext, RecordingContract.View recordingView) {
         context = applicationContext;
@@ -30,21 +32,36 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     public void start() {
         try {
             checkCameraHardware();
-            backCamera.openCamera();
-        } catch (CameraAccessException e) {
+            selectedCamera = backCamera;
+        } catch (CameraAccessException | CameraException e) {
             e.printStackTrace();
             recordingView.showIncorrigibleErrorDialog(
                     context.getString(R.string.camera_access_error)
                             + "\n" + context.getString(R.string.no_camera_no_app)
             );
-        } catch (CameraException e) {
-            e.printStackTrace();
-            recordingView.showIncorrigibleErrorDialog(context.getString(R.string.camera_error)
-                    + "\n" + context.getString(R.string.no_camera_no_app)
-            );
         } catch (SecurityException e) {
-
+            // TODO PERMISSIONS Request camera permission
         }
+    }
+
+    @Override
+    public void setOutputForVideo(TextureView output) {
+        selectedCamera.setTextureView(output);
+    }
+
+    @Override
+    public void doOnResumeActions() {
+        try {
+            selectedCamera.resumeCameraWork();
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            processCameraError(CAMERA_ACCESS_ERROR);
+        }
+    }
+
+    @Override
+    public void doOnPauseActions() {
+        selectedCamera.closeCamera();
     }
 
     private void checkCameraHardware() throws CameraAccessException, CameraException {
@@ -74,7 +91,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     }
 
     @Override
-    public void onCameraError(int error) {
+    public void onCameraStandardError(int error) {
         //TODO error handling
 
         switch (error) {
@@ -94,6 +111,22 @@ public class RecordingPresenter implements RecordingContract.Presenter,
             case CameraDevice.StateCallback.ERROR_MAX_CAMERAS_IN_USE:
                 recordingView.showFatalErrorDialog("ERROR_MAX_CAMERAS_IN_USE");
 
+        }
+    }
+
+    @Override
+    public void onCameraError(int error) {
+        processCameraError(error);
+    }
+
+    private void processCameraError(int error) {
+        // TODO Error handling
+        switch (error) {
+            case CAPTURE_SESSION_ERROR:
+                recordingView.showFatalErrorDialog("ON CAPTURE SESSION ERROR");
+                break;
+            case CAMERA_ACCESS_ERROR:
+                recordingView.showFatalErrorDialog("ON CAMERA ACCESS ERROR");
         }
     }
 }

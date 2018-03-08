@@ -8,9 +8,16 @@
     <string name="signed_in_as">Авторизован как %1$s</string>
     <string name="cant_record_video">Не получается записать видео</string>
     <string name="start_recording">Начать запись</string>
-    <string name="no_camera_no_app">Невозможно продолжить работу без камеры</string>>
-    <string name="camera_access_error">Возникла ошибка при попытке доступа к камере</string>>
+    <string name="no_camera_no_app">Невозможно продолжить работу без камеры</string>
+    <string name="camera_access_error">Возникла ошибка при попытке доступа к камере</string>
     <string name="camera_error">Возникла ошибка при работе с камерой</string>
     <string name="disconnected_camera">Камера недоступна</string>
     <string name="camera_already_in_use">Камера уже используется другим приложением</string>
+    <string name="grant_camera_access">Необходим доступ к камере</string>
+    <string name="need_for_camera_explanation">Для работы приложения необходимо разрешить ему
+    доступ к камере. Иначе мы не сможем выполнять свою главную цель :(</string>
+    <string name="grant_write_external_storage_access">Необходимо разрешение на сохранение
+    во внешнее хранилище</string>
+    <string name="need_for_write_external_storage_explanation">Если не дать этот доступ,
+    нам некуда будет сохранять файлы</string>
 </resources>
