@@ -18,15 +18,16 @@ import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
 
 public class RequiredPermissionsActivity extends BaseActivity {
     private static final int PERMISSIONS_REQUEST_CAMERA = 0;
-    private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+    private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
+    private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 2;
     private static final String NO_CAMERA_ACCESS_TAG = "NO_CAMERA_ACCESS_TAG";
     private static final String NO_WRITE_EXTERNAL_ACCESS_TAG = "NO_WRITE_EXTERNAL_ACCESS_TAG";
+
     private boolean permissionIsBeingRequested = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        permissionIsBeingRequested = true;
         requestPermissions();
     }
 
@@ -34,42 +35,9 @@ public class RequiredPermissionsActivity extends BaseActivity {
     protected void onStart() {
         super.onStart();
 
-        if (permissionIsBeingRequested) {
-            return;
+        if (!permissionIsBeingRequested) {
+            requestPermissions();
         }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (getSupportFragmentManager().findFragmentByTag(NO_CAMERA_ACCESS_TAG) == null) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.content,
-                                NoRequiredPermissionFragment.newInstance(Manifest.permission.CAMERA),
-                                NO_CAMERA_ACCESS_TAG)
-                        .commit();
-            }
-            return;
-        }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                if (getSupportFragmentManager().findFragmentByTag(NO_WRITE_EXTERNAL_ACCESS_TAG) == null) {
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.content,
-                                    NoRequiredPermissionFragment.newInstance(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                                    NO_WRITE_EXTERNAL_ACCESS_TAG)
-                            .commit();
-                }
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
-            }
-            return;
-        }
-
-        goToNextView();
     }
 
     @Override
@@ -95,55 +63,111 @@ public class RequiredPermissionsActivity extends BaseActivity {
                             R.id.content,
                             NO_CAMERA_ACCESS_TAG
                     );
-                } else {
-                    checkWriteExternalStoragePermission();
+                    return;
                 }
                 break;
             case PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE:
                 if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                     ActivityUtils.addFragmentToActivity(
                             getSupportFragmentManager(),
-                            NoRequiredPermissionFragment.newInstance(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                            NoRequiredPermissionFragment.newInstance(
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE),
                             R.id.content,
                             NO_WRITE_EXTERNAL_ACCESS_TAG
                     );
-                } else {
-                    goToNextView();
+                    return;
                 }
         }
+        requestPermissions();
     }
 
     private void requestPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},
-                    PERMISSIONS_REQUEST_CAMERA);
+        if (!ifCameraGranted()) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.CAMERA)) {
+                if (getSupportFragmentManager().findFragmentByTag(NO_CAMERA_ACCESS_TAG) == null) {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.content,
+                                    NoRequiredPermissionFragment.newInstance(Manifest.permission.CAMERA),
+                                    NO_CAMERA_ACCESS_TAG)
+                            .commit();
+                }
+            } else {
+                requestCameraPermission();
+            }
         } else {
-            checkWriteExternalStoragePermission();
+            Fragment noCameraAccessFragment = getSupportFragmentManager()
+                    .findFragmentByTag(NO_CAMERA_ACCESS_TAG);
+            if (noCameraAccessFragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .remove(noCameraAccessFragment)
+                        .commit();
+            }
+            if (!ifRecordAudioGranted() &&
+                    !ActivityCompat.shouldShowRequestPermissionRationale(this,
+                            Manifest.permission.RECORD_AUDIO)) {
+                requestRecordAudioPermission();
+            } else if (!ifWriteExternalStorageGranted()) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    if (getSupportFragmentManager()
+                            .findFragmentByTag(NO_WRITE_EXTERNAL_ACCESS_TAG) == null) {
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.content,
+                                        NoRequiredPermissionFragment.newInstance(
+                                                Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                                        NO_WRITE_EXTERNAL_ACCESS_TAG)
+                                .commit();
+                    }
+                } else {
+                    requestWriteExternalStoragePermission();
+                }
+            } else {
+                goToNextView();
+            }
         }
-    }
-
-    private void checkWriteExternalStoragePermission() {
-        permissionIsBeingRequested = true;
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED) {
-            goToNextView();
-            return;
-        }
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
     }
 
     private void goToNextView() {
-        permissionIsBeingRequested = false;
         for (Fragment fragment : getSupportFragmentManager().getFragments()) {
             getSupportFragmentManager().beginTransaction()
                     .remove(fragment)
                     .commit();
         }
         startActivity(new Intent(this, MainActivity.class));
+    }
+
+    private boolean ifCameraGranted() {
+        return ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean ifRecordAudioGranted() {
+        return ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean ifWriteExternalStorageGranted() {
+        return ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestCameraPermission() {
+        requestPermission(Manifest.permission.CAMERA, PERMISSIONS_REQUEST_CAMERA);
+    }
+
+    private void requestRecordAudioPermission() {
+        requestPermission(Manifest.permission.RECORD_AUDIO, PERMISSIONS_REQUEST_RECORD_AUDIO);
+    }
+
+    private void requestWriteExternalStoragePermission() {
+        requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+    }
+
+    private void requestPermission(String permission, int tag) {
+        permissionIsBeingRequested = true;
+        ActivityCompat.requestPermissions(this,
+                new String[]{permission}, tag);
     }
 }
