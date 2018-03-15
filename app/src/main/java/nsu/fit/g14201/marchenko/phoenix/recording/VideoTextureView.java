@@ -18,9 +18,7 @@ import nsu.fit.g14201.marchenko.phoenix.ui.views.AutoFitTextureView;
 
 
 public class VideoTextureView extends AutoFitTextureView {
-    private Size previewSize; // TODO: Actions
-    private Size videoSize; // TODO: Actions
-    private Integer sensorOrientation;
+    private Size previewSize;
 
     public VideoTextureView(Context context) {
         super(context);
@@ -34,14 +32,14 @@ public class VideoTextureView extends AutoFitTextureView {
         super(context, attrs, defStyle);
     }
 
-    public Integer getSensorOrientation() {
-        return sensorOrientation;
-    }
-
     public SurfaceTexture configureSurfaceTexture() {
         SurfaceTexture texture = getSurfaceTexture();
         texture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
         return texture;
+    }
+
+    public void setPreviewSize(Size previewSize) {
+        this.previewSize = previewSize;
     }
 
     /**
@@ -75,24 +73,5 @@ public class VideoTextureView extends AutoFitTextureView {
             matrix.postRotate(90 * (rotation - 2), centerX, centerY);
         }
         setTransform(matrix);
-    }
-
-    public void chooseSizes(int width, int height, CameraCharacteristics characteristics) {
-        StreamConfigurationMap map = characteristics
-                .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-        sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
-        if (map == null) {
-            throw new RuntimeException("Cannot get available preview/video sizes");
-        }
-        videoSize = SizeManager.chooseVideoSize(map.getOutputSizes(MediaRecorder.class));
-        previewSize = SizeManager.chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class),
-                width, height, videoSize);
-
-        int orientation = getResources().getConfiguration().orientation;
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            setAspectRatio(previewSize.getWidth(), previewSize.getHeight());
-        } else {
-            setAspectRatio(previewSize.getHeight(), previewSize.getWidth());
-        }
     }
 }

@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import nsu.fit.g14201.marchenko.phoenix.ui.BaseActivity;
 
 public abstract class BaseFragment extends Fragment {
     private Unbinder unbinder;

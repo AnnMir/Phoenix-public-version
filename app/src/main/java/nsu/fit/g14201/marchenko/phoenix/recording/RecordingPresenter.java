@@ -20,6 +20,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     private CameraHandler backCamera;
     private CameraHandler frontCamera;
     private CameraHandler selectedCamera;
+    private boolean isVideoRecording = false;
 
     public RecordingPresenter(Context applicationContext, RecordingContract.View recordingView) {
         context = applicationContext;
@@ -49,6 +50,15 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     }
 
     @Override
+    public void changeRecordingState() {
+        if (isVideoRecording) {
+            selectedCamera.stopRecording();
+        } else {
+            selectedCamera.startRecording();
+        }
+    }
+
+    @Override
     public void doOnResumeActions() {
         try {
             selectedCamera.resumeCameraWork();
@@ -61,6 +71,18 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     @Override
     public void doOnPauseActions() {
         selectedCamera.closeCamera();
+    }
+
+    @Override
+    public void onRecordingStarted() {
+        isVideoRecording = true;
+        recordingView.onRecordingStarted();
+    }
+
+    @Override
+    public void onRecordingFinished(String path) {
+        isVideoRecording = false;
+        recordingView.onRecordingFinished(path);
     }
 
     private void checkCameraHardware() throws CameraAccessException, CameraException {

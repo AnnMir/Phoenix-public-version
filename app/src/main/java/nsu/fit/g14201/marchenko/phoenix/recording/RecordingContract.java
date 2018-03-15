@@ -6,6 +6,10 @@ import nsu.fit.g14201.marchenko.phoenix.BaseView;
 
 public interface RecordingContract {
     interface View extends BaseView<Presenter> {
+        void onRecordingStarted();
+
+        void onRecordingFinished(String path);
+
         void showCorrigibleErrorDialog(String errorMessage);
 
         void showIncorrigibleErrorDialog(String errorMessage);
@@ -15,6 +19,8 @@ public interface RecordingContract {
 
     interface Presenter extends BasePresenter {
         void setOutputForVideo(VideoTextureView output);
+
+        void changeRecordingState();
 
         void doOnResumeActions();
 
