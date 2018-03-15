@@ -105,3 +105,5 @@ public class MainActivity extends BaseActivity
         recordingPresenter = new RecordingPresenter(getApplicationContext(), recordingFragment);
     }
 }
+
+// TODO: Configure backstack: https://developer.android.com/guide/components/activities/tasks-and-back-stack.html

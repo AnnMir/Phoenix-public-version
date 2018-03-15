@@ -6,7 +6,6 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
-import android.view.TextureView;
 
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
@@ -21,6 +20,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     private CameraHandler backCamera;
     private CameraHandler frontCamera;
     private CameraHandler selectedCamera;
+    private boolean isVideoRecording = false;
 
     public RecordingPresenter(Context applicationContext, RecordingContract.View recordingView) {
         context = applicationContext;
@@ -45,8 +45,17 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     }
 
     @Override
-    public void setOutputForVideo(TextureView output) {
+    public void setOutputForVideo(VideoTextureView output) {
         selectedCamera.setTextureView(output);
+    }
+
+    @Override
+    public void changeRecordingState() {
+        if (isVideoRecording) {
+            selectedCamera.stopRecording();
+        } else {
+            selectedCamera.startRecording();
+        }
     }
 
     @Override
@@ -62,6 +71,18 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     @Override
     public void doOnPauseActions() {
         selectedCamera.closeCamera();
+    }
+
+    @Override
+    public void onRecordingStarted() {
+        isVideoRecording = true;
+        recordingView.onRecordingStarted();
+    }
+
+    @Override
+    public void onRecordingFinished(String path) {
+        isVideoRecording = false;
+        recordingView.onRecordingFinished(path);
     }
 
     private void checkCameraHardware() throws CameraAccessException, CameraException {
