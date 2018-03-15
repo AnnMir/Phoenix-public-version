@@ -6,7 +6,6 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
-import android.view.TextureView;
 
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
@@ -45,7 +44,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     }
 
     @Override
-    public void setOutputForVideo(TextureView output) {
+    public void setOutputForVideo(VideoTextureView output) {
         selectedCamera.setTextureView(output);
     }
 
