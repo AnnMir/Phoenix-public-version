@@ -6,6 +6,7 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.support.annotation.NonNull;
 import android.view.Surface;
@@ -19,13 +20,14 @@ public class CameraHandler {
     private String cameraId;
     private CameraStateListener listener;
     private TextureView textureView;
-    private CameraCaptureSession captureSession;
+    private CameraCaptureSession previewSession;
+    private CaptureRequest.Builder previewBuilder;
 
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(@NonNull CameraDevice device) {
             cameraDevice = device;
-            createCameraPreviewSession();
+            startPreview();
         }
 
         @Override
@@ -60,7 +62,6 @@ public class CameraHandler {
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture texture, int width, int height) {
-            // TODO Advanced
         }
 
         @Override
@@ -86,20 +87,7 @@ public class CameraHandler {
     }
 
     public void openCamera(int width, int height) throws SecurityException, CameraAccessException {
-        // TODO Take width and height into account
         cameraManager.openCamera(cameraId, stateCallback, null); // TODO threads
-    }
-
-    public void closeCamera() {
-        if (captureSession != null) {
-            captureSession.close();
-            captureSession = null;
-        }
-
-        if (cameraDevice != null) {
-            cameraDevice.close();
-            cameraDevice = null;
-        }
     }
 
     public void resumeCameraWork() throws CameraAccessException {
@@ -110,35 +98,40 @@ public class CameraHandler {
         }
     }
 
-    private void createCameraPreviewSession() {
+    public void closeCamera() {
+        closePreview();
+
+        if (cameraDevice != null) {
+            cameraDevice.close();
+            cameraDevice = null;
+        }
+    }
+
+    private void startPreview() {
+        if (!textureView.isAvailable()) {
+            return;
+        }
+
         SurfaceTexture texture = textureView.getSurfaceTexture();
         assert texture != null;
         texture.setDefaultBufferSize(1920, 1080); // TODO Advanced surface size
-        Surface surface = new Surface(texture);
+        Surface previewSurface = new Surface(texture);
 
         try {
-            final CaptureRequest.Builder builder =
-                    cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            builder.addTarget(surface);
+            previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            previewBuilder.addTarget(previewSurface);
 
             cameraDevice.createCaptureSession(
-                    Collections.singletonList(surface),
+                    Collections.singletonList(previewSurface),
                     new CameraCaptureSession.StateCallback() {
+
                         @Override
                         public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
                             if (cameraDevice == null) {
                                 return;
                             }
-
-                            captureSession = cameraCaptureSession;
-                            try {
-                                captureSession.setRepeatingRequest(builder.build(), null, null);
-                                // TODO Make more advanced
-                                // TODO Threads
-                            } catch (CameraAccessException e) {
-                                e.printStackTrace();
-                                listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
-                            }
+                            previewSession = cameraCaptureSession;
+                            updatePreview();
                         }
 
                         @Override
@@ -151,6 +144,27 @@ public class CameraHandler {
         } catch (CameraAccessException e) {
             e.printStackTrace();
             listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
+        }
+    }
+
+    /**
+     * Update the camera preview. {@link #startPreview()} needs to be called in advance.
+     */
+    private void updatePreview() {
+        try {
+            previewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+            previewSession.setRepeatingRequest(previewBuilder.build(), null, null);
+            // TODO: Threads
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
+        }
+    }
+
+    private void closePreview() {
+        if (previewSession != null) {
+            previewSession.close();
+            previewSession = null;
         }
     }
 }
