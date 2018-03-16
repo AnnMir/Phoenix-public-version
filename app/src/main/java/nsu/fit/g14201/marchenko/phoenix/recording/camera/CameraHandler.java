@@ -109,14 +109,14 @@ public class CameraHandler {
         cameraManager.openCamera(cameraId, stateCallback, null); // TODO threads
     }
 
-    public void startRecording() {
+    public void startRecording(String videoPath) {
         if (cameraDevice == null || !textureView.isAvailable()) {
             return;
         }
 
         try {
             closePreview();
-            videoHandler.setUpRecorder(textureView.getContext());
+            videoHandler.setUpRecorder(textureView.getContext(), videoPath);
             SurfaceTexture texture = textureView.configureSurfaceTexture();
 
             previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
@@ -158,9 +158,10 @@ public class CameraHandler {
         }
     }
 
-    public void stopRecording() {
+    public void stopRecording(String videoPath) {
         videoHandler.stopRecording();
-        listener.onRecordingFinished(videoHandler.getAndResetLastVideoPath());
+        videoHandler.resetRecorder();
+        listener.onRecordingFinished(videoPath);
         startPreview();
     }
 

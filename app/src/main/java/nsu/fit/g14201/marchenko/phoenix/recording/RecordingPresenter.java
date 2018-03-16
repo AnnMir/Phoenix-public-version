@@ -20,6 +20,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     private CameraHandler backCamera;
     private CameraHandler frontCamera;
     private CameraHandler selectedCamera;
+    private PeriodicRecordTransmitter recordTransmitter;
     private boolean isVideoRecording = false;
 
     public RecordingPresenter(Context applicationContext, RecordingContract.View recordingView) {
@@ -33,6 +34,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         try {
             checkCameraHardware();
             selectedCamera = backCamera;
+            recordTransmitter = new PeriodicRecordTransmitter(backCamera);
         } catch (CameraAccessException | CameraException e) {
             e.printStackTrace();
             recordingView.showIncorrigibleErrorDialog(
@@ -52,16 +54,16 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     @Override
     public void changeRecordingState() {
         if (isVideoRecording) {
-            selectedCamera.stopRecording();
+            recordTransmitter.stop();
         } else {
-            selectedCamera.startRecording();
+            recordTransmitter.start(context);
         }
     }
 
     @Override
     public void doOnResumeActions() {
         try {
-            selectedCamera.resumeCameraWork();
+            recordTransmitter.resume();
         } catch (CameraAccessException e) {
             e.printStackTrace();
             processCameraError(CAMERA_ACCESS_ERROR);
@@ -70,7 +72,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
 
     @Override
     public void doOnPauseActions() {
-        selectedCamera.closeCamera();
+        recordTransmitter.pause();
     }
 
     @Override
