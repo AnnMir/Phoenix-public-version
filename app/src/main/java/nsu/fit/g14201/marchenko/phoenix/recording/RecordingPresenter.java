@@ -6,7 +6,6 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
-import android.view.TextureView;
 
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
@@ -21,6 +20,8 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     private CameraHandler backCamera;
     private CameraHandler frontCamera;
     private CameraHandler selectedCamera;
+    private PeriodicRecordTransmitter recordTransmitter;
+    private boolean isVideoRecording = false;
 
     public RecordingPresenter(Context applicationContext, RecordingContract.View recordingView) {
         context = applicationContext;
@@ -33,6 +34,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         try {
             checkCameraHardware();
             selectedCamera = backCamera;
+            recordTransmitter = new PeriodicRecordTransmitter(backCamera);
         } catch (CameraAccessException | CameraException e) {
             e.printStackTrace();
             recordingView.showIncorrigibleErrorDialog(
@@ -45,14 +47,23 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     }
 
     @Override
-    public void setOutputForVideo(TextureView output) {
+    public void setOutputForVideo(VideoTextureView output) {
         selectedCamera.setTextureView(output);
+    }
+
+    @Override
+    public void changeRecordingState() {
+        if (isVideoRecording) {
+            recordTransmitter.stop();
+        } else {
+            recordTransmitter.start(context);
+        }
     }
 
     @Override
     public void doOnResumeActions() {
         try {
-            selectedCamera.resumeCameraWork();
+            recordTransmitter.resume();
         } catch (CameraAccessException e) {
             e.printStackTrace();
             processCameraError(CAMERA_ACCESS_ERROR);
@@ -61,7 +72,19 @@ public class RecordingPresenter implements RecordingContract.Presenter,
 
     @Override
     public void doOnPauseActions() {
-        selectedCamera.closeCamera();
+        recordTransmitter.pause();
+    }
+
+    @Override
+    public void onRecordingStarted() {
+        isVideoRecording = true;
+        recordingView.onRecordingStarted();
+    }
+
+    @Override
+    public void onRecordingFinished(String path) {
+        isVideoRecording = false;
+        recordingView.onRecordingFinished(path);
     }
 
     private void checkCameraHardware() throws CameraAccessException, CameraException {

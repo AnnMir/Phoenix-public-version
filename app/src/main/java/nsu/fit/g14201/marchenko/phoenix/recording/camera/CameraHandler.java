@@ -1,31 +1,48 @@
 package nsu.fit.g14201.marchenko.phoenix.recording.camera;
 
 
+import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.MediaRecorder;
 import android.support.annotation.NonNull;
+import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+
+import nsu.fit.g14201.marchenko.phoenix.recording.VideoTextureView;
+import nsu.fit.g14201.marchenko.phoenix.recording.utils.SizeManager;
 
 public class CameraHandler {
     private CameraManager cameraManager;
     private CameraDevice cameraDevice;
     private String cameraId;
     private CameraStateListener listener;
-    private TextureView textureView;
-    private CameraCaptureSession captureSession;
+    private VideoTextureView textureView;
+    private CameraCaptureSession previewSession;
+    private CaptureRequest.Builder previewBuilder;
+    private VideoHandler videoHandler;
 
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(@NonNull CameraDevice device) {
             cameraDevice = device;
-            createCameraPreviewSession();
+            startPreview();
+            if (textureView != null) {
+                textureView.configureTransform(textureView.getWidth(), textureView.getHeight());
+            }
         }
 
         @Override
@@ -60,7 +77,7 @@ public class CameraHandler {
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture texture, int width, int height) {
-            // TODO Advanced
+            textureView.configureTransform(width, height);
         }
 
         @Override
@@ -81,25 +98,71 @@ public class CameraHandler {
         this.listener = listener;
     }
 
-    public void setTextureView(TextureView textureView) {
+    public void setTextureView(VideoTextureView textureView) {
         this.textureView = textureView;
     }
 
     public void openCamera(int width, int height) throws SecurityException, CameraAccessException {
-        // TODO Take width and height into account
+        videoHandler = new VideoHandler();
+        chooseSizes(width, height);
+        textureView.configureTransform(width, height);
         cameraManager.openCamera(cameraId, stateCallback, null); // TODO threads
     }
 
-    public void closeCamera() {
-        if (captureSession != null) {
-            captureSession.close();
-            captureSession = null;
+    public void startRecording(String videoPath) {
+        if (cameraDevice == null || !textureView.isAvailable()) {
+            return;
         }
 
-        if (cameraDevice != null) {
-            cameraDevice.close();
-            cameraDevice = null;
+        try {
+            closePreview();
+            videoHandler.setUpRecorder(textureView.getContext(), videoPath);
+            SurfaceTexture texture = textureView.configureSurfaceTexture();
+
+            previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+            List<Surface> surfaces = new ArrayList<>();
+
+            // Set up Surface for the camera preview
+            Surface previewSurface = new Surface(texture);
+            surfaces.add(previewSurface);
+            previewBuilder.addTarget(previewSurface);
+
+            // Set up Surface for the MediaRecorder
+            Surface recorderSurface = videoHandler.getSurface();
+            surfaces.add(recorderSurface);
+            previewBuilder.addTarget(recorderSurface);
+
+            // Start a capture session
+            // Once the session starts, we can update the UI and start recording
+            cameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
+
+                @Override
+                public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
+                    previewSession = cameraCaptureSession;
+                    updatePreview();
+                    listener.onRecordingStarted();
+                    videoHandler.startRecording();
+                }
+
+                @Override
+                public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
+                    listener.onCameraError(CameraStateListener.CAPTURE_SESSION_ERROR);
+                }
+            }, null); // TODO: Threads
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
+        } catch (IOException e) {
+            e.printStackTrace();
+            listener.onCameraError(CameraStateListener.UNKNOWN_ERROR);
         }
+    }
+
+    public void stopRecording(String videoPath) {
+        videoHandler.stopRecording();
+        videoHandler.resetRecorder();
+        listener.onRecordingFinished(videoPath);
+        startPreview();
     }
 
     public void resumeCameraWork() throws CameraAccessException {
@@ -110,35 +173,44 @@ public class CameraHandler {
         }
     }
 
-    private void createCameraPreviewSession() {
-        SurfaceTexture texture = textureView.getSurfaceTexture();
+    public void closeCamera() {
+        closePreview();
+
+        if (cameraDevice != null) {
+            cameraDevice.close();
+            cameraDevice = null;
+        }
+
+        if (videoHandler != null) {
+            videoHandler.closeRecorder();
+            videoHandler = null;
+        }
+    }
+
+    private void startPreview() {
+        if (cameraDevice == null || !textureView.isAvailable()) {
+            return;
+        }
+
+        SurfaceTexture texture = textureView.configureSurfaceTexture();
         assert texture != null;
-        texture.setDefaultBufferSize(1920, 1080); // TODO Advanced surface size
-        Surface surface = new Surface(texture);
+        Surface previewSurface = new Surface(texture);
 
         try {
-            final CaptureRequest.Builder builder =
-                    cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            builder.addTarget(surface);
+            previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            previewBuilder.addTarget(previewSurface);
 
             cameraDevice.createCaptureSession(
-                    Collections.singletonList(surface),
+                    Collections.singletonList(previewSurface),
                     new CameraCaptureSession.StateCallback() {
+
                         @Override
                         public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
                             if (cameraDevice == null) {
                                 return;
                             }
-
-                            captureSession = cameraCaptureSession;
-                            try {
-                                captureSession.setRepeatingRequest(builder.build(), null, null);
-                                // TODO Make more advanced
-                                // TODO Threads
-                            } catch (CameraAccessException e) {
-                                e.printStackTrace();
-                                listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
-                            }
+                            previewSession = cameraCaptureSession;
+                            updatePreview();
                         }
 
                         @Override
@@ -151,6 +223,56 @@ public class CameraHandler {
         } catch (CameraAccessException e) {
             e.printStackTrace();
             listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
+        }
+    }
+
+    /**
+     * Update the camera preview. {@link #startPreview()} needs to be called in advance.
+     */
+    private void updatePreview() {
+        if (cameraDevice == null) {
+            return;
+        }
+
+        try {
+            previewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+            previewSession.setRepeatingRequest(previewBuilder.build(), null, null);
+            // TODO: Threads
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
+        }
+    }
+
+    private void closePreview() {
+        if (previewSession != null) {
+            previewSession.close();
+            previewSession = null;
+        }
+    }
+
+    private void chooseSizes(int width, int height) throws CameraAccessException {
+        CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
+
+        StreamConfigurationMap map = characteristics
+                .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+        if (map == null) {
+            throw new RuntimeException("Cannot get available preview/video sizes");
+        }
+
+        Size videoSize = SizeManager.chooseVideoSize(map.getOutputSizes(MediaRecorder.class));
+        Size previewSize = SizeManager.chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class),
+                width, height, videoSize);
+
+        videoHandler.setVideoSize(videoSize);
+        videoHandler.setSensorOrientation(characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION));
+        textureView.setPreviewSize(previewSize);
+
+        int orientation = textureView.getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            textureView.setAspectRatio(previewSize.getWidth(), previewSize.getHeight());
+        } else {
+            textureView.setAspectRatio(previewSize.getHeight(), previewSize.getWidth());
         }
     }
 }

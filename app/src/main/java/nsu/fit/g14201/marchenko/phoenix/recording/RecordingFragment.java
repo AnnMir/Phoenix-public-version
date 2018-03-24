@@ -3,10 +3,10 @@ package nsu.fit.g14201.marchenko.phoenix.recording;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 
-import nsu.fit.g14201.marchenko.phoenix.App;
+import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.ui.BaseFragment;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.CorrigibleErrorDialog;
@@ -15,11 +15,17 @@ import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.IncorrigibleErrorDialog;
 
 public class RecordingFragment extends BaseFragment
         implements RecordingContract.View {
-    private static final String FRAGMENT_DIALOG = "dialog"; //FIXME NOW tag
     private RecordingContract.Presenter presenter;
+    private Button recordingButton;
 
     public static RecordingFragment newInstance() {
         return new RecordingFragment();
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        recordingButton = view.findViewById(R.id.record_video_button);
     }
 
     @Override
@@ -40,6 +46,11 @@ public class RecordingFragment extends BaseFragment
         super.onPause();
     }
 
+    @OnClick(R.id.record_video_button)
+    void onChangeRecordingStatus() {
+        presenter.changeRecordingState();
+    }
+
     @Override
     protected int getLayoutId() {
         return R.layout.fragment_recording;
@@ -51,20 +62,31 @@ public class RecordingFragment extends BaseFragment
     }
 
     @Override
+    public void onRecordingStarted() {
+        recordingButton.setText(R.string.stop_recording);
+    }
+
+    @Override
+    public void onRecordingFinished(String path) {
+        recordingButton.setText(R.string.start_recording);
+        showToast(String.format("%s: %s", getString(R.string.video_saved), path));
+    }
+
+    @Override
     public void showCorrigibleErrorDialog(String errorMessage) {
         CorrigibleErrorDialog.newInstance(null, errorMessage)
-                .show(getChildFragmentManager(), FRAGMENT_DIALOG);
+                .show(getChildFragmentManager(), null);
     }
 
     @Override
     public void showIncorrigibleErrorDialog(String errorMessage) {
         IncorrigibleErrorDialog.newInstance(null, errorMessage)
-                .show(getChildFragmentManager(), FRAGMENT_DIALOG); //FIXME NOW multiline in resources
+                .show(getChildFragmentManager(), null); //FIXME NOW multiline in resources
     }
 
     @Override
     public void showFatalErrorDialog(String errorMessage) {
         FatalErrorDialog.newInstance(null, errorMessage)
-                .show(getChildFragmentManager(), FRAGMENT_DIALOG);
+                .show(getChildFragmentManager(), null);
     }
 }
