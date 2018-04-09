@@ -8,11 +8,15 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
+import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraHandler;
+import nsu.fit.g14201.marchenko.phoenix.recording.camera.LowLevelVideoHandler;
+import nsu.fit.g14201.marchenko.phoenix.recording.camera.OpenGLException;
 
 
 class PeriodicRecordTransmitter {
@@ -24,28 +28,36 @@ class PeriodicRecordTransmitter {
     }
 
     void start(Context context) {
-        startRecording(context);
-        cameraHandler.startRecording(videoPath);
+        LowLevelVideoHandler videoHandler = new LowLevelVideoHandler();
+        try {
+            videoHandler.prepareEncoder(640, 480);
+            Log.d(App.getTag(), "SUCCESS!");
+        } catch (IOException | CameraException | OpenGLException e) {
+            e.printStackTrace();
+            Log.d(App.getTag(), e.getMessage());
+        }
+//        startRecording(context);
+//        cameraHandler.startRecording(videoPath);
     }
 
     void stop() {
-        cameraHandler.stopRecording(videoPath);
+//        cameraHandler.stopRecording(videoPath);
     }
 
     void pause() {
-        cameraHandler.closeCamera();
+//        cameraHandler.closeCamera();
     }
 
     void resume() throws CameraAccessException {
-        cameraHandler.resumeCameraWork();
+//        cameraHandler.resumeCameraWork();
     }
 
     private void startRecording(Context context) {
-        createVideoPath(context);
+//        createVideoPath(context);
     }
 
     private void createVideoPath(Context context) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy_HHmmss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss");
         String videoDirectory = dateFormat.format(Calendar.getInstance().getTime());
 
         final File directory = new File(context.getExternalFilesDir(Environment.DIRECTORY_MOVIES),

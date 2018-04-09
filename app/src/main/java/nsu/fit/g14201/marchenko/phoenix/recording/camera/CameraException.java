@@ -10,10 +10,11 @@ import java.lang.annotation.Target;
 
 public class CameraException extends Throwable {
     public static final int NO_CAMERAS_FOUND = 0;
+    public static final int NO_CODEC_FOUND = 1;
 
     @Target(ElementType.PARAMETER)
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({NO_CAMERAS_FOUND})
+    @IntDef({NO_CAMERAS_FOUND, NO_CODEC_FOUND})
     public @interface CameraError {}
 
     private final int reason;
@@ -27,6 +28,8 @@ public class CameraException extends Throwable {
         switch (problem) {
             case NO_CAMERAS_FOUND:
                 return "Haven't found neither back nor front camera";
+            case NO_CODEC_FOUND:
+                return "Haven't found codec satisfying given format";
         }
         return null;
     }

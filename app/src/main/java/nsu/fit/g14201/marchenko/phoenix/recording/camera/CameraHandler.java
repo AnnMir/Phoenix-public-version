@@ -33,7 +33,6 @@ public class CameraHandler {
     private VideoTextureView textureView;
     private CameraCaptureSession previewSession;
     private CaptureRequest.Builder previewBuilder;
-    private VideoHandler videoHandler;
 
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
         @Override
@@ -103,7 +102,6 @@ public class CameraHandler {
     }
 
     public void openCamera(int width, int height) throws SecurityException, CameraAccessException {
-        videoHandler = new VideoHandler();
         chooseSizes(width, height);
         textureView.configureTransform(width, height);
         cameraManager.openCamera(cameraId, stateCallback, null); // TODO threads
@@ -116,7 +114,6 @@ public class CameraHandler {
 
         try {
             closePreview();
-            videoHandler.setUpRecorder(textureView.getContext(), videoPath);
             SurfaceTexture texture = textureView.configureSurfaceTexture();
 
             previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
@@ -128,9 +125,9 @@ public class CameraHandler {
             previewBuilder.addTarget(previewSurface);
 
             // Set up Surface for the MediaRecorder
-            Surface recorderSurface = videoHandler.getSurface();
-            surfaces.add(recorderSurface);
-            previewBuilder.addTarget(recorderSurface);
+//            Surface recorderSurface = videoHandler.getSurface();
+//            surfaces.add(recorderSurface);
+//            previewBuilder.addTarget(recorderSurface);
 
             // Start a capture session
             // Once the session starts, we can update the UI and start recording
@@ -141,7 +138,7 @@ public class CameraHandler {
                     previewSession = cameraCaptureSession;
                     updatePreview();
                     listener.onRecordingStarted();
-                    videoHandler.startRecording();
+//                    videoHandler.startRecording();
                 }
 
                 @Override
@@ -152,15 +149,12 @@ public class CameraHandler {
         } catch (CameraAccessException e) {
             e.printStackTrace();
             listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
-        } catch (IOException e) {
-            e.printStackTrace();
-            listener.onCameraError(CameraStateListener.UNKNOWN_ERROR);
         }
     }
 
     public void stopRecording(String videoPath) {
-        videoHandler.stopRecording();
-        videoHandler.resetRecorder();
+//        videoHandler.stopRecording();
+//        videoHandler.resetRecorder();
         listener.onRecordingFinished(videoPath);
         startPreview();
     }
@@ -181,10 +175,10 @@ public class CameraHandler {
             cameraDevice = null;
         }
 
-        if (videoHandler != null) {
-            videoHandler.closeRecorder();
-            videoHandler = null;
-        }
+//        if (videoHandler != null) {
+//            videoHandler.closeRecorder();
+//            videoHandler = null;
+//        }
     }
 
     private void startPreview() {
@@ -264,8 +258,8 @@ public class CameraHandler {
         Size previewSize = SizeManager.chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class),
                 width, height, videoSize);
 
-        videoHandler.setVideoSize(videoSize);
-        videoHandler.setSensorOrientation(characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION));
+//        videoHandler.setVideoSize(videoSize);
+//        videoHandler.setSensorOrientation(characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION));
         textureView.setPreviewSize(previewSize);
 
         int orientation = textureView.getResources().getConfiguration().orientation;
