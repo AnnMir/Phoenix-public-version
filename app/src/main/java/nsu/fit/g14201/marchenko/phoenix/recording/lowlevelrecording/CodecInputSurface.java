@@ -108,14 +108,14 @@ class CodecInputSurface {
         surface = null;
     }
 
-//    /**
-//     * Makes our EGL context and surface current.
-//     */
-//    public void makeCurrent() {
-//        EGL14.eglMakeCurrent(EGLDisplay, EGLSurface, EGLSurface, EGLContext);
-//        checkEglError("eglMakeCurrent");
-//    }
-//
+    /**
+     * Makes our EGL context and surface current.
+     */
+    public void makeCurrent() throws LowLevelRecordingException {
+        EGL14.eglMakeCurrent(EGLDisplay, EGLSurface, EGLSurface, EGLContext);
+        checkEglError("eglMakeCurrent");
+    }
+
 //    /**
 //     * Calls eglSwapBuffers.  Use this to "publish" the current frame.
 //     */
