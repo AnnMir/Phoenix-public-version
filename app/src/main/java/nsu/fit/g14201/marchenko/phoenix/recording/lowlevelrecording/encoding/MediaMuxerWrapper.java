@@ -1,9 +1,11 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
+package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding;
 
 
 import android.media.MediaMuxer;
 
 import java.io.IOException;
+
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelRecordingException;
 
 public class MediaMuxerWrapper {
     private final MediaMuxer muxer;

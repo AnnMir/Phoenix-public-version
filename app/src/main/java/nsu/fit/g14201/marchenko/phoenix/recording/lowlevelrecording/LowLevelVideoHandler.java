@@ -11,6 +11,7 @@ import android.util.Log;
 import java.io.IOException;
 
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaMuxerWrapper;
 
 import static nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException.NO_CODEC_FOUND;
 

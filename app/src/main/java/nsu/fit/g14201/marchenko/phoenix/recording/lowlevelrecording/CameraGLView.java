@@ -2,21 +2,37 @@ package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
 
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import nsu.fit.g14201.marchenko.phoenix.App;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.VideoEncoder;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.glutils.GLDrawer2D;
+
 /**
  * Sub class of GLSurfaceView to display camera preview and write video frame to capturing surface
  */
 public class CameraGLView extends GLSurfaceView {
     private final CameraSurfaceRenderer renderer;
+    private CameraHandler cameraHandler = null;
+
+    boolean hasSurface;
+    int videoWidth, videoHeight;
+    int scaleMode = SCALE_STRETCH_FIT;
+
+    static final int SCALE_STRETCH_FIT = 0;
+    static final int SCALE_KEEP_ASPECT_VIEWPORT = 1;
+    static final int SCALE_KEEP_ASPECT = 2;
+    static final int SCALE_CROP_CENTER = 3;
 
     private static final boolean VERBOSE = true;
 
@@ -38,45 +54,31 @@ public class CameraGLView extends GLSurfaceView {
 //		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
-    private static final class CameraSurfaceRenderer implements GLSurfaceView.Renderer {
-        private final WeakReference<CameraGLView> surface;
-        private final float[] mvpMatrix = new float[16];
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
 
-        CameraSurfaceRenderer(CameraGLView surface) {
-            this.surface = new WeakReference<>(surface);
-            Matrix.setIdentityM(mvpMatrix, 0);
-        }
+    @Override
+    public void onResume() {
+        super.onResume();
 
-        @Override
-        public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            // This renderer required OES_EGL_image_external extension
-            String extensions = GLES20.glGetString(GLES20.GL_EXTENSIONS);	// API >= 8
-            if (!extensions.contains("OES_EGL_image_external"))
-                throw new RuntimeException("This system does not support OES_EGL_image_external.");
-//            // create textur ID
-//            hTex = GLDrawer2D.initTex();
-//            // create SurfaceTexture with texture ID.
-//            mSTexture = new SurfaceTexture(hTex);
-//            mSTexture.setOnFrameAvailableListener(this);
-//            // clear screen with yellow color so that you can see rendering rectangle
-//            GLES20.glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
-//            final CameraGLView parent = mWeakParent.get();
-//            if (parent != null) {
-//                parent.mHasSurface = true;
-//            }
-//            // create object for preview display
-//            mDrawer = new GLDrawer2D();
-//            mDrawer.setMatrix(mMvpMatrix, 0);
-        }
-
-        @Override
-        public void onSurfaceChanged(GL10 gl, int width, int height) {
-
-        }
-
-        @Override
-        public void onDrawFrame(GL10 gl) {
-
+        if (hasSurface && cameraHandler == null) {
+            if (VERBOSE) {
+                Log.v(App.getTag(), "Surface already exists");
+            }
+            startPreview(getWidth(),  getHeight());
         }
     }
+
+    synchronized void startPreview(final int width, final int height) {
+        if (cameraHandler == null) {
+            CameraThread thread = new CameraThread(this);
+            thread.start();
+            cameraHandler = thread.getHandler();
+        }
+        cameraHandler.startPreview(width, height);
+    }
+
+
 }
