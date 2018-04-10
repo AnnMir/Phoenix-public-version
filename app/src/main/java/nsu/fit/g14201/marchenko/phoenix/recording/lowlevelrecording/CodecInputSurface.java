@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.camera;
+package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
 
 
 import android.opengl.EGL14;
@@ -30,7 +30,7 @@ class CodecInputSurface {
     /**
      * Creates a CodecInputSurface from a Surface.
      */
-    public CodecInputSurface(@NonNull Surface surface) throws OpenGLException {
+    public CodecInputSurface(@NonNull Surface surface) throws LowLevelRecordingException {
         if (surface == null) {
             throw new NullPointerException();
         }
@@ -42,14 +42,14 @@ class CodecInputSurface {
     /**
      * Prepares EGL.  We want a GLES 2.0 context and a surface that supports recording.
      */
-    private void eglSetup() throws OpenGLException {
+    private void eglSetup() throws LowLevelRecordingException {
         EGLDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
         if (EGLDisplay == EGL14.EGL_NO_DISPLAY) {
-            throw new OpenGLException(OpenGLException.CAN_NOT_GET_EGL_DISPLAY);
+            throw new LowLevelRecordingException(LowLevelRecordingException.CAN_NOT_GET_EGL_DISPLAY);
         }
         int[] version = new int[2];
         if (!EGL14.eglInitialize(EGLDisplay, version, 0, version, 1)) {
-            throw new OpenGLException(OpenGLException.EGL_DISPLAY_INIT_ERROR);
+            throw new LowLevelRecordingException(LowLevelRecordingException.EGL_DISPLAY_INIT_ERROR);
         }
 
         // Configure EGL for recording and OpenGL ES 2.0.
@@ -136,10 +136,10 @@ class CodecInputSurface {
     /**
      * Checks for EGL errors.  Throws an exception if one is found.
      */
-    private void checkEglError(String message) throws OpenGLException {
+    private void checkEglError(String message) throws LowLevelRecordingException {
         int error;
         if ((error = EGL14.eglGetError()) != EGL14.EGL_SUCCESS) {
-            throw new OpenGLException(error, message);
+            throw new LowLevelRecordingException(error, message);
         }
     }
 }

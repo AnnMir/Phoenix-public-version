@@ -15,8 +15,8 @@ import java.util.Calendar;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraHandler;
-import nsu.fit.g14201.marchenko.phoenix.recording.camera.LowLevelVideoHandler;
-import nsu.fit.g14201.marchenko.phoenix.recording.camera.OpenGLException;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelRecordingException;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelVideoHandler;
 
 
 class PeriodicRecordTransmitter {
@@ -30,9 +30,9 @@ class PeriodicRecordTransmitter {
     void start(Context context) {
         LowLevelVideoHandler videoHandler = new LowLevelVideoHandler();
         try {
-            videoHandler.prepareEncoder(640, 480);
-            Log.d(App.getTag(), "SUCCESS!");
-        } catch (IOException | CameraException | OpenGLException e) {
+            createVideoPath(context);
+            videoHandler.prepareEncoder(640, 480, videoPath);
+        } catch (IOException | CameraException | LowLevelRecordingException e) {
             e.printStackTrace();
             Log.d(App.getTag(), e.getMessage());
         }
