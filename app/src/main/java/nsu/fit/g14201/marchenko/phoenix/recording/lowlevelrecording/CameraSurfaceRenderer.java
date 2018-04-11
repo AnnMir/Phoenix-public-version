@@ -28,8 +28,9 @@ final class CameraSurfaceRenderer implements GLSurfaceView.Renderer,
     private final float[] stMatrix = new float[16];
     private final float[] mvpMatrix = new float[16];
     private int textureId;
-    private SurfaceTexture surfaceTexture;
     private VideoEncoder videoEncoder;
+
+    SurfaceTexture surfaceTexture;
 
     private static final boolean VERBOSE = true;
 
