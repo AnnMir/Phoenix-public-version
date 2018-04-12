@@ -67,12 +67,12 @@ class CameraThread extends Thread {
      * @param width
      * @param height
      */
-    void startPreview(int width, int height) throws CameraAccessException {
+    synchronized void startPreview(int width, int height) throws CameraAccessException {
         if (VERBOSE) {
             Log.d(App.getTag(), "StartPreview");
         }
         CameraGLView surface = this.surface.get();
-        if (surface == null || cameraWrapper != null) {
+        if (surface == null) {
             return;
         }
 
@@ -80,39 +80,15 @@ class CameraThread extends Thread {
         // adjust view size with keeping the aspect ration of camera preview
         surface.post(surface::setVideoSizeAccordingToPreviewSize);
         cameraWrapper.setPreviewTexture(surface.getUpdatedSurfaceTexture());
-//        cameraWrapper.openCamera();
-//            try {
-//                final SurfaceTexture st = surface.getSurfaceTexture();
-//                st.setDefaultBufferSize(previewSize.width, previewSize.height);
-//                mCamera.setPreviewTexture(st);
-//            } catch (final IOException e) {
-//                Log.e(TAG, "startPreview:", e);
-//                if (mCamera != null) {
-//                    mCamera.release();
-//                    mCamera = null;
-//                }
-//            } catch (final RuntimeException e) {
-//                Log.e(TAG, "startPreview:", e);
-//                if (mCamera != null) {
-//                    mCamera.release();
-//                    mCamera = null;
-//                }
-//            }
-//            if (mCamera != null) {
-//                // start camera preview display
-//                mCamera.startPreview();
-//            }
+        cameraWrapper.openCamera();
     }
 
     void stopPreview() {
         if (VERBOSE) {
             Log.d(App.getTag(), "stopPreview:");
         }
-//        if (mCamera != null) {
-//            mCamera.stopPreview();
-//            mCamera.release();
-//            mCamera = null;
-//        }
+        cameraWrapper.closeCamera();
+
         CameraGLView cameraGLView = surface.get();
         if (cameraGLView != null) {
             cameraGLView.cameraHandler = null;

@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Size;
+import android.view.SurfaceHolder;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 
@@ -69,11 +70,27 @@ public class CameraGLView extends GLSurfaceView {
         }
     }
 
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        if (VERBOSE) {
+            Log.d(App.getTag(), "surfaceDestroyed:");
+        }
+        if (cameraHandler != null) {
+            cameraHandler.stopPreview(true);
+        }
+        cameraHandler = null;
+        hasSurface = false;
+        renderer.onSurfaceDestroyed();
+        super.surfaceDestroyed(holder);
+    }
+
     public void setVideoSize(int width, int height) {
         if ((rotation % 180) == 0) {
+            Log.d("SAFARI2", "Normal");
             videoWidth = width;
             videoHeight = height;
         } else {
+            Log.d("SAFARI2", "Opposite");
             videoWidth = height;
             videoHeight = width;
         }

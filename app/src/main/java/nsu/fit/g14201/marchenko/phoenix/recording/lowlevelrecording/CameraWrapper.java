@@ -3,7 +3,6 @@ package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -13,18 +12,18 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.support.annotation.NonNull;
-import android.util.Range;
+import android.util.Log;
 import android.util.Size;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
+import java.util.concurrent.Semaphore;
 
+import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
 
 
@@ -37,6 +36,8 @@ public class CameraWrapper {
     private CameraCaptureSession previewSession;
     private CaptureRequest.Builder previewBuilder;
 
+    private Semaphore startPreviewSemaphore = new Semaphore(1);
+
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(@NonNull CameraDevice device) {
@@ -48,6 +49,8 @@ public class CameraWrapper {
         public void onDisconnected(@NonNull CameraDevice device) {
             device.close();
             cameraDevice = null;
+            startPreviewSemaphore.release();
+
             if (listener != null) {
                 listener.onCameraDisconnected();
             }
@@ -57,6 +60,8 @@ public class CameraWrapper {
         public void onError(@NonNull CameraDevice device, int error) {
             device.close();
             cameraDevice = null;
+            startPreviewSemaphore.release();
+
             if (listener != null) {
                 listener.onCameraStandardError(error);
             }
@@ -111,10 +116,6 @@ public class CameraWrapper {
                 width, height);
         setRotation(cameraGLView, characteristics);
 
-        // Autofocus
-        previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-        previewBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_AUTO);
-
         // TODO: fps
 //        Range<Integer>[] supportedFpsRange =
 //                characteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
@@ -123,14 +124,15 @@ public class CameraWrapper {
 
     void setPreviewTexture(SurfaceTexture surfaceTexture) {
         this.surfaceTexture = surfaceTexture;
-        // Set up Surface for the camera preview
-//        previewBuilder.addTarget(new Surface(surfaceTexture));
     }
 
-    public void openCamera()
+    void openCamera()
             throws SecurityException,
             CameraAccessException {
-        cameraManager.openCamera(cameraId, stateCallback, null); // TODO threads
+        if (!startPreviewSemaphore.tryAcquire()) {
+            return;
+        }
+        cameraManager.openCamera(cameraId, stateCallback, null);
     }
 
     public void startRecording(String videoPath) {
@@ -139,7 +141,7 @@ public class CameraWrapper {
         }
 
 //        try {
-//            closePreview();
+//            stopPreview();
 //            SurfaceTexture texture = textureView.configureSurfaceTexture();
 //
 //            previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
@@ -179,8 +181,6 @@ public class CameraWrapper {
     }
 
     public void stopRecording(String videoPath) {
-//        videoHandler.stopRecording();
-//        videoHandler.resetRecorder();
         listener.onRecordingFinished(videoPath);
         startPreview();
     }
@@ -193,57 +193,57 @@ public class CameraWrapper {
 //        }
     }
 
-    public void closeCamera() {
-        closePreview();
+    void closeCamera() {
+        stopPreview();
 
         if (cameraDevice != null) {
             cameraDevice.close();
             cameraDevice = null;
         }
 
-//        if (videoHandler != null) {
-//            videoHandler.closeRecorder();
-//            videoHandler = null;
-//        }
+        Log.d(App.getTag(), "Camera closed");
     }
 
     private void startPreview() {
-        if (cameraDevice == null /*|| !textureView.isAvailable()*/) {
+        if (cameraDevice == null) {
+            startPreviewSemaphore.release();
             return;
         }
-//
-//        SurfaceTexture texture = textureView.configureSurfaceTexture();
-//        assert texture != null;
-//        Surface previewSurface = new Surface(texture);
-//
-//        try {
-//            previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-//            previewBuilder.addTarget(previewSurface);
-//
-//            cameraDevice.createCaptureSession(
-//                    Collections.singletonList(previewSurface),
-//                    new CameraCaptureSession.StateCallback() {
-//
-//                        @Override
-//                        public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
-//                            if (cameraDevice == null) {
-//                                return;
-//                            }
-//                            previewSession = cameraCaptureSession;
-//                            updatePreview();
-//                        }
-//
-//                        @Override
-//                        public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
-//                            listener.onCameraError(CameraStateListener.CAPTURE_SESSION_ERROR);
-//                        }
-//                    },
-//                    null
-//            );
-//        } catch (CameraAccessException e) {
-//            e.printStackTrace();
-//            listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
-//        }
+
+        Surface previewSurface = new Surface(surfaceTexture);
+
+        try {
+            previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            previewBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_AUTO);
+            previewBuilder.addTarget(previewSurface);
+            cameraDevice.createCaptureSession(
+                    Collections.singletonList(previewSurface),
+                    new CameraCaptureSession.StateCallback() {
+
+                        @Override
+                        public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
+                            startPreviewSemaphore.release();
+
+                            if (cameraDevice == null) {
+                                return;
+                            }
+                            previewSession = cameraCaptureSession;
+                            updatePreview();
+                        }
+
+                        @Override
+                        public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
+                            startPreviewSemaphore.release();
+                            listener.onCameraError(CameraStateListener.CAPTURE_SESSION_ERROR);
+                        }
+                    },
+                    null
+            );
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            startPreviewSemaphore.release();
+            listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
+        }
     }
 
     /**
@@ -257,14 +257,13 @@ public class CameraWrapper {
         try {
             previewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             previewSession.setRepeatingRequest(previewBuilder.build(), null, null);
-            // TODO: Threads
         } catch (CameraAccessException e) {
             e.printStackTrace();
             listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
         }
     }
 
-    private void closePreview() {
+    private void stopPreview() {
         if (previewSession != null) {
             previewSession.close();
             previewSession = null;

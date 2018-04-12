@@ -71,6 +71,18 @@ final class CameraSurfaceRenderer implements GLSurfaceView.Renderer,
         }
     }
 
+    void onSurfaceDestroyed() {
+        if (drawer != null) {
+            drawer.release();
+            drawer = null;
+        }
+        if (surfaceTexture != null) {
+            surfaceTexture.release();
+            surfaceTexture = null;
+        }
+        GLDrawer2D.deleteTex(textureId);
+    }
+
     private volatile boolean requestUpdateTex = false;
     private boolean flip = true;
 
