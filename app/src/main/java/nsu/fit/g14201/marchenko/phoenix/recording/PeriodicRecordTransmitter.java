@@ -15,27 +15,21 @@ import java.util.Calendar;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraHandler;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelRecordingException;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelVideoHandler;
 
 
 class PeriodicRecordTransmitter {
-    private CameraHandler cameraHandler;
+    private CameraGLView cameraGLView;
     private String videoPath;
 
-    PeriodicRecordTransmitter(@NonNull CameraHandler cameraHandler) {
-        this.cameraHandler = cameraHandler;
+    PeriodicRecordTransmitter(@NonNull CameraGLView cameraGLView) {
+        this.cameraGLView = cameraGLView;
     }
 
     void start(Context context) {
-        LowLevelVideoHandler videoHandler = new LowLevelVideoHandler();
-        try {
-            createVideoPath(context);
-            videoHandler.prepareEncoder(640, 480, videoPath);
-        } catch (IOException | CameraException | LowLevelRecordingException e) {
-            e.printStackTrace();
-            Log.d(App.getTag(), e.getMessage());
-        }
+
 //        startRecording(context);
 //        cameraHandler.startRecording(videoPath);
     }
@@ -45,11 +39,11 @@ class PeriodicRecordTransmitter {
     }
 
     void pause() {
-//        cameraHandler.closeCamera();
+        cameraGLView.onPause();
     }
 
     void resume() throws CameraAccessException {
-//        cameraHandler.resumeCameraWork();
+        cameraGLView.onResume();
     }
 
     private void startRecording(Context context) {

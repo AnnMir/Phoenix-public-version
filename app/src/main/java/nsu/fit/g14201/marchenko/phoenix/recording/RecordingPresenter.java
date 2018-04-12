@@ -6,21 +6,26 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.util.Log;
 
+import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraHandler;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraWrapper;
 
 public class RecordingPresenter implements RecordingContract.Presenter,
         CameraStateListener {
     private final RecordingContract.View recordingView;
     private final Context context;
 
-    private CameraHandler backCamera;
-    private CameraHandler frontCamera;
-    private CameraHandler selectedCamera;
+    private CameraWrapper backCamera;
+    private CameraWrapper frontCamera;
+    private CameraWrapper selectedCamera;
     private PeriodicRecordTransmitter recordTransmitter;
+    private CameraGLView cameraGLView;
     private boolean isVideoRecording = false;
 
     public RecordingPresenter(Context applicationContext, RecordingContract.View recordingView) {
@@ -34,7 +39,6 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         try {
             checkCameraHardware();
             selectedCamera = backCamera;
-            recordTransmitter = new PeriodicRecordTransmitter(backCamera);
         } catch (CameraAccessException | CameraException e) {
             e.printStackTrace();
             recordingView.showIncorrigibleErrorDialog(
@@ -47,8 +51,10 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     }
 
     @Override
-    public void setOutputForVideo(VideoTextureView output) {
-        selectedCamera.setTextureView(output);
+    public void setOutputForVideo(CameraGLView view) {
+        cameraGLView = view;
+        cameraGLView.setCameraWrapper(selectedCamera);
+        recordTransmitter = new PeriodicRecordTransmitter(cameraGLView);
     }
 
     @Override
@@ -94,11 +100,11 @@ public class RecordingPresenter implements RecordingContract.Presenter,
                     .get(CameraCharacteristics.LENS_FACING);
             if (facing != null) {
                 if (facing == CameraCharacteristics.LENS_FACING_BACK) {
-                    backCamera = new CameraHandler(cameraManager, cameraId, this);
+                    backCamera = new CameraWrapper(cameraManager, cameraId, this);
                     continue;
                 }
                 if (facing == CameraCharacteristics.LENS_FACING_FRONT) {
-                    frontCamera = new CameraHandler(cameraManager, cameraId, this);
+                    frontCamera = new CameraWrapper(cameraManager, cameraId, this);
                 }
             }
         }

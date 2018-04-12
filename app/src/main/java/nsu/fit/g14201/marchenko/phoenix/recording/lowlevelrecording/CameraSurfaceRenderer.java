@@ -109,7 +109,7 @@ final class CameraSurfaceRenderer implements GLSurfaceView.Renderer,
         requestUpdateTex = true;
     }
 
-    private void updateViewport() {
+    void updateViewport() {
         CameraGLView parent = surface.get();
         if (parent == null) {
             return;

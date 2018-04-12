@@ -1,12 +1,20 @@
 package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
 
 
+import android.hardware.camera2.CameraAccessException;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
+
+import nsu.fit.g14201.marchenko.phoenix.App;
 
 class CameraHandler extends Handler {
+    private static final boolean VERBOSE = true;
     private static final int MSG_PREVIEW_START = 1;
-    private CameraThread thread; // FIXME: Doesn't it need to be weak?
+    private static final int MSG_PREVIEW_STOP = 2;
+
+    private CameraThread thread; // FIXME: Shouldn't it be weak?
 
     CameraHandler(final CameraThread thread) {
         this.thread = thread;
@@ -16,16 +24,20 @@ class CameraHandler extends Handler {
     public void handleMessage(Message msg) {
         switch (msg.what) {
             case MSG_PREVIEW_START:
-                thread.startPreview(msg.arg1, msg.arg2);
+                try {
+                    thread.startPreview(msg.arg1, msg.arg2);
+                } catch (CameraAccessException e) {
+                    e.printStackTrace();
+                }
                 break;
-//            case MSG_PREVIEW_STOP:
-//                mThread.stopPreview();
-//                synchronized (this) {
-//                    notifyAll();
-//                }
-//                Looper.myLooper().quit();
-//                mThread = null;
-//                break;
+            case MSG_PREVIEW_STOP:
+                thread.stopPreview();
+                synchronized (this) {
+                    notifyAll();
+                }
+                Looper.myLooper().quit();
+                thread = null;
+                break;
             default:
                 throw new RuntimeException("Unknown message: what = " + msg.what);
         }
@@ -33,5 +45,24 @@ class CameraHandler extends Handler {
 
     void startPreview(int width, int height) {
         sendMessage(obtainMessage(MSG_PREVIEW_START, width, height));
+    }
+
+    /**
+     * Request to stop camera preview
+     * @param needWait need to wait for stopping camera preview
+     */
+    void stopPreview(boolean needWait) {
+        synchronized (this) {
+            sendEmptyMessage(MSG_PREVIEW_STOP);
+            if (needWait && thread.isRunning) {
+                try {
+                    if (VERBOSE) {
+                        Log.d(App.getTag(), "Wait for termination of the camera thread");
+                    }
+                    wait();
+                } catch (final InterruptedException e) {
+                }
+            }
+        }
     }
 }

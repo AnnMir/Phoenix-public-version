@@ -3,11 +3,14 @@ package nsu.fit.g14201.marchenko.phoenix.recording;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 
 import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.ui.BaseFragment;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.CorrigibleErrorDialog;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.FatalErrorDialog;
@@ -31,7 +34,9 @@ public class RecordingFragment extends BaseFragment
     @Override
     public void onStart() {
         super.onStart();
-        presenter.setOutputForVideo(getView().findViewById(R.id.texture));
+        CameraGLView cameraView = getView().findViewById(R.id.texture);
+        cameraView.setVideoSize(1280, 720); // Entry point for video size parameters
+        presenter.setOutputForVideo(cameraView);
     }
 
     @Override

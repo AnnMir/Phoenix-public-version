@@ -18,7 +18,7 @@ class CameraThread extends Thread {
     private final Object threadSyncObject = new Object();
     private CameraHandler handler;
     private CameraWrapper cameraWrapper;
-    private volatile boolean isRunning = false;
+    volatile boolean isRunning = false;
 
     CameraThread(@NonNull CameraGLView surface, @NonNull CameraWrapper cameraWrapper) {
         super("Camera thread");
@@ -75,7 +75,8 @@ class CameraThread extends Thread {
             return;
         }
 
-        cameraWrapper.openCamera(width, height, surface.getSurfaceTexture());
+        cameraWrapper.configureCamera(width, height, surface);
+//        cameraWrapper.openCamera();
 //            try {
 //                mCamera = Camera.open(CAMERA_ID);
 //                final Camera.Parameters params = mCamera.getParameters();
@@ -141,5 +142,20 @@ class CameraThread extends Thread {
 //                // start camera preview display
 //                mCamera.startPreview();
 //            }
+    }
+
+    void stopPreview() {
+        if (VERBOSE) {
+            Log.d(App.getTag(), "stopPreview:");
+        }
+//        if (mCamera != null) {
+//            mCamera.stopPreview();
+//            mCamera.release();
+//            mCamera = null;
+//        }
+        CameraGLView cameraGLView = surface.get();
+        if (cameraGLView != null) {
+            cameraGLView.cameraHandler = null;
+        }
     }
 }
