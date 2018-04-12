@@ -93,7 +93,17 @@ public class CameraGLView extends GLSurfaceView {
         cameraHandler.startPreview(width, height);
     }
 
+    void setVideoSizeAccordingToPreviewSize() {
+        setVideoSize(previewSize.getWidth(), previewSize.getHeight());
+    }
+
     SurfaceTexture getSurfaceTexture() {
         return renderer != null ? renderer.surfaceTexture : null;
+    }
+
+    SurfaceTexture getUpdatedSurfaceTexture() {
+        SurfaceTexture surfaceTexture = getSurfaceTexture();
+        surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
+        return surfaceTexture;
     }
 }

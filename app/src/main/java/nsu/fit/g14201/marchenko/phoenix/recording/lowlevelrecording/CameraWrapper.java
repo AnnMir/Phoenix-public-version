@@ -13,25 +13,27 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.support.annotation.NonNull;
+import android.util.Range;
 import android.util.Size;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView;
+
 
 public class CameraWrapper {
     private CameraManager cameraManager;
     private CameraDevice cameraDevice;
     private String cameraId;
     private CameraStateListener listener;
-//    private VideoTextureView textureView;
-//    private SurfaceTexture surfaceTexture;
+    private SurfaceTexture surfaceTexture;
     private CameraCaptureSession previewSession;
     private CaptureRequest.Builder previewBuilder;
 
@@ -40,9 +42,6 @@ public class CameraWrapper {
         public void onOpened(@NonNull CameraDevice device) {
             cameraDevice = device;
             startPreview();
-//            if (textureView != null) {
-//                textureView.configureTransform(textureView.getWidth(), textureView.getHeight());
-//            }
         }
 
         @Override
@@ -98,35 +97,39 @@ public class CameraWrapper {
         this.listener = listener;
     }
 
-    public void configureCamera(int width, int height, CameraGLView cameraGLView)
+    void configureCamera(int width, int height, CameraGLView cameraGLView)
             throws CameraAccessException {
         CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
 
         StreamConfigurationMap map = characteristics
-            .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         if (map == null) {
             throw new RuntimeException("Cannot get available preview/video sizes");
         }
 
-        cameraGLView.previewSize = getClosestSupportedSize(map.getOutputSizes(SurfaceTexture.class), width,
-                height);
+        cameraGLView.previewSize = getClosestSupportedSize(map.getOutputSizes(SurfaceTexture.class),
+                width, height);
         setRotation(cameraGLView, characteristics);
+
+        // Autofocus
+        previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+        previewBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_AUTO);
+
+        // TODO: fps
+//        Range<Integer>[] supportedFpsRange =
+//                characteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
+//        previewBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, bestFPSRange);
     }
-//
-//        // rotate camera preview according to the device orientation
-//        setRotation(params);
-//        mCamera.setParameters(params);
-//
-//        // get the actual preview size
-//        final Camera.Size previewSize = mCamera.getParameters().getPreviewSize();
-//        Log.i(TAG, String.format("previewSize(%d, %d)", previewSize.width, previewSize.height));
-//    }
+
+    void setPreviewTexture(SurfaceTexture surfaceTexture) {
+        this.surfaceTexture = surfaceTexture;
+        // Set up Surface for the camera preview
+//        previewBuilder.addTarget(new Surface(surfaceTexture));
+    }
 
     public void openCamera()
             throws SecurityException,
             CameraAccessException {
-//        chooseSizes(width, height);
-//        textureView.configureTransform(width, height);
         cameraManager.openCamera(cameraId, stateCallback, null); // TODO threads
     }
 
