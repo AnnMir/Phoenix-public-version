@@ -79,6 +79,7 @@ class CameraThread extends Thread {
         cameraWrapper.configureCamera(width, height, surface);
         // adjust view size with keeping the aspect ration of camera preview
         surface.post(surface::setVideoSizeAccordingToPreviewSize);
+        Log.d(App.getTag(), "Setting preview texture");
         cameraWrapper.setPreviewTexture(surface.getUpdatedSurfaceTexture());
         cameraWrapper.openCamera();
     }

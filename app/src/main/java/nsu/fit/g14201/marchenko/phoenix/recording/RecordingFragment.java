@@ -33,7 +33,7 @@ public class RecordingFragment extends BaseFragment
     public void onStart() {
         super.onStart();
         CameraGLView cameraView = getView().findViewById(R.id.texture);
-        cameraView.setVideoSize(1280, 720); // Entry point for video size parameters
+//        cameraView.setVideoSize(1280, 720); // Entry point for video size parameters
         presenter.setOutputForVideo(cameraView);
     }
 

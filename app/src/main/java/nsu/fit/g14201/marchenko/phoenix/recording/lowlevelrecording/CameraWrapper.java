@@ -214,7 +214,7 @@ public class CameraWrapper {
 
         try {
             previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            previewBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_AUTO);
+            previewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             previewBuilder.addTarget(previewSurface);
             cameraDevice.createCaptureSession(
                     Collections.singletonList(previewSurface),
@@ -255,7 +255,6 @@ public class CameraWrapper {
         }
 
         try {
-            previewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             previewSession.setRepeatingRequest(previewBuilder.build(), null, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
