@@ -99,6 +99,14 @@ public class CameraGLView extends GLSurfaceView {
         queueEvent(renderer::updateViewport);
     }
 
+    public int getVideoWidth() {
+        return videoWidth;
+    }
+
+    public int getVideoHeight() {
+        return videoHeight;
+    }
+
     public void setCameraWrapper(CameraWrapper cameraWrapper) {
         this.cameraWrapper = cameraWrapper;
     }

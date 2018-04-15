@@ -14,24 +14,29 @@ import java.util.Calendar;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
-import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraHandler;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelRecordingException;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelVideoHandler;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.AudioEncoder;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaEncoder;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaMuxerException;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaMuxerWrapper;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.VideoEncoder;
 
 
 class PeriodicRecordTransmitter {
     private CameraGLView cameraGLView;
-    private String videoPath;
+    private MediaMuxerWrapper muxer; // FIXME: Move somewhere
 
     PeriodicRecordTransmitter(@NonNull CameraGLView cameraGLView) {
         this.cameraGLView = cameraGLView;
     }
 
-    void start(Context context) {
-
-//        startRecording(context);
-//        cameraHandler.startRecording(videoPath);
+    void start(MediaEncoder.MediaEncoderListener listener, Context context)
+            throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException {
+        muxer = new MediaMuxerWrapper(createVideoPath(context));
+        new VideoEncoder(muxer, cameraGLView.getVideoWidth(), cameraGLView.getVideoHeight(), listener);
+        new AudioEncoder(muxer, listener);
+        muxer.prepare();
     }
 
     void stop() {
@@ -50,7 +55,7 @@ class PeriodicRecordTransmitter {
 //        createVideoPath(context);
     }
 
-    private void createVideoPath(Context context) {
+    private String createVideoPath(Context context) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss");
         String videoDirectory = dateFormat.format(Calendar.getInstance().getTime());
 
@@ -59,6 +64,8 @@ class PeriodicRecordTransmitter {
         if (!directory.mkdirs()) {
             Log.d(App.getTag(), "Failed to create directory for video"); // TODO: Error
         }
-        videoPath = directory.getAbsolutePath() + "/";
+        String videoPath = directory.getAbsolutePath() + "/";
+
+        return videoPath;
     }
 }

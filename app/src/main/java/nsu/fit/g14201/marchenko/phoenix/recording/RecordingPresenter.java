@@ -6,18 +6,20 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
-import android.util.Log;
 
-import nsu.fit.g14201.marchenko.phoenix.App;
+import java.io.IOException;
+
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
-import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraHandler;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraWrapper;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelRecordingException;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaEncoder;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaMuxerException;
 
 public class RecordingPresenter implements RecordingContract.Presenter,
-        CameraStateListener {
+        CameraStateListener, MediaEncoder.MediaEncoderListener {
     private final RecordingContract.View recordingView;
     private final Context context;
 
@@ -62,7 +64,13 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         if (isVideoRecording) {
             recordTransmitter.stop();
         } else {
-            recordTransmitter.start(context);
+            try {
+                recordTransmitter.start(this, context);
+            } catch (LowLevelRecordingException | MediaMuxerException | CameraException
+                    | IOException e) {
+                e.printStackTrace();
+                recordingView.showIncorrigibleErrorDialog(e.getMessage());
+            }
         }
     }
 
@@ -157,5 +165,15 @@ public class RecordingPresenter implements RecordingContract.Presenter,
             case CAMERA_ACCESS_ERROR:
                 recordingView.showFatalErrorDialog("ON CAMERA ACCESS ERROR");
         }
+    }
+
+    @Override
+    public void onPrepared(MediaEncoder encoder) {
+
+    }
+
+    @Override
+    public void onStopped(MediaEncoder encoder) {
+
     }
 }
