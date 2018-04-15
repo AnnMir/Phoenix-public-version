@@ -14,9 +14,9 @@ import java.util.Calendar;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
+import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelRecordingException;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.AudioEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaMuxerException;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaMuxerWrapper;
@@ -26,21 +26,33 @@ import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.Vid
 class PeriodicRecordTransmitter {
     private CameraGLView cameraGLView;
     private MediaMuxerWrapper muxer; // FIXME: Move somewhere
+    private String videoPath;
+    private CameraStateListener cameraStateListener;
 
-    PeriodicRecordTransmitter(@NonNull CameraGLView cameraGLView) {
+    PeriodicRecordTransmitter(@NonNull CameraGLView cameraGLView,
+                              @NonNull CameraStateListener cameraStateListener) {
         this.cameraGLView = cameraGLView;
+        this.cameraStateListener = cameraStateListener;
     }
 
-    void start(MediaEncoder.MediaEncoderListener listener, Context context)
+    void start(MediaEncoder.MediaEncoderListener mediaEncoderListener, Context context)
             throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException {
-        muxer = new MediaMuxerWrapper(createVideoPath(context));
-        new VideoEncoder(muxer, cameraGLView.getVideoWidth(), cameraGLView.getVideoHeight(), listener);
-        new AudioEncoder(muxer, listener);
+        createVideoPath(context);
+        muxer = new MediaMuxerWrapper(videoPath);
+        new VideoEncoder(muxer, cameraGLView.getVideoWidth(), cameraGLView.getVideoHeight(),
+                mediaEncoderListener);
+//        new AudioEncoder(muxer, listener); // TODO: Audio track
         muxer.prepare();
+        muxer.startRecording();
+        cameraStateListener.onRecordingStarted();
     }
 
     void stop() {
-//        cameraHandler.stopRecording(videoPath);
+        if (muxer != null) {
+            muxer.stopRecording();
+            muxer = null;
+            cameraStateListener.onRecordingFinished(videoPath);
+        }
     }
 
     void pause() {
@@ -51,11 +63,7 @@ class PeriodicRecordTransmitter {
         cameraGLView.onResume();
     }
 
-    private void startRecording(Context context) {
-//        createVideoPath(context);
-    }
-
-    private String createVideoPath(Context context) {
+    private void createVideoPath(Context context) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss");
         String videoDirectory = dateFormat.format(Calendar.getInstance().getTime());
 
@@ -64,8 +72,6 @@ class PeriodicRecordTransmitter {
         if (!directory.mkdirs()) {
             Log.d(App.getTag(), "Failed to create directory for video"); // TODO: Error
         }
-        String videoPath = directory.getAbsolutePath() + "/";
-
-        return videoPath;
+        videoPath = directory.getAbsolutePath() + "/";
     }
 }

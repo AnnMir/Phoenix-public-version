@@ -5,7 +5,7 @@ import android.app.Application;
 
 public class App extends Application {
     private static final String TAG = "safari";
-    public static final String APP_NAME = "Phoenix"; //FIXME Заменить на что-нибудь поэлегантнее
+    public static final String APP_NAME = "Phoenix";
     private static final String EXTRA_COORDINATOR =
             "nsu.fit.g14201.marchenko.phoenix.registration.COORDINATOR";
 

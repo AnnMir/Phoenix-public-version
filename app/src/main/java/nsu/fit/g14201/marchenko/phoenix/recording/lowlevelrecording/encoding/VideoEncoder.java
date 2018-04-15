@@ -3,6 +3,7 @@ package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding;
 
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
+import android.opengl.EGLContext;
 import android.util.Log;
 import android.view.Surface;
 
@@ -39,12 +40,30 @@ public class VideoEncoder extends MediaEncoder {
         renderHandler = RenderHandler.createHandler(TAG);
     }
 
-    public boolean frameAvailableSoon(final float[] texMatrix, final float[] mvpMatrix) {
-//        boolean result;
-//        if (result = super.frameAvailableSoon())
-//            mRenderHandler.draw(texMatrix, mvpMatrix);
-//        return result;
-        return true;
+    public boolean frameAvailableSoon(final float[] tex_matrix) {
+        boolean result;
+        if (result = super.frameAvailableSoon())
+            renderHandler.draw(tex_matrix);
+        return result;
+    }
+
+    public boolean frameAvailableSoon(final float[] tex_matrix, final float[] mvp_matrix) {
+        boolean result;
+        if (result = super.frameAvailableSoon())
+            renderHandler.draw(tex_matrix, mvp_matrix);
+        return result;
+    }
+
+    @Override
+    public boolean frameAvailableSoon() {
+        boolean result;
+        if (result = super.frameAvailableSoon())
+            renderHandler.draw(null);
+        return result;
+    }
+
+    public void setEglContext(final EGLContext shared_context, final int tex_id) {
+        renderHandler.setEglContext(shared_context, tex_id, inputSurface, true);
     }
 
     @Override
@@ -79,6 +98,14 @@ public class VideoEncoder extends MediaEncoder {
         if (listener != null) {
             listener.onPrepared(this);
         }
+    }
+
+    @Override
+    protected void signalEndOfInputStream() {
+        if (VERBOSE) {
+            Log.d(App.getTag(), "Sending EOS to encoder");
+        }
+		mediaCodec.signalEndOfInputStream();
     }
 
     private int calculateBitRate() {

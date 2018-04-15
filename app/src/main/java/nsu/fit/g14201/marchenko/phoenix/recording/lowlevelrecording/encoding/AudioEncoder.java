@@ -59,4 +59,15 @@ public class AudioEncoder extends MediaEncoder {
             listener.onPrepared(this);
         }
     }
+
+    @Override
+    protected void signalEndOfInputStream() {
+        if (VERBOSE) {
+            Log.d(App.getTag(), "Sending EOS to encoder");
+        }
+        // signalEndOfInputStream is only available for video encoding with surface
+        // and equivalent sending a empty buffer with BUFFER_FLAG_END_OF_STREAM flag.
+//		mMediaCodec.signalEndOfInputStream();	// API >= 18
+        encode(null, 0, getPTSUs());
+    }
 }

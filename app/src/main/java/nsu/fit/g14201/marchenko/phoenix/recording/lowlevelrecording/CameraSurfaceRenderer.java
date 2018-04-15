@@ -27,10 +27,10 @@ final class CameraSurfaceRenderer implements GLSurfaceView.Renderer,
     private GLDrawer2D drawer; // Object for preview display
     private final float[] stMatrix = new float[16];
     private final float[] mvpMatrix = new float[16];
-    private int textureId;
-    private VideoEncoder videoEncoder;
 
     SurfaceTexture surfaceTexture;
+    int textureId;
+    VideoEncoder videoEncoder;
 
     private static final boolean VERBOSE = true;
 

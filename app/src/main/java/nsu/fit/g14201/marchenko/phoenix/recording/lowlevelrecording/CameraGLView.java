@@ -3,6 +3,7 @@ package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.opengl.EGL14;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.util.Size;
 import android.view.SurfaceHolder;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.VideoEncoder;
 
 /**
  * Sub class of GLSurfaceView to display camera preview and write video frame to capturing surface
@@ -109,6 +111,17 @@ public class CameraGLView extends GLSurfaceView {
 
     public void setCameraWrapper(CameraWrapper cameraWrapper) {
         this.cameraWrapper = cameraWrapper;
+    }
+
+    public void setVideoEncoder(VideoEncoder encoder) {
+        queueEvent(() -> {
+            synchronized (renderer) {
+                if (encoder != null) {
+                    encoder.setEglContext(EGL14.eglGetCurrentContext(), renderer.textureId);
+                }
+                renderer.videoEncoder = encoder;
+            }
+        });
     }
 
     synchronized void startPreview(int width, int height) {

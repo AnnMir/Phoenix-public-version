@@ -6,9 +6,11 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.util.Log;
 
 import java.io.IOException;
 
+import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
@@ -17,9 +19,12 @@ import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraWrappe
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelRecordingException;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaMuxerException;
+import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.VideoEncoder;
 
 public class RecordingPresenter implements RecordingContract.Presenter,
         CameraStateListener, MediaEncoder.MediaEncoderListener {
+    private final boolean VERBOSE = true;
+
     private final RecordingContract.View recordingView;
     private final Context context;
 
@@ -56,7 +61,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     public void setOutputForVideo(CameraGLView view) {
         cameraGLView = view;
         cameraGLView.setCameraWrapper(selectedCamera);
-        recordTransmitter = new PeriodicRecordTransmitter(cameraGLView);
+        recordTransmitter = new PeriodicRecordTransmitter(cameraGLView, this);
     }
 
     @Override
@@ -169,11 +174,20 @@ public class RecordingPresenter implements RecordingContract.Presenter,
 
     @Override
     public void onPrepared(MediaEncoder encoder) {
-
+        if (VERBOSE) {
+            Log.d(App.getTag(), "on Prepared: encoder = " + encoder);
+        }
+        if (encoder instanceof VideoEncoder) {
+            cameraGLView.setVideoEncoder((VideoEncoder) encoder);
+        }
     }
 
     @Override
     public void onStopped(MediaEncoder encoder) {
-
+        if (VERBOSE) {
+            Log.d(App.getTag(), "on Stopped: encoder = " + encoder);
+        }
+        if (encoder instanceof VideoEncoder)
+            cameraGLView.setVideoEncoder(null);
     }
 }
