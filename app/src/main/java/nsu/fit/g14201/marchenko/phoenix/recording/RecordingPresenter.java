@@ -6,6 +6,8 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.media.MediaCodec;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.IOException;
@@ -189,5 +191,12 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         }
         if (encoder instanceof VideoEncoder)
             cameraGLView.setVideoEncoder(null);
+    }
+
+    @Override
+    public void onError(@NonNull MediaCodec.CodecException e) {
+        e.printStackTrace();
+        Log.d(App.getTag(), e.getDiagnosticInfo());
+        recordingView.showIncorrigibleErrorDialog(e.getMessage());
     }
 }

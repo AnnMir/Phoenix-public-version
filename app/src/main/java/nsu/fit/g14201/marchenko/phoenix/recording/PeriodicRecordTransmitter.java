@@ -22,6 +22,7 @@ import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.Med
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaMuxerWrapper;
 import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.VideoEncoder;
 
+// TODO IMPORTANT: Отследить поведение при повороте
 
 class PeriodicRecordTransmitter {
     private CameraGLView cameraGLView;

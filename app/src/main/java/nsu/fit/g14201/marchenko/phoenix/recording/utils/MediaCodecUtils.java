@@ -20,9 +20,6 @@ public class MediaCodecUtils {
         if ((encoderName = mediaCodecList.findEncoderForFormat(format)) == null) {
             throw new CameraException(NO_CODEC_FOUND);
         }
-        MediaCodec mediaCodec = MediaCodec.createByCodecName(encoderName);
-        mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-
-        return mediaCodec;
+        return MediaCodec.createByCodecName(encoderName);
     }
 }

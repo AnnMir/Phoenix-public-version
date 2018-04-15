@@ -2,6 +2,7 @@ package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding;
 
 
 import android.media.AudioFormat;
+import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.util.Log;
@@ -49,6 +50,7 @@ public class AudioEncoder extends MediaEncoder {
         }
 
         mediaCodec = MediaCodecUtils.getCodecByFormat(format);
+        mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mediaCodec.start();
 
         if (VERBOSE) {

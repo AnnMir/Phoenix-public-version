@@ -95,7 +95,7 @@ public class MediaMuxerWrapper {
         }
         int trackIndex = muxer.addTrack(format);
         if (VERBOSE) {
-            Log.d(App.getTag(), "Add track with number =" + trackIndex + " of " + trackNum +
+            Log.d(App.getTag(), "Add track with number = " + trackIndex + " of " + trackNum +
                     ", format = " + format);
         }
         return trackIndex;
@@ -109,11 +109,8 @@ public class MediaMuxerWrapper {
         if ((trackNum > 0) && (tracksStarted == trackNum)) {
             muxer.start();
             muxerStarted = true;
-            notifyAll();
-            if (VERBOSE) {
-                Log.d(App.getTag(),  "MediaMuxer started");
-            }
         }
+
         return muxerStarted;
     }
 
@@ -138,6 +135,7 @@ public class MediaMuxerWrapper {
         if (VERBOSE) {
             Log.d(App.getTag(),  "Stopped muxer: tracks started = " + tracksStarted);
         }
+
         tracksStarted--;
         if (trackNum > 0 && tracksStarted <= 0) {
             muxer.stop();
@@ -147,12 +145,6 @@ public class MediaMuxerWrapper {
                 Log.d(App.getTag(),  "MediaMuxer stopped:");
             }
         }
-    }
-
-    // TODO: remove
-    public void release() {
-        videoEncoder.release();
-        audioEncoder.release();
     }
 
     private String getCurrentFilename() {
