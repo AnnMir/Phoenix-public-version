@@ -2,6 +2,7 @@ package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding;
 
 
 import android.media.MediaCodec;
+import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -71,6 +72,20 @@ public abstract class MediaEncoder implements Runnable {
             return;
         }
         signalEndOfInputStream();
+    }
+
+    MediaFormat getOutputFormat() {
+        return mediaCodec.getOutputFormat();
+    }
+
+    /**
+     * @return old track index
+     */
+    int renewTrackIndex(int trackIndex) {
+        int oldTrackIndex = trackIndex;
+        this.trackIndex = trackIndex;
+
+        return oldTrackIndex;
     }
 
     protected void release() {

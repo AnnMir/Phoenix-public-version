@@ -25,7 +25,7 @@ public class VideoEncoder extends MediaEncoder {
     private static final String TAG = "MediaVideoEncoder";
     private static final String MIME_TYPE = "video/avc";
     private static final int FRAME_RATE = 30;
-    private static final int IFRAME_INTERVAL = 5;
+    private static final int IFRAME_INTERVAL = 1; // In seconds
     private static final float BPP = 0.25f;
 
     private int videoWidth;
@@ -183,6 +183,5 @@ public class VideoEncoder extends MediaEncoder {
             }
         }
         muxerStarted = true;
-        System.out.println("Muxer IS ready");
     }
 }

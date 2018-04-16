@@ -3,12 +3,14 @@ package nsu.fit.g14201.marchenko.phoenix.recording;
 
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
+import android.media.MediaCodec;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -24,7 +26,7 @@ import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.Vid
 
 // TODO IMPORTANT: Отследить поведение при повороте
 
-class PeriodicRecordTransmitter {
+class PeriodicRecordTransmitter implements MediaMuxerWrapper.KeyFrameListener {
     private CameraGLView cameraGLView;
     private MediaMuxerWrapper muxer; // FIXME: Move somewhere
     private String videoPath;
@@ -36,10 +38,21 @@ class PeriodicRecordTransmitter {
         this.cameraStateListener = cameraStateListener;
     }
 
+    @Override
+    public void onKeyFrameReceived(int trackIndex, ByteBuffer byteBuffer,
+                                   MediaCodec.BufferInfo bufferInfo) {
+        try {
+            muxer.restart(trackIndex, byteBuffer, bufferInfo);
+        } catch (LowLevelRecordingException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
     void start(MediaEncoder.MediaEncoderListener mediaEncoderListener, Context context)
             throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException {
         createVideoPath(context);
-        muxer = new MediaMuxerWrapper(videoPath);
+        muxer = new MediaMuxerWrapper(videoPath, this);
         new VideoEncoder(muxer, cameraGLView.getVideoWidth(), cameraGLView.getVideoHeight(),
                 mediaEncoderListener);
 //        new AudioEncoder(muxer, listener); // TODO: Audio track
@@ -47,6 +60,19 @@ class PeriodicRecordTransmitter {
         muxer.startRecording();
         cameraStateListener.onRecordingStarted();
     }
+
+//    private void startTimer() {
+//        disposable = Observable.interval(timerPeriod, timerPeriod, TimeUnit.SECONDS)
+//                .observeOn(Schedulers.io())
+//                .subscribe(counter -> {
+//                    try {
+//                        saveFragment();
+//                    } catch (LowLevelRecordingException e) {
+//                        e.printStackTrace();
+//                        throw new RuntimeException(e);
+//                    }
+//                });
+//    }
 
     void stop() {
         if (muxer != null) {

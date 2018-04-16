@@ -103,7 +103,7 @@ public class LowLevelVideoHandler {
         // the raw H.264 elementary stream we get from MediaCodec into a .mp4 file.
         // FIXME: No, we're interesting!
 
-        muxerWrapper = new MediaMuxerWrapper(outputPath);
+        muxerWrapper = new MediaMuxerWrapper(outputPath, null);
 
         inputSurface.release();
         encoder.release();

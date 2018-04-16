@@ -17,25 +17,54 @@ import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelReco
 public class MediaMuxerWrapper {
     private static final boolean VERBOSE = true;
 
-    private final MediaMuxer muxer;
+    private MediaMuxer muxer;
     private final String outputPath;
     private boolean muxerStarted = false;
-    private int trackIndex;
     private int trackNum = 0;
     private int tracksStarted = 0;
     private int filenameIndex = 0;
+    private boolean isFirstKeyframe = true;
+    private KeyFrameListener keyFrameListener;
 
     private MediaEncoder videoEncoder;
     private MediaEncoder audioEncoder;
 
-    public MediaMuxerWrapper(@NonNull String outputPath) throws LowLevelRecordingException {
+    public MediaMuxerWrapper(@NonNull String outputPath, @NonNull KeyFrameListener keyFrameListener)
+            throws LowLevelRecordingException {
         this.outputPath = outputPath;
+        this.keyFrameListener = keyFrameListener;
         try {
             muxer = new MediaMuxer(getCurrentFilename(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-            trackIndex = -1;
         } catch (IOException e) {
             e.printStackTrace();
             throw new LowLevelRecordingException(LowLevelRecordingException.MEDIA_MUXER_INIT_ERROR);
+        }
+    }
+
+    public synchronized void restart(int trackIndex, ByteBuffer byteBuffer,
+                                     MediaCodec.BufferInfo bufferInfo)
+            throws LowLevelRecordingException {
+        muxer.stop();
+        muxer.release();
+        try {
+            muxer = new MediaMuxer(getCurrentFilename(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new LowLevelRecordingException(LowLevelRecordingException.MEDIA_MUXER_INIT_ERROR);
+        }
+        int oldVideoRecorderTrackIndex = -1;
+        if (videoEncoder != null) {
+            oldVideoRecorderTrackIndex = videoEncoder.renewTrackIndex(
+                    muxer.addTrack(videoEncoder.getOutputFormat()));
+        }
+        if (audioEncoder != null) {
+            audioEncoder.renewTrackIndex(muxer.addTrack(audioEncoder.getOutputFormat()));
+        }
+
+        muxer.start();
+
+        if (oldVideoRecorderTrackIndex == trackIndex) {
+            muxer.writeSampleData(videoEncoder.trackIndex, byteBuffer, bufferInfo);
         }
     }
 
@@ -126,6 +155,13 @@ public class MediaMuxerWrapper {
      */
 	synchronized void writeSampleData(int trackIndex, ByteBuffer byteBuf,
                                       MediaCodec.BufferInfo bufferInfo) {
+        if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0) {
+            if (!isFirstKeyframe) {
+                keyFrameListener.onKeyFrameReceived(trackIndex, byteBuf, bufferInfo);
+                return;
+            }
+            isFirstKeyframe = false;
+        }
         if (tracksStarted > 0) {
             muxer.writeSampleData(trackIndex, byteBuf, bufferInfo);
         }
@@ -154,5 +190,9 @@ public class MediaMuxerWrapper {
         builder.append(".mp4");
 
         return builder.toString();
+    }
+
+    public interface KeyFrameListener {
+	    void onKeyFrameReceived(int trackIndex, ByteBuffer byteBuffer, MediaCodec.BufferInfo bufferInfo);
     }
 }
