@@ -67,33 +67,6 @@ public class CameraWrapper {
             }
         }
     };
-//    private final TextureView.SurfaceTextureListener surfaceTextureListener
-//            = new TextureView.SurfaceTextureListener() {
-//        @Override
-//        public void onSurfaceTextureAvailable(SurfaceTexture texture, int width, int height) {
-//            try {
-//                openCamera(width, height);
-//            } catch (CameraAccessException e) {
-//                e.printStackTrace();
-//                listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
-//            }
-//        }
-//
-//        @Override
-//        public void onSurfaceTextureSizeChanged(SurfaceTexture texture, int width, int height) {
-//            textureView.configureTransform(width, height);
-//        }
-//
-//        @Override
-//        public boolean onSurfaceTextureDestroyed(SurfaceTexture texture) {
-//            return true;
-//        }
-//
-//        @Override
-//        public void onSurfaceTextureUpdated(SurfaceTexture texture) {
-//        }
-//    };
-
 
     public CameraWrapper(@NonNull CameraManager cameraManager, @NonNull String cameraId,
                          CameraStateListener listener) {
@@ -133,64 +106,6 @@ public class CameraWrapper {
             return;
         }
         cameraManager.openCamera(cameraId, stateCallback, null);
-    }
-
-    public void startRecording(String videoPath) {
-        if (cameraDevice == null /*|| !textureView.isAvailable()*/) {
-            return;
-        }
-
-//        try {
-//            stopPreview();
-//            SurfaceTexture texture = textureView.configureSurfaceTexture();
-//
-//            previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
-//            List<Surface> surfaces = new ArrayList<>();
-//
-//            // Set up Surface for the camera preview
-//            Surface previewSurface = new Surface(texture);
-//            surfaces.add(previewSurface);
-//            previewBuilder.addTarget(previewSurface);
-//
-//            // Set up Surface for the MediaRecorder
-////            Surface recorderSurface = videoHandler.getSurface();
-////            surfaces.add(recorderSurface);
-////            previewBuilder.addTarget(recorderSurface);
-//
-//            // Start a capture session
-//            // Once the session starts, we can update the UI and start recording
-//            cameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
-//
-//                @Override
-//                public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
-//                    previewSession = cameraCaptureSession;
-//                    updatePreview();
-//                    listener.onRecordingStarted();
-////                    videoHandler.startRecording();
-//                }
-//
-//                @Override
-//                public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
-//                    listener.onCameraError(CameraStateListener.CAPTURE_SESSION_ERROR);
-//                }
-//            }, null); // TODO: Threads
-//        } catch (CameraAccessException e) {
-//            e.printStackTrace();
-//            listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
-//        }
-    }
-
-    public void stopRecording(String videoPath) {
-        listener.onRecordingFinished(videoPath);
-        startPreview();
-    }
-
-    public void resumeCameraWork() throws CameraAccessException {
-//        if (textureView.isAvailable()) {
-//            openCamera(textureView.getWidth(), textureView.getHeight());
-//        } else {
-//            textureView.setSurfaceTextureListener(surfaceTextureListener);
-//        }
     }
 
     void closeCamera() {
