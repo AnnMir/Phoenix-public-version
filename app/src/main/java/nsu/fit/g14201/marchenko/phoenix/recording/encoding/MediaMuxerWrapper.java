@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding;
+package nsu.fit.g14201.marchenko.phoenix.recording.encoding;
 
 
 import android.media.MediaCodec;
@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelRecordingException;
+import nsu.fit.g14201.marchenko.phoenix.recording.gl.LowLevelRecordingException;
 
 public class MediaMuxerWrapper {
     private static final boolean VERBOSE = true;

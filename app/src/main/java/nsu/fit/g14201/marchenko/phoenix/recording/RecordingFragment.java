@@ -8,7 +8,7 @@ import android.widget.Button;
 
 import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView;
+import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.ui.BaseFragment;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.CorrigibleErrorDialog;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.FatalErrorDialog;

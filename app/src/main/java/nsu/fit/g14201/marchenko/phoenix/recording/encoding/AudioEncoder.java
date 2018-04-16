@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding;
+package nsu.fit.g14201.marchenko.phoenix.recording.encoding;
 
 
 import android.media.AudioFormat;

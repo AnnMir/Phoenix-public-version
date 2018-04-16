@@ -3,7 +3,7 @@ package nsu.fit.g14201.marchenko.phoenix.recording;
 
 import nsu.fit.g14201.marchenko.phoenix.BasePresenter;
 import nsu.fit.g14201.marchenko.phoenix.BaseView;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView;
+import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 
 public interface RecordingContract {
     interface View extends BaseView<Presenter> {

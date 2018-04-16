@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
+package nsu.fit.g14201.marchenko.phoenix.recording.camera;
 
 
 import android.content.Context;
@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.concurrent.Semaphore;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
-import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
+import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 
 
 public class CameraWrapper {

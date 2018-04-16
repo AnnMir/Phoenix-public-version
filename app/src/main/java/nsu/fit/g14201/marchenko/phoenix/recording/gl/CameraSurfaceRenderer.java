@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
+package nsu.fit.g14201.marchenko.phoenix.recording.gl;
 
 
 import android.graphics.SurfaceTexture;
@@ -13,16 +13,18 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.VideoEncoder;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.glutils.GLDrawer2D;
+import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
+import nsu.fit.g14201.marchenko.phoenix.recording.gl.glutils.GLDrawer2D;
 
-import static nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView.SCALE_CROP_CENTER;
-import static nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView.SCALE_KEEP_ASPECT;
-import static nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView.SCALE_KEEP_ASPECT_VIEWPORT;
-import static nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView.SCALE_STRETCH_FIT;
+import static nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView.SCALE_CROP_CENTER;
+import static nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView.SCALE_KEEP_ASPECT;
+import static nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView.SCALE_KEEP_ASPECT_VIEWPORT;
+import static nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView.SCALE_STRETCH_FIT;
 
 final class CameraSurfaceRenderer implements GLSurfaceView.Renderer,
         SurfaceTexture.OnFrameAvailableListener{
+    private static final boolean VERBOSE = true;
+
     private final WeakReference<CameraGLView> surface;
     private GLDrawer2D drawer; // Object for preview display
     private final float[] stMatrix = new float[16];
@@ -31,8 +33,6 @@ final class CameraSurfaceRenderer implements GLSurfaceView.Renderer,
     SurfaceTexture surfaceTexture;
     int textureId;
     VideoEncoder videoEncoder;
-
-    private static final boolean VERBOSE = true;
 
     CameraSurfaceRenderer(CameraGLView surface) {
         this.surface = new WeakReference<>(surface);
@@ -71,18 +71,6 @@ final class CameraSurfaceRenderer implements GLSurfaceView.Renderer,
         }
     }
 
-    void onSurfaceDestroyed() {
-        if (drawer != null) {
-            drawer.release();
-            drawer = null;
-        }
-        if (surfaceTexture != null) {
-            surfaceTexture.release();
-            surfaceTexture = null;
-        }
-        GLDrawer2D.deleteTex(textureId);
-    }
-
     private volatile boolean requestUpdateTex = false;
     private boolean flip = true;
 
@@ -119,6 +107,18 @@ final class CameraSurfaceRenderer implements GLSurfaceView.Renderer,
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
         requestUpdateTex = true;
+    }
+
+    void onSurfaceDestroyed() {
+        if (drawer != null) {
+            drawer.release();
+            drawer = null;
+        }
+        if (surfaceTexture != null) {
+            surfaceTexture.release();
+            surfaceTexture = null;
+        }
+        GLDrawer2D.deleteTex(textureId);
     }
 
     void updateViewport() {

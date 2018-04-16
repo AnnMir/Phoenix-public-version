@@ -17,12 +17,12 @@ import java.util.Calendar;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.CameraGLView;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.LowLevelRecordingException;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaEncoder;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaMuxerException;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.MediaMuxerWrapper;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.VideoEncoder;
+import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaEncoder;
+import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaMuxerException;
+import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaMuxerWrapper;
+import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
+import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
+import nsu.fit.g14201.marchenko.phoenix.recording.gl.LowLevelRecordingException;
 
 // TODO IMPORTANT: Отследить поведение при повороте
 

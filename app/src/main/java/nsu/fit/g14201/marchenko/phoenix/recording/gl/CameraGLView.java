@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
+package nsu.fit.g14201.marchenko.phoenix.recording.gl;
 
 
 import android.content.Context;
@@ -11,27 +11,32 @@ import android.util.Size;
 import android.view.SurfaceHolder;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding.VideoEncoder;
+import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraHandler;
+import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraThread;
+import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraWrapper;
+import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
 
 /**
  * Sub class of GLSurfaceView to display camera preview and write video frame to capturing surface
  */
 public class CameraGLView extends GLSurfaceView {
+    private static final boolean VERBOSE = true;
+
     static final int SCALE_STRETCH_FIT = 0;
     static final int SCALE_KEEP_ASPECT_VIEWPORT = 1;
     static final int SCALE_KEEP_ASPECT = 2;
     static final int SCALE_CROP_CENTER = 3;
 
-    private static final boolean VERBOSE = true;
-    private final CameraSurfaceRenderer renderer;
-    private CameraWrapper cameraWrapper;
+    public CameraHandler cameraHandler = null;
+    public Size previewSize;
+    public int rotation;
 
-    CameraHandler cameraHandler = null;
     boolean hasSurface;
     int videoWidth, videoHeight;
-    Size previewSize;
-    int rotation;
     int scaleMode = SCALE_STRETCH_FIT;
+
+    private final CameraSurfaceRenderer renderer;
+    private CameraWrapper cameraWrapper;
 
     public CameraGLView(Context context) {
         this(context, null, 0);
@@ -124,6 +129,16 @@ public class CameraGLView extends GLSurfaceView {
         });
     }
 
+    public void setVideoSizeAccordingToPreviewSize() {
+        setVideoSize(previewSize.getWidth(), previewSize.getHeight());
+    }
+
+    public SurfaceTexture getUpdatedSurfaceTexture() {
+        SurfaceTexture surfaceTexture = getSurfaceTexture();
+        surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
+        return surfaceTexture;
+    }
+
     synchronized void startPreview(int width, int height) {
         if (cameraHandler == null) {
             CameraThread thread = new CameraThread(this, cameraWrapper);
@@ -133,17 +148,7 @@ public class CameraGLView extends GLSurfaceView {
         cameraHandler.startPreview(width, height);
     }
 
-    void setVideoSizeAccordingToPreviewSize() {
-        setVideoSize(previewSize.getWidth(), previewSize.getHeight());
-    }
-
     SurfaceTexture getSurfaceTexture() {
         return renderer != null ? renderer.surfaceTexture : null;
-    }
-
-    SurfaceTexture getUpdatedSurfaceTexture() {
-        SurfaceTexture surfaceTexture = getSurfaceTexture();
-        surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
-        return surfaceTexture;
     }
 }

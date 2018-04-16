@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.glutils;
+package nsu.fit.g14201.marchenko.phoenix.recording.gl.glutils;
 
 /*
  * AudioVideoRecordingSample

@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.encoding;
+package nsu.fit.g14201.marchenko.phoenix.recording.encoding;
 
 
 import android.media.MediaCodec;
@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
-import nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording.glutils.RenderHandler;
+import nsu.fit.g14201.marchenko.phoenix.recording.gl.glutils.RenderHandler;
 import nsu.fit.g14201.marchenko.phoenix.recording.utils.MediaCodecUtils;
 
 public class VideoEncoder extends MediaEncoder {

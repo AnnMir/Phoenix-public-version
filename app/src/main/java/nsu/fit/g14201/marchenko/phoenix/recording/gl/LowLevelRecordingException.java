@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
+package nsu.fit.g14201.marchenko.phoenix.recording.gl;
 
 
 import android.support.annotation.IntDef;

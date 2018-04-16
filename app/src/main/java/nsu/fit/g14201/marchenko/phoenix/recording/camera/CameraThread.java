@@ -1,6 +1,5 @@
-package nsu.fit.g14201.marchenko.phoenix.recording.lowlevelrecording;
+package nsu.fit.g14201.marchenko.phoenix.recording.camera;
 
-import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -9,25 +8,28 @@ import android.util.Log;
 import java.lang.ref.WeakReference;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
+import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 
 /**
  * Thread for asynchronous operation on the camera preview
  */
-class CameraThread extends Thread {
+public class CameraThread extends Thread {
     private static final boolean VERBOSE = true;
+
     private final WeakReference<CameraGLView> surface;
     private final Object threadSyncObject = new Object();
-    private CameraHandler handler;
     private CameraWrapper cameraWrapper;
+
+    CameraHandler handler;
     volatile boolean isRunning = false;
 
-    CameraThread(@NonNull CameraGLView surface, @NonNull CameraWrapper cameraWrapper) {
+    public CameraThread(@NonNull CameraGLView surface, @NonNull CameraWrapper cameraWrapper) {
         super("Camera thread");
         this.surface = new WeakReference<>(surface);
         this.cameraWrapper = cameraWrapper;
     }
 
-    CameraHandler getHandler() {
+    public CameraHandler getHandler() {
         synchronized (threadSyncObject) {
             try {
                 threadSyncObject.wait();
