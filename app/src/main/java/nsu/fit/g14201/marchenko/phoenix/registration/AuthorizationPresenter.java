@@ -10,10 +10,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
+import nsu.fit.g14201.marchenko.phoenix.connection.GoogleUserConnection;
+import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
 import nsu.fit.g14201.marchenko.phoenix.coordination.Coordinated;
 import nsu.fit.g14201.marchenko.phoenix.coordination.Coordinator;
-import nsu.fit.g14201.marchenko.phoenix.model.connection.GoogleUserConnection;
-import nsu.fit.g14201.marchenko.phoenix.model.connection.SignInException;
 
 import static android.app.Activity.RESULT_OK;
 

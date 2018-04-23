@@ -40,7 +40,7 @@ public class VideoSavingUtils {
         Log.d(App.getTag(), path.toString());
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), App.APP_NAME);
+                Environment.DIRECTORY_PICTURES), App.getAppName());
         Log.d(App.getTag(), mediaStorageDir == null ? "null!" : "not null!");
 
         if (!mediaStorageDir.exists()) {

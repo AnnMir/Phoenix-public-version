@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.model.connection;
+package nsu.fit.g14201.marchenko.phoenix.connection;
 
 
 import android.content.Context;

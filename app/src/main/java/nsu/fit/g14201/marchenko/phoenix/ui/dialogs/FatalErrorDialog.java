@@ -2,5 +2,5 @@ package nsu.fit.g14201.marchenko.phoenix.ui.dialogs;
 
 
 public class FatalErrorDialog extends IncorrigibleErrorDialog {
-    // TODO NOW close app in "OK"
+    // TODO: close app in "OK"
 }

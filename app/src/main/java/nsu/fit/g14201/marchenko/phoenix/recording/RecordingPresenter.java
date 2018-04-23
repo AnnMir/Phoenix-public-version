@@ -29,6 +29,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
 
     private final RecordingContract.View recordingView;
     private final Context context;
+    private nsu.fit.g14201.marchenko.phoenix.context.Context appContext;
 
     private CameraWrapper backCamera;
     private CameraWrapper frontCamera;
@@ -198,5 +199,10 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         e.printStackTrace();
         Log.d(App.getTag(), e.getDiagnosticInfo());
         recordingView.showIncorrigibleErrorDialog(e.getMessage());
+    }
+
+    @Override
+    public void setContext(nsu.fit.g14201.marchenko.phoenix.context.Context context) {
+        appContext = context;
     }
 }

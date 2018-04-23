@@ -18,9 +18,10 @@ import com.google.android.gms.tasks.Task;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
-import nsu.fit.g14201.marchenko.phoenix.model.connection.GoogleUserConnection;
-import nsu.fit.g14201.marchenko.phoenix.model.connection.SignInException;
-import nsu.fit.g14201.marchenko.phoenix.model.connection.UserConnection;
+import nsu.fit.g14201.marchenko.phoenix.connection.GoogleUserConnection;
+import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
+import nsu.fit.g14201.marchenko.phoenix.connection.UserConnection;
+import nsu.fit.g14201.marchenko.phoenix.context.Context;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingContract;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingFragment;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingPresenter;
@@ -31,6 +32,7 @@ public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnCompleteListener<Void> {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
+    private Context context;
 
     private RecordingContract.Presenter recordingPresenter;
 
@@ -38,15 +40,14 @@ public class MainActivity extends BaseActivity
         super.onCreate(savedInstanceState);
 
         configureToolbarAndNavigationView();
-        configureRecordingBlock();
-
-        //TODO move Drive code
-            /*// Use the last signed in account here since it already have a Drive scope.
-            mDriveClient = Drive.getDriveClient(this, GoogleSignIn.getLastSignedInAccount(this));
-            // Build a drive resource client.
-            mDriveResourceClient =
-                    Drive.getDriveResourceClient(this, GoogleSignIn.getLastSignedInAccount(this));
-            */
+        try {
+            context = Context.createContext(this);
+            configureRecordingBlock();
+            context.getCloudAPI().createAppFolderIfNotExists();
+        } catch (SignInException e) {
+            showSnack(getString(R.string.some_error));
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -137,6 +138,7 @@ public class MainActivity extends BaseActivity
             );
         }
         recordingPresenter = new RecordingPresenter(getApplicationContext(), recordingFragment);
+        recordingPresenter.setContext(context);
     }
 
     private void signOut() {
