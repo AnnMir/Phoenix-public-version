@@ -6,11 +6,13 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import nsu.fit.g14201.marchenko.phoenix.R;
-import nsu.fit.g14201.marchenko.phoenix.ui.BaseActivity;
 import nsu.fit.g14201.marchenko.phoenix.camerapermission.RequiredPermissionsActivity;
+import nsu.fit.g14201.marchenko.phoenix.coordination.Coordinator;
+import nsu.fit.g14201.marchenko.phoenix.ui.BaseActivity;
+import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
 
-public class RegistrationActivity extends BaseActivity {
-    private AuthorizationPresenter authorizationPresenter;
+public class RegistrationActivity extends BaseActivity implements Coordinator {
+    private AuthorizationContract.Presenter authorizationPresenter;
 
     @Override
     public int getLayoutId() {
@@ -21,10 +23,7 @@ public class RegistrationActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = new Intent(this, RequiredPermissionsActivity.class);
-        startActivity(intent); //TODO Temp
-
-        /*AuthorizationFragment authorizationFragment =
+        AuthorizationFragment authorizationFragment =
                 (AuthorizationFragment) getSupportFragmentManager()
                         .findFragmentById(R.id.contentFrame);
 
@@ -34,19 +33,24 @@ public class RegistrationActivity extends BaseActivity {
             ActivityUtils.addFragmentToActivity(
                     getSupportFragmentManager(),
                     authorizationFragment,
-                    R.id.contentFrame);
+                    R.id.contentFrame,
+                    null);
         }
 
-        authorizationFragment.setSuperiorActivity(this);
         authorizationPresenter = new AuthorizationPresenter(
-                getApplicationContext(), authorizationFragment);*/
+                getApplicationContext(), authorizationFragment);
+        authorizationPresenter.setCoordinator(this);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        authorizationPresenter.start();
+    }
 
-        //TODO Temp 2
-//        authorizationPresenter.start();
+    @Override
+    public void next() {
+        Intent intent = new Intent(this, RequiredPermissionsActivity.class);
+        startActivity(intent);
     }
 }

@@ -11,9 +11,9 @@ import com.google.android.gms.common.SignInButton;
 
 import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
-import nsu.fit.g14201.marchenko.phoenix.coordination.InferiorFragment;
+import nsu.fit.g14201.marchenko.phoenix.ui.BaseFragment;
 
-public class AuthorizationFragment extends InferiorFragment implements
+public class AuthorizationFragment extends BaseFragment implements
         AuthorizationContract.View {
     private static final int REQUEST_CODE_SIGN_IN = 0;
 
@@ -68,15 +68,5 @@ public class AuthorizationFragment extends InferiorFragment implements
     @OnClick(R.id.sign_in_button)
     void onSignInClick() {
         presenter.signIn();
-    }
-
-    @Override
-    public void startNextView() {
-        applyForCoordination();
-    }
-
-    @OnClick(R.id.sign_out_button)
-    void onSignOut() {
-        presenter.signOut();
     }
 }

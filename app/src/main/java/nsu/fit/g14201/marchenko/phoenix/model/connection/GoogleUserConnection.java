@@ -10,16 +10,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.tasks.OnCompleteListener;
 
-public class UserConnectionImpl implements UserConnection {
+public class GoogleUserConnection implements UserConnection {
     private GoogleSignInClient googleSignInClient;
 
-    private UserConnectionImpl() {}
+    private GoogleUserConnection() {}
 
     private static class SingletonHelper {
-        private static final UserConnectionImpl INSTANCE = new UserConnectionImpl();
+        private static final GoogleUserConnection INSTANCE = new GoogleUserConnection();
     }
 
-    public static UserConnectionImpl getInstance(){
+    public static GoogleUserConnection getInstance(){
         return SingletonHelper.INSTANCE;
     }
 
