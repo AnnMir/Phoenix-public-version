@@ -20,6 +20,8 @@
 .idea/**/gradle.xml
 .idea/**/libraries
 
+.idea/caches
+
 # CMake
 cmake-build-debug/
 
