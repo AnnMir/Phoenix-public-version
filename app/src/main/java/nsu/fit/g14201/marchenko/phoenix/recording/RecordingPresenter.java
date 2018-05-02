@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
+import nsu.fit.g14201.marchenko.phoenix.context.Contextual;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraWrapper;
@@ -22,9 +23,13 @@ import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaMuxerException;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.LowLevelRecordingException;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordStorageErrorListener;
 
 public class RecordingPresenter implements RecordingContract.Presenter,
-        CameraStateListener, MediaEncoder.MediaEncoderListener {
+        CameraStateListener,
+        MediaEncoder.MediaEncoderListener,
+        RecordStorageErrorListener,
+        Contextual {
     private final boolean VERBOSE = true;
 
     private final RecordingContract.View recordingView;
@@ -34,7 +39,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     private CameraWrapper backCamera;
     private CameraWrapper frontCamera;
     private CameraWrapper selectedCamera;
-    private PeriodicRecordTransmitter recordTransmitter;
+    private PeriodicFragmentRecorder fragmentRecorder;
     private CameraGLView cameraGLView;
     private boolean isVideoRecording = false;
 
@@ -64,16 +69,19 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     public void setOutputForVideo(CameraGLView view) {
         cameraGLView = view;
         cameraGLView.setCameraWrapper(selectedCamera);
-        recordTransmitter = new PeriodicRecordTransmitter(cameraGLView, this);
+        fragmentRecorder = new PeriodicFragmentRecorder(cameraGLView, this);
     }
 
     @Override
     public void changeRecordingState() {
         if (isVideoRecording) {
-            recordTransmitter.stop();
+            fragmentRecorder.stop();
         } else {
             try {
-                recordTransmitter.start(this, context);
+                fragmentRecorder.start(
+                        this,
+                        context,
+                        new PeriodicRecordTransmitter(appContext.getRecordRepositoriesController()));
             } catch (LowLevelRecordingException | MediaMuxerException | CameraException
                     | IOException e) {
                 e.printStackTrace();
@@ -84,22 +92,18 @@ public class RecordingPresenter implements RecordingContract.Presenter,
 
     @Override
     public void doOnResumeActions() {
-        try {
-            recordTransmitter.resume();
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-            processCameraError(CAMERA_ACCESS_ERROR);
-        }
+        fragmentRecorder.resume();
     }
 
     @Override
     public void doOnPauseActions() {
-        recordTransmitter.pause();
+        fragmentRecorder.pause();
     }
 
     @Override
     public void onRecordingStarted() {
         isVideoRecording = true;
+
         recordingView.onRecordingStarted();
     }
 
@@ -204,5 +208,13 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     @Override
     public void setContext(nsu.fit.g14201.marchenko.phoenix.context.Context context) {
         appContext = context;
+        appContext.getRecordRepositoriesController().setErrorListener(this);
+    }
+
+    @Override
+    public void onError(@NonNull String description) {
+        recordingView.showIncorrigibleErrorDialog(
+                context.getString(R.string.record_repository_storage_error)
+        );
     }
 }

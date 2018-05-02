@@ -23,4 +23,5 @@
     во внешнее хранилище</string>
     <string name="need_for_write_external_storage_explanation">Если не дать этот доступ,
     нам некуда будет сохранять файлы</string>
+    <string name="record_repository_storage_error">Возникла ошибка при работе с хранилищем данных</string>
 </resources>

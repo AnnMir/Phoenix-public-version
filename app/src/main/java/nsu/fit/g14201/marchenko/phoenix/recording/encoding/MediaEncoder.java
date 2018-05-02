@@ -111,10 +111,7 @@ public abstract class MediaEncoder implements Runnable {
      * @return return true if encoder is ready to encode.
      */
     public boolean frameAvailableSoon() {
-        if (!isCapturing) {
-            return false;
-        }
-        return true;
+        return isCapturing;
     }
 
     /**
@@ -122,7 +119,7 @@ public abstract class MediaEncoder implements Runnable {
      */
     private long prevOutputPTSUs = 0;
     /**
-     * get next encoding presentationTimeUs
+     * get nextFragment encoding presentationTimeUs
      * @return
      */
     protected long getPTSUs() {

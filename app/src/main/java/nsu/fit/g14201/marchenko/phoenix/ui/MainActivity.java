@@ -43,7 +43,6 @@ public class MainActivity extends BaseActivity
         try {
             context = Context.createContext(this);
             configureRecordingBlock();
-            context.getCloudAPI().createAppFolderIfNotExists();
         } catch (SignInException e) {
             showSnack(getString(R.string.some_error));
             e.printStackTrace();

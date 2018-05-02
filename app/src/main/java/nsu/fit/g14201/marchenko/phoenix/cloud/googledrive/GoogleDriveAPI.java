@@ -1,7 +1,8 @@
-package nsu.fit.g14201.marchenko.phoenix.cloud;
+package nsu.fit.g14201.marchenko.phoenix.cloud.googledrive;
 
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -19,6 +20,8 @@ import com.google.android.gms.drive.query.SearchableField;
 import com.google.android.gms.tasks.Task;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
+import nsu.fit.g14201.marchenko.phoenix.cloud.CloudAPI;
+import nsu.fit.g14201.marchenko.phoenix.cloud.CloudErrorListener;
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
 
 public class GoogleDriveAPI implements CloudAPI {
@@ -27,7 +30,8 @@ public class GoogleDriveAPI implements CloudAPI {
     private DriveClient driveClient;
     private DriveResourceClient driveResourceClient;
     private DriveId appFolderId;
-    private DriveFolder parentFolder;
+    private DriveFolder rootFolder;
+    private CloudErrorListener errorListener;
 
     public GoogleDriveAPI(Context context) throws SignInException {
         GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(context);
@@ -41,9 +45,14 @@ public class GoogleDriveAPI implements CloudAPI {
     }
 
     @Override
+    public void setListener(@NonNull CloudErrorListener listener) {
+        errorListener = listener;
+    }
+
+    // TODO: Move listeners to background
+    // TODO: Add outer listeners
+    @Override
     public void createAppFolderIfNotExists() {
-        // TODO: Move listeners to background
-        // TODO: Add outer listeners
         driveResourceClient
                 .getRootFolder()
                 .continueWithTask(task -> {
@@ -53,8 +62,8 @@ public class GoogleDriveAPI implements CloudAPI {
                                 Filters.eq(SearchableField.TITLE, FOLDER_NAME),
                                 Filters.eq(SearchableField.TRASHED, false)))
                         .build();
-                    parentFolder = task.getResult();
-                    return driveResourceClient.queryChildren(parentFolder, query);
+                    rootFolder = task.getResult();
+                    return driveResourceClient.queryChildren(rootFolder, query);
 
                 })
                 .addOnSuccessListener(metadataBuffer -> {
@@ -77,11 +86,21 @@ public class GoogleDriveAPI implements CloudAPI {
                 });
     }
 
+    @Override
+    public void createFolder(@NonNull String name) {
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                .setTitle(name)
+                .setMimeType(DriveFolder.MIME_TYPE)
+                .build();
+        driveResourceClient.createFolder(appFolderId.asDriveFolder(), changeSet)
+                .addOnFailureListener(e -> errorListener.onFailedToCreateVideoFolder(e));
+    }
+
     private Task<DriveFolder> createAppFolder() {
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
                 .setTitle(App.getAppName())
                 .setMimeType(DriveFolder.MIME_TYPE)
                 .build();
-        return driveResourceClient.createFolder(parentFolder, changeSet);
+        return driveResourceClient.createFolder(rootFolder, changeSet);
     }
 }
