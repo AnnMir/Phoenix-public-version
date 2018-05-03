@@ -19,9 +19,11 @@ import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 import com.google.android.gms.tasks.Task;
 
+import java.io.FileInputStream;
+
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.cloud.CloudAPI;
-import nsu.fit.g14201.marchenko.phoenix.cloud.CloudErrorListener;
+import nsu.fit.g14201.marchenko.phoenix.cloud.CloudListener;
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
 
 public class GoogleDriveAPI implements CloudAPI {
@@ -31,7 +33,7 @@ public class GoogleDriveAPI implements CloudAPI {
     private DriveResourceClient driveResourceClient;
     private DriveId appFolderId;
     private DriveFolder rootFolder;
-    private CloudErrorListener errorListener;
+    private CloudListener listener;
 
     public GoogleDriveAPI(Context context) throws SignInException {
         GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(context);
@@ -45,8 +47,8 @@ public class GoogleDriveAPI implements CloudAPI {
     }
 
     @Override
-    public void setListener(@NonNull CloudErrorListener listener) {
-        errorListener = listener;
+    public void setListener(@NonNull CloudListener listener) {
+        this.listener = listener;
     }
 
     // TODO: Move listeners to background
@@ -93,7 +95,15 @@ public class GoogleDriveAPI implements CloudAPI {
                 .setMimeType(DriveFolder.MIME_TYPE)
                 .build();
         driveResourceClient.createFolder(appFolderId.asDriveFolder(), changeSet)
-                .addOnFailureListener(e -> errorListener.onFailedToCreateVideoFolder(e));
+                .addOnSuccessListener(
+                        driveFolder -> listener.onVideoFolderCreated(
+                                new GoogleDriveRecordFolder(driveFolder.getDriveId())))
+                .addOnFailureListener(e -> listener.onFailedToCreateVideoFolder(e));
+    }
+
+    @Override
+    public void transmitFragment(FileInputStream inputStream) {
+
     }
 
     private Task<DriveFolder> createAppFolder() {

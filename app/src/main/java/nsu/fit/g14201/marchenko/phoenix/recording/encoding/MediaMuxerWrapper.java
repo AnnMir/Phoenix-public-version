@@ -39,7 +39,7 @@ public class MediaMuxerWrapper {
         this.keyFrameListener = keyFrameListener;
         try {
             fragmentPath.nextFragment();
-            muxer = new MediaMuxer(fragmentPath.getFullFilePath(localStoragePath),
+            muxer = new MediaMuxer(fragmentPath.getCurrentFragmentPath(localStoragePath),
                     MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
         } catch (IOException e) {
             e.printStackTrace();
@@ -55,7 +55,7 @@ public class MediaMuxerWrapper {
         muxer.release();
         try {
             fragmentPath.nextFragment();
-            muxer = new MediaMuxer(fragmentPath.getFullFilePath(localStoragePath),
+            muxer = new MediaMuxer(fragmentPath.getCurrentFragmentPath(localStoragePath),
                     MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
         } catch (IOException e) {
             e.printStackTrace();

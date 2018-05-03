@@ -5,6 +5,7 @@ import java.util.Calendar;
 
 public class VideoFragmentPath {
     private final String directoryName;
+    private final String extension = ".mp4";
     private int filenameIndex = -1;
 
     public VideoFragmentPath() {
@@ -20,13 +21,17 @@ public class VideoFragmentPath {
         return directoryName;
     }
 
-    public String getFullFilePath(String appStoragePath) {
+    public String getCurrentFragmentName() {
+        return String.valueOf(filenameIndex) + extension;
+    }
+
+    public String getCurrentFragmentPath(String appStoragePath) {
         StringBuilder builder = new StringBuilder();
         builder.append(appStoragePath);
         builder.append(directoryName);
         builder.append("/");
         builder.append(String.valueOf(filenameIndex));
-        builder.append(".mp4");
+        builder.append(extension);
 
         return builder.toString();
     }

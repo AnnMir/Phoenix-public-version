@@ -40,8 +40,9 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Co
     public void onKeyFrameReceived(int trackIndex, ByteBuffer byteBuffer,
                                    MediaCodec.BufferInfo bufferInfo) {
         try {
+            String currentFragmentName = videoFragmentPath.getCurrentFragmentName();
             muxer.restart(trackIndex, byteBuffer, bufferInfo);
-            fragmentListener.onFragmentSavedLocally();
+            fragmentListener.onFragmentSavedLocally(currentFragmentName);
         } catch (LowLevelRecordingException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -91,7 +92,7 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Co
         if (muxer != null) {
             muxer.stopRecording();
             muxer = null;
-            cameraStateListener.onRecordingFinished(videoFragmentPath.getFullFilePath(
+            cameraStateListener.onRecordingFinished(videoFragmentPath.getCurrentFragmentPath(
                     context.getRecordRepositoriesController().getLocalStoragePath()));
             fragmentListener = null;
         }

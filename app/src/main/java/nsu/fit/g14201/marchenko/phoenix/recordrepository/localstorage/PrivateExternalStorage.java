@@ -5,6 +5,8 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoryException;
 
@@ -26,9 +28,12 @@ public class PrivateExternalStorage implements LocalStorage {
         File directory = new File(path, name);
         if (!directory.mkdirs()) {
             throw new RecordRepositoryException(RecordRepositoryException.DIRECTORY_CREATION_ERROR);
-//            Log.d(App.getTag(), "Failed to create directory for video");
         }
 
         return directory;
+    }
+
+    public FileInputStream getRecord(@NonNull String name) throws FileNotFoundException {
+        return new FileInputStream(path + "/" + name);
     }
 }
