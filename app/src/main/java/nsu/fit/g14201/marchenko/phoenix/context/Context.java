@@ -6,14 +6,16 @@ import nsu.fit.g14201.marchenko.phoenix.cloud.googledrive.GoogleDriveAPI;
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoriesController;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.GoogleDriveService;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.LocalStorage;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.PrivateExternalStorage;
 
 public class Context {
     private CloudAPI cloudAPI;
     private RecordRepositoriesController recordRepositoriesController;
 
-    public Context(CloudAPI cloudAPI) {
+    public Context(CloudAPI cloudAPI, LocalStorage localStorage) {
         this.cloudAPI = cloudAPI;
-        recordRepositoriesController = new RecordRepositoriesController();
+        recordRepositoriesController = new RecordRepositoriesController(localStorage);
         cloudAPI.setListener(recordRepositoriesController);
     }
 
@@ -23,8 +25,8 @@ public class Context {
 
     public static Context createContext(android.content.Context context) throws SignInException {
         GoogleDriveAPI googleDriveAPI = new GoogleDriveAPI(context);
-        Context newContext = new Context(googleDriveAPI);
-        newContext.recordRepositoriesController.addRepository(new GoogleDriveService(googleDriveAPI));
+        Context newContext = new Context(googleDriveAPI, new PrivateExternalStorage(context));
+        newContext.recordRepositoriesController.addCloudService(new GoogleDriveService(googleDriveAPI));
 
         return newContext;
     }

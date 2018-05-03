@@ -11,15 +11,16 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
-import nsu.fit.g14201.marchenko.phoenix.recording.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.LowLevelRecordingException;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 public class MediaMuxerWrapper {
     private static final boolean VERBOSE = true;
 
     private MediaMuxer muxer;
     private final VideoFragmentPath fragmentPath;
+    private final String localStoragePath;
     private boolean muxerStarted = false;
     private int trackNum = 0;
     private int tracksStarted = 0;
@@ -30,13 +31,15 @@ public class MediaMuxerWrapper {
     private MediaEncoder audioEncoder;
 
     public MediaMuxerWrapper(@NonNull VideoFragmentPath fragmentPath,
+                             @NonNull String localStoragePath,
                              @NonNull KeyFrameListener keyFrameListener)
             throws LowLevelRecordingException {
         this.fragmentPath = fragmentPath;
+        this.localStoragePath = localStoragePath;
         this.keyFrameListener = keyFrameListener;
         try {
             fragmentPath.nextFragment();
-            muxer = new MediaMuxer(fragmentPath.getFullPath(),
+            muxer = new MediaMuxer(fragmentPath.getFullFilePath(localStoragePath),
                     MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
         } catch (IOException e) {
             e.printStackTrace();
@@ -44,14 +47,15 @@ public class MediaMuxerWrapper {
         }
     }
 
-    public synchronized void restart(int trackIndex, ByteBuffer byteBuffer,
+    public synchronized void restart(int trackIndex,
+                                     ByteBuffer byteBuffer,
                                      MediaCodec.BufferInfo bufferInfo)
             throws LowLevelRecordingException {
         muxer.stop();
         muxer.release();
         try {
             fragmentPath.nextFragment();
-            muxer = new MediaMuxer(fragmentPath.getFullPath(),
+            muxer = new MediaMuxer(fragmentPath.getFullFilePath(localStoragePath),
                     MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
         } catch (IOException e) {
             e.printStackTrace();

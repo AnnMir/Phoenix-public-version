@@ -1,13 +1,13 @@
 package nsu.fit.g14201.marchenko.phoenix.recording;
 
 
-import android.content.Context;
 import android.media.MediaCodec;
 import android.support.annotation.NonNull;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import nsu.fit.g14201.marchenko.phoenix.context.Contextual;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaEncoder;
@@ -16,12 +16,16 @@ import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaMuxerWrapper;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.LowLevelRecordingException;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoryException;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 // TODO IMPORTANT: Отследить поведение при повороте
 
-class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener {
+class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Contextual {
     private CameraGLView cameraGLView;
-    private MediaMuxerWrapper muxer; // FIXME: Move somewhere
+    private MediaMuxerWrapper muxer;
+
+    private nsu.fit.g14201.marchenko.phoenix.context.Context context;
     private VideoFragmentPath videoFragmentPath;
     private CameraStateListener cameraStateListener;
     private VideoFragmentListener fragmentListener;
@@ -37,27 +41,36 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener {
                                    MediaCodec.BufferInfo bufferInfo) {
         try {
             muxer.restart(trackIndex, byteBuffer, bufferInfo);
+            fragmentListener.onFragmentSavedLocally();
         } catch (LowLevelRecordingException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
-    void start(@NonNull MediaEncoder.MediaEncoderListener mediaEncoderListener,
-               @NonNull Context context,
-               @NonNull VideoFragmentListener videoFragmentListener)
-            throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException {
-        videoFragmentPath = new VideoFragmentPath(context);
-        fragmentListener = videoFragmentListener;
+    @Override
+    public void setContext(nsu.fit.g14201.marchenko.phoenix.context.Context context) {
+        this.context = context;
+    }
 
-        muxer = new MediaMuxerWrapper(videoFragmentPath, this);
+    void start(@NonNull MediaEncoder.MediaEncoderListener mediaEncoderListener,
+               @NonNull VideoFragmentListener videoFragmentListener)
+            throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException,
+            RecordRepositoryException {
+        videoFragmentPath = new VideoFragmentPath();
+        fragmentListener = videoFragmentListener;
+        fragmentListener.recordWillStart(videoFragmentPath);
+
+        muxer = new MediaMuxerWrapper(videoFragmentPath,
+                this.context.getRecordRepositoriesController().getLocalStoragePath(),
+                this);
         new VideoEncoder(muxer, cameraGLView.getVideoWidth(), cameraGLView.getVideoHeight(),
                 mediaEncoderListener);
 //        new AudioEncoder(muxer, listener); // TODO: Audio track
         muxer.prepare();
         muxer.startRecording();
 
-        fragmentListener.onRecordStarted(videoFragmentPath);
+        fragmentListener.recordDidStart();
         cameraStateListener.onRecordingStarted();
     }
 
@@ -78,7 +91,8 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener {
         if (muxer != null) {
             muxer.stopRecording();
             muxer = null;
-            cameraStateListener.onRecordingFinished(videoFragmentPath.getFullDirectoryPath());
+            cameraStateListener.onRecordingFinished(videoFragmentPath.getFullFilePath(
+                    context.getRecordRepositoriesController().getLocalStoragePath()));
             fragmentListener = null;
         }
     }

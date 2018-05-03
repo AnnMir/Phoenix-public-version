@@ -8,26 +8,39 @@ import java.util.Set;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.cloud.CloudErrorListener;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.LocalStorage;
 
 public class RecordRepositoriesController implements CloudErrorListener {
-    private Set<RecordRepository> repositories;
+    private LocalStorage localStorage;
+    private Set<CloudService> cloudServices;
     private RecordStorageErrorListener errorListener;
 
-    public RecordRepositoriesController() {
-        repositories = new HashSet<>();
+    public RecordRepositoriesController(LocalStorage localStorage) {
+        this.localStorage = localStorage;
+        cloudServices = new HashSet<>();
     }
 
-    public void addRepository(RecordRepository recordRepository) {
-        repositories.add(recordRepository);
+    public void addCloudService(CloudService cloudService) {
+        cloudServices.add(cloudService);
     }
 
     public void setErrorListener(RecordStorageErrorListener errorListener) {
         this.errorListener = errorListener;
     }
 
-    public void createVideoRepository(@NonNull String repositoryName) {
-        for (RecordRepository repository : repositories) {
-            repository.createVideoRepository(repositoryName);
+    public String getLocalStoragePath() {
+        return localStorage.getPath();
+    }
+
+    public void createVideoRepositoryLocally(@NonNull String repositoryName)
+            throws RecordRepositoryException {
+        localStorage.createRecordDirectory(repositoryName);
+    }
+
+    public void createVideoRepositoryRemotely(@NonNull String repositoryName) {
+        for (CloudService cloudService : cloudServices) {
+            cloudService.createVideoRepository(repositoryName);
         }
     }
 

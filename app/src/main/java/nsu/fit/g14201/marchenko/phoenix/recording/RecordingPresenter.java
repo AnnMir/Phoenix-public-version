@@ -10,8 +10,6 @@ import android.media.MediaCodec;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import java.io.IOException;
-
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.context.Contextual;
@@ -19,10 +17,8 @@ import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraWrapper;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaEncoder;
-import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaMuxerException;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
-import nsu.fit.g14201.marchenko.phoenix.recording.gl.LowLevelRecordingException;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordStorageErrorListener;
 
 public class RecordingPresenter implements RecordingContract.Presenter,
@@ -70,6 +66,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         cameraGLView = view;
         cameraGLView.setCameraWrapper(selectedCamera);
         fragmentRecorder = new PeriodicFragmentRecorder(cameraGLView, this);
+        fragmentRecorder.setContext(appContext);
     }
 
     @Override
@@ -80,10 +77,8 @@ public class RecordingPresenter implements RecordingContract.Presenter,
             try {
                 fragmentRecorder.start(
                         this,
-                        context,
                         new PeriodicRecordTransmitter(appContext.getRecordRepositoriesController()));
-            } catch (LowLevelRecordingException | MediaMuxerException | CameraException
-                    | IOException e) {
+            } catch (Throwable e) {
                 e.printStackTrace();
                 recordingView.showIncorrigibleErrorDialog(e.getMessage());
             }
