@@ -19,12 +19,17 @@ import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraWrapper;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordStorageErrorListener;
+import nsu.fit.g14201.marchenko.phoenix.transmission.PeriodicRecordRemoteTransmitter;
+import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionDetailedProblem;
+import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionListener;
+import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem;
+
+import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.FAILED_TO_CREATE_VIDEO_FOLDER;
 
 public class RecordingPresenter implements RecordingContract.Presenter,
         CameraStateListener,
         MediaEncoder.MediaEncoderListener,
-        RecordStorageErrorListener,
+        TransmissionListener,
         Contextual {
     private final boolean VERBOSE = true;
 
@@ -75,9 +80,10 @@ public class RecordingPresenter implements RecordingContract.Presenter,
             fragmentRecorder.stop();
         } else {
             try {
-                fragmentRecorder.start(
-                        this,
-                        new PeriodicRecordTransmitter(appContext.getRecordRepositoriesController()));
+                PeriodicRecordRemoteTransmitter transmitter =
+                        new PeriodicRecordRemoteTransmitter(appContext.getRecordRepositoriesController());
+                transmitter.setListener(this);
+                fragmentRecorder.start(this, transmitter);
             } catch (Throwable e) {
                 e.printStackTrace();
                 recordingView.showIncorrigibleErrorDialog(e.getMessage());
@@ -203,13 +209,16 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     @Override
     public void setContext(nsu.fit.g14201.marchenko.phoenix.context.Context context) {
         appContext = context;
-        appContext.getRecordRepositoriesController().setErrorListener(this);
     }
 
     @Override
-    public void onError(@NonNull String description) {
-        recordingView.showIncorrigibleErrorDialog(
-                context.getString(R.string.record_repository_storage_error)
-        );
+    public void onUnableToContinueTransmission(@NonNull TransmissionProblem problem) {
+        String message = null;
+        switch (problem.getType()) {
+            case FAILED_TO_CREATE_VIDEO_FOLDER:
+                message = context.getString(R.string.error_working_with_cloud,
+                        ((TransmissionDetailedProblem) problem).getMessage());
+        }
+        recordingView.showCorrigibleErrorDialog(message);
     }
 }

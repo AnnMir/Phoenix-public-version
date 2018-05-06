@@ -16,7 +16,6 @@ import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaMuxerWrapper;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.LowLevelRecordingException;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoryException;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 // TODO IMPORTANT: Отследить поведение при повороте
@@ -56,8 +55,7 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Co
 
     void start(@NonNull MediaEncoder.MediaEncoderListener mediaEncoderListener,
                @NonNull VideoFragmentListener videoFragmentListener)
-            throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException,
-            RecordRepositoryException {
+            throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException {
         videoFragmentPath = new VideoFragmentPath();
         fragmentListener = videoFragmentListener;
         fragmentListener.recordWillStart(videoFragmentPath);

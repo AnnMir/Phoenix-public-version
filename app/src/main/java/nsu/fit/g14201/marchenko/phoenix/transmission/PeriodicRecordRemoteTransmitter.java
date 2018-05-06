@@ -1,23 +1,29 @@
-package nsu.fit.g14201.marchenko.phoenix.recording;
+package nsu.fit.g14201.marchenko.phoenix.transmission;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.io.FileInputStream;
 
+import nsu.fit.g14201.marchenko.phoenix.App;
+import nsu.fit.g14201.marchenko.phoenix.recording.VideoFragmentListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoriesController;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoryException;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRemoteRepoStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
-public class PeriodicRecordTransmitter implements VideoFragmentListener {
+public class PeriodicRecordRemoteTransmitter implements VideoFragmentListener,
+        RecordRemoteRepoStateListener {
     private RecordRepositoriesController recordRepositoriesController;
     private VideoFragmentPath videoFragmentPath;
+    private TransmissionListener listener;
 
-    PeriodicRecordTransmitter(RecordRepositoriesController recordRepositoriesController) {
+    public PeriodicRecordRemoteTransmitter(RecordRepositoriesController recordRepositoriesController) {
         this.recordRepositoriesController = recordRepositoriesController;
+        recordRepositoriesController.setRemoteRepoStateListener(this);
     }
 
     @Override
-    public void recordWillStart(VideoFragmentPath videoFragmentPath) throws RecordRepositoryException {
+    public void recordWillStart(VideoFragmentPath videoFragmentPath) {
         this.videoFragmentPath = videoFragmentPath;
         recordRepositoriesController.createVideoRepositoryLocally(videoFragmentPath.getDirectoryName());
     }
@@ -32,10 +38,37 @@ public class PeriodicRecordTransmitter implements VideoFragmentListener {
         new Thread() {
             @Override
             public void run() {
-                FileInputStream record = recordRepositoriesController.getRecord(fragmentName);
-                transmitVideoFragment(record);
+                recordRepositoriesController.getRecord(fragmentName, new RecordRepositoriesController.RecordGetter() {
+                    @Override
+                    public void onRecordGot(FileInputStream record) {
+                        transmitVideoFragment(record);
+                    }
+
+                    @Override
+                    public void onRecordNotFound() {
+                        listener.onUnableToContinueTransmission(
+                                new TransmissionProblem(TransmissionProblem.RECORD_NOT_FOUND_LOCALLY)
+                        );
+                    }
+                });
             }
         }.start();
+    }
+
+    @Override
+    public void onFailedToCreateVideoRepository(@NonNull Exception e, @NonNull String name) {
+        // TODO: Handle no internet access case
+        e.printStackTrace();
+        Log.e(App.getTag(), e.getLocalizedMessage());
+        listener.onUnableToContinueTransmission(
+                new TransmissionDetailedProblem(
+                        TransmissionProblem.FAILED_TO_CREATE_VIDEO_FOLDER, name
+                )
+        );
+    }
+
+    public void setListener(@NonNull TransmissionListener listener) {
+        this.listener = listener;
     }
 
     private void transmitVideoFragment(FileInputStream inputStream) {

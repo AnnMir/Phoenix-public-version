@@ -8,13 +8,22 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoryException;
-
 public class PrivateExternalStorage implements LocalStorage {
     private final File path;
+    private LocalStorageListener listener;
 
     public PrivateExternalStorage(@NonNull Context context) {
         path = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+    }
+
+    @Override
+    public void createVideoRepository(@NonNull String name) {
+        File directory = new File(path, name);
+        if (!directory.mkdirs()) {
+            listener.onFailedToCreateRepository();
+        }
+
+        listener.onRepositoryCreated(directory);
     }
 
     @Override
@@ -23,17 +32,16 @@ public class PrivateExternalStorage implements LocalStorage {
     }
 
     @Override
-    public File createRecordDirectory(@NonNull String name)
-            throws RecordRepositoryException {
-        File directory = new File(path, name);
-        if (!directory.mkdirs()) {
-            throw new RecordRepositoryException(RecordRepositoryException.DIRECTORY_CREATION_ERROR);
+    public void getRecord(@NonNull String name) {
+        try {
+            listener.onRecordGot(new FileInputStream(path + "/" + name));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            listener.onRecordNotFound();
         }
-
-        return directory;
     }
 
-    public FileInputStream getRecord(@NonNull String name) throws FileNotFoundException {
-        return new FileInputStream(path + "/" + name);
+    public void setListener(@NonNull LocalStorageListener listener) {
+        this.listener = listener;
     }
 }

@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.cloud.googledrive;
+package nsu.fit.g14201.marchenko.phoenix.network.cloud.googledrive;
 
 
 import android.content.Context;
@@ -22,8 +22,7 @@ import com.google.android.gms.tasks.Task;
 import java.io.FileInputStream;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
-import nsu.fit.g14201.marchenko.phoenix.cloud.CloudAPI;
-import nsu.fit.g14201.marchenko.phoenix.cloud.CloudListener;
+import nsu.fit.g14201.marchenko.phoenix.network.cloud.CloudAPI;
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
 
 public class GoogleDriveAPI implements CloudAPI {
@@ -33,7 +32,6 @@ public class GoogleDriveAPI implements CloudAPI {
     private DriveResourceClient driveResourceClient;
     private DriveId appFolderId;
     private DriveFolder rootFolder;
-    private CloudListener listener;
 
     public GoogleDriveAPI(Context context) throws SignInException {
         GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(context);
@@ -44,11 +42,6 @@ public class GoogleDriveAPI implements CloudAPI {
         driveClient = Drive.getDriveClient(context, signInAccount);
         // Build a drive resource client.
         driveResourceClient = Drive.getDriveResourceClient(context, signInAccount);
-    }
-
-    @Override
-    public void setListener(@NonNull CloudListener listener) {
-        this.listener = listener;
     }
 
     // TODO: Move listeners to background
@@ -89,16 +82,18 @@ public class GoogleDriveAPI implements CloudAPI {
     }
 
     @Override
-    public void createFolder(@NonNull String name) {
+    public void createFolder(@NonNull String name, FolderCreationListener listener) {
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
                 .setTitle(name)
                 .setMimeType(DriveFolder.MIME_TYPE)
                 .build();
         driveResourceClient.createFolder(appFolderId.asDriveFolder(), changeSet)
                 .addOnSuccessListener(
-                        driveFolder -> listener.onVideoFolderCreated(
-                                new GoogleDriveRecordFolder(driveFolder.getDriveId())))
-                .addOnFailureListener(e -> listener.onFailedToCreateVideoFolder(e));
+                        driveFolder -> listener.onFolderCreated(
+                                new GoogleDriveRecordFolder(driveFolder.getDriveId())
+                        )
+                )
+                .addOnFailureListener(listener::onFailedToCreateFolder);
     }
 
     @Override
