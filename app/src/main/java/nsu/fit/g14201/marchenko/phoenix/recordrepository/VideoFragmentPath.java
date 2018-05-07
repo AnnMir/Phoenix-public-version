@@ -21,12 +21,24 @@ public class VideoFragmentPath {
         return directoryName;
     }
 
-    public String getCurrentFragmentName() {
-        return String.valueOf(filenameIndex) + extension;
+    public String getRelativeNameByFragmentNumber(int fragmentNumber) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(directoryName);
+        builder.append("/");
+        builder.append(String.valueOf(fragmentNumber));
+        builder.append(extension);
+
+        return builder.toString();
+    }
+
+    public int getCurrentFragmentNumber() {
+        return filenameIndex;
     }
 
     public String getCurrentFragmentPath(String appStoragePath) {
         StringBuilder builder = new StringBuilder();
+
         builder.append(appStoragePath);
         builder.append(directoryName);
         builder.append("/");

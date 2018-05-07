@@ -28,11 +28,13 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
     }
 
     @Override
-    public void onFragmentSavedLocally(@NonNull String fragmentName) {
+    public void onFragmentSavedLocally(int fragmentNum) {
         new Thread() {
             @Override
             public void run() {
-                recordRepositoriesController.getRecord(fragmentName, new RecordRepositoriesController.RecordGetter() {
+                recordRepositoriesController.getRecord(
+                        videoFragmentPath.getRelativeNameByFragmentNumber(fragmentNum),
+                        new RecordRepositoriesController.RecordGetter() {
                     @Override
                     public void onRecordGot(FileInputStream record) {
                         transmitVideoFragment(record);

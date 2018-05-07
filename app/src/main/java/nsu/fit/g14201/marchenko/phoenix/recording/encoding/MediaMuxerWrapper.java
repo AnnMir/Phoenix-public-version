@@ -95,7 +95,7 @@ public class MediaMuxerWrapper {
         }
     }
 
-    public void stopRecording() {
+    public synchronized void stopRecording() {
         if (videoEncoder != null) {
             videoEncoder.stopRecording();
             videoEncoder = null;
