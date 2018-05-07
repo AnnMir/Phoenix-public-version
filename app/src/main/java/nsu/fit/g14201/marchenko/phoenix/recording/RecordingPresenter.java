@@ -19,17 +19,11 @@ import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraWrapper;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
-import nsu.fit.g14201.marchenko.phoenix.transmission.PeriodicRecordRemoteTransmitter;
-import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionDetailedProblem;
-import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionListener;
-import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem;
-
-import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.FAILED_TO_CREATE_VIDEO_FOLDER;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 public class RecordingPresenter implements RecordingContract.Presenter,
         CameraStateListener,
         MediaEncoder.MediaEncoderListener,
-        TransmissionListener,
         Contextual {
     private final boolean VERBOSE = true;
 
@@ -43,6 +37,8 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     private PeriodicFragmentRecorder fragmentRecorder;
     private CameraGLView cameraGLView;
     private boolean isVideoRecording = false;
+    private RecordingListener recordingListener;
+    private VideoFragmentListener fragmentListener;
 
     public RecordingPresenter(Context applicationContext, RecordingContract.View recordingView) {
         context = applicationContext;
@@ -78,12 +74,13 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     public void changeRecordingState() {
         if (isVideoRecording) {
             fragmentRecorder.stop();
+            // TODO: stop transmitter and remove itself as a listener
         } else {
             try {
-                PeriodicRecordRemoteTransmitter transmitter =
-                        new PeriodicRecordRemoteTransmitter(appContext.getRecordRepositoriesController());
-                transmitter.setListener(this);
-                fragmentRecorder.start(this, transmitter);
+                VideoFragmentPath videoFragmentPath = new VideoFragmentPath();
+                createLocalVideoRepository(videoFragmentPath);
+                recordingListener.recordWillStart(videoFragmentPath);
+                fragmentRecorder.start(this, videoFragmentPath);
             } catch (Throwable e) {
                 e.printStackTrace();
                 recordingView.showIncorrigibleErrorDialog(e.getMessage());
@@ -102,36 +99,31 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     }
 
     @Override
-    public void onRecordingStarted() {
-        isVideoRecording = true;
-
-        recordingView.onRecordingStarted();
+    public void setRecordingListener(RecordingListener listener) {
+        recordingListener = listener;
     }
 
     @Override
-    public void onRecordingFinished(String path) {
-        isVideoRecording = false;
-        recordingView.onRecordingFinished(path);
+    public void removeRecordingListener() {
+        recordingListener = null;
     }
 
-    private void checkCameraHardware() throws CameraAccessException, CameraException {
-        CameraManager cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
-        for (String cameraId : cameraManager.getCameraIdList()) {
-            Integer facing = cameraManager.getCameraCharacteristics(cameraId)
-                    .get(CameraCharacteristics.LENS_FACING);
-            if (facing != null) {
-                if (facing == CameraCharacteristics.LENS_FACING_BACK) {
-                    backCamera = new CameraWrapper(cameraManager, cameraId, this);
-                    continue;
-                }
-                if (facing == CameraCharacteristics.LENS_FACING_FRONT) {
-                    frontCamera = new CameraWrapper(cameraManager, cameraId, this);
-                }
-            }
+    @Override
+    public void setVideoFragmentListener(VideoFragmentListener listener) {
+        fragmentRecorder.setVideoFragmentListener(listener);
+    }
+
+    @Override
+    public void removeVideoFragmentListener() {
+        fragmentRecorder.removeVideoFragmentListener();
+    }
+
+    @Override
+    public void stop() {
+        if (isVideoRecording) {
+            fragmentRecorder.stop();
         }
-        if (backCamera == null && frontCamera == null) {
-            throw new CameraException(CameraException.NO_CAMERAS_FOUND);
-        }
+        fragmentRecorder.removeCameraStateListener();
     }
 
     @Override
@@ -169,15 +161,20 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         processCameraError(error);
     }
 
-    private void processCameraError(int error) {
-        // TODO Error handling
-        switch (error) {
-            case CAPTURE_SESSION_ERROR:
-                recordingView.showFatalErrorDialog("ON CAPTURE SESSION ERROR");
-                break;
-            case CAMERA_ACCESS_ERROR:
-                recordingView.showFatalErrorDialog("ON CAMERA ACCESS ERROR");
-        }
+    @Override
+    public void onRecordingStarted() {
+        isVideoRecording = true;
+
+        recordingListener.recordDidStart();
+        recordingView.onRecordingStarted();
+    }
+
+    @Override
+    public void onRecordingFinished(String path) {
+        isVideoRecording = false;
+
+        recordingListener.recordDidStop();
+        recordingView.onRecordingFinished(path);
     }
 
     @Override
@@ -211,14 +208,40 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         appContext = context;
     }
 
-    @Override
-    public void onUnableToContinueTransmission(@NonNull TransmissionProblem problem) {
-        String message = null;
-        switch (problem.getType()) {
-            case FAILED_TO_CREATE_VIDEO_FOLDER:
-                message = context.getString(R.string.error_working_with_cloud,
-                        ((TransmissionDetailedProblem) problem).getMessage());
+    private void checkCameraHardware() throws CameraAccessException, CameraException {
+        CameraManager cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+        for (String cameraId : cameraManager.getCameraIdList()) {
+            Integer facing = cameraManager.getCameraCharacteristics(cameraId)
+                    .get(CameraCharacteristics.LENS_FACING);
+            if (facing != null) {
+                if (facing == CameraCharacteristics.LENS_FACING_BACK) {
+                    backCamera = new CameraWrapper(cameraManager, cameraId, this);
+                    continue;
+                }
+                if (facing == CameraCharacteristics.LENS_FACING_FRONT) {
+                    frontCamera = new CameraWrapper(cameraManager, cameraId, this);
+                }
+            }
         }
-        recordingView.showCorrigibleErrorDialog(message);
+        if (backCamera == null && frontCamera == null) {
+            throw new CameraException(CameraException.NO_CAMERAS_FOUND);
+        }
+    }
+
+    private void processCameraError(int error) {
+        // TODO Error handling
+        switch (error) {
+            case CAPTURE_SESSION_ERROR:
+                recordingView.showFatalErrorDialog("ON CAPTURE SESSION ERROR");
+                break;
+            case CAMERA_ACCESS_ERROR:
+                recordingView.showFatalErrorDialog("ON CAMERA ACCESS ERROR");
+        }
+    }
+
+    private void createLocalVideoRepository(@NonNull VideoFragmentPath videoFragmentPath) {
+        appContext.getRecordRepositoriesController().createVideoRepositoryLocally(
+                videoFragmentPath.getDirectoryName()
+        );
     }
 }

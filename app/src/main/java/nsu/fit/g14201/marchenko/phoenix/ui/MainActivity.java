@@ -24,24 +24,38 @@ import nsu.fit.g14201.marchenko.phoenix.connection.UserConnection;
 import nsu.fit.g14201.marchenko.phoenix.context.Context;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingContract;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingFragment;
+import nsu.fit.g14201.marchenko.phoenix.recording.RecordingListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingPresenter;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.registration.RegistrationActivity;
+import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionContract;
+import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionDetailedProblem;
+import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionModuleListener;
+import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionPresenter;
+import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem;
 import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
 
-public class MainActivity extends BaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener, OnCompleteListener<Void> {
+import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.FAILED_TO_CREATE_VIDEO_FOLDER;
+import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.RECORD_NOT_FOUND_LOCALLY;
+
+public class MainActivity extends BaseActivity implements
+        NavigationView.OnNavigationItemSelectedListener,
+        RecordingListener,
+        TransmissionModuleListener,
+        OnCompleteListener<Void> {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
-    private Context context;
+    private Context appContext;
 
     private RecordingContract.Presenter recordingPresenter;
+    private TransmissionContract.Presenter transmissionPresenter;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         configureToolbarAndNavigationView();
         try {
-            context = Context.createContext(this);
+            appContext = Context.createContext(this);
             configureRecordingBlock();
         } catch (SignInException e) {
             showSnack(getString(R.string.some_error));
@@ -59,6 +73,11 @@ public class MainActivity extends BaseActivity
     protected void onStart() {
         recordingPresenter.start();
         super.onStart();
+    }
+
+    @Override
+    public int getLayoutId() {
+        return R.layout.activity_main;
     }
 
     @Override
@@ -89,8 +108,52 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
-    public int getLayoutId() {
-        return R.layout.activity_main;
+    protected void onStop() {
+        recordingPresenter.removeRecordingListener();
+        recordingPresenter.stop();
+
+        super.onStop();
+    }
+
+    @Override
+    public void recordWillStart(@NonNull VideoFragmentPath videoFragmentPath) {
+        if (transmissionPresenter == null) {
+            transmissionPresenter = new TransmissionPresenter(appContext);
+        }
+        recordingPresenter.setVideoFragmentListener(
+                transmissionPresenter.prepareForNewTransmission(videoFragmentPath)
+        );
+    }
+
+    @Override
+    public void recordDidStart() {
+        transmissionPresenter.setTransmissionModuleListener(this);
+        transmissionPresenter.start();
+    }
+
+    @Override
+    public void recordDidStop() {
+        // TODO
+    }
+
+    @Override
+    public void onUnableToContinueTransmission(@NonNull TransmissionProblem problem) {
+        recordingPresenter.removeVideoFragmentListener();
+
+        StringBuilder message = new StringBuilder();
+        switch (problem.getType()) {
+            case FAILED_TO_CREATE_VIDEO_FOLDER:
+                message.append(getApplication().getString(R.string.error_working_with_cloud,
+                        ((TransmissionDetailedProblem) problem).getMessage()));
+                break;
+            case RECORD_NOT_FOUND_LOCALLY:
+                message.append(getApplication().getString(R.string.can_not_find_fragment_locally));
+        }
+        message.append(". ");
+        message.append(getApplication().getString(R.string.stop_uploading_data));
+        message.append(".");
+
+        showToast(message.toString());
     }
 
     @Override
@@ -137,7 +200,8 @@ public class MainActivity extends BaseActivity
             );
         }
         recordingPresenter = new RecordingPresenter(getApplicationContext(), recordingFragment);
-        recordingPresenter.setContext(context);
+        recordingPresenter.setContext(appContext);
+        recordingPresenter.setRecordingListener(this);
     }
 
     private void signOut() {

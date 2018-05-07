@@ -27,5 +27,15 @@ public interface RecordingContract {
         void doOnResumeActions();
 
         void doOnPauseActions();
+
+        void setRecordingListener(RecordingListener listener);
+
+        void removeRecordingListener();
+
+        void setVideoFragmentListener(VideoFragmentListener listener);
+
+        void removeVideoFragmentListener();
+
+        void stop();
     }
 }

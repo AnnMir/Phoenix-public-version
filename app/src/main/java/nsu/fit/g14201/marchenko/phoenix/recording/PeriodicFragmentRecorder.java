@@ -18,7 +18,7 @@ import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.LowLevelRecordingException;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
-// TODO IMPORTANT: Отследить поведение при повороте
+// TODO: Запретить горизонтальную ориентацию
 
 class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Contextual {
     private CameraGLView cameraGLView;
@@ -41,7 +41,9 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Co
         try {
             String currentFragmentName = videoFragmentPath.getCurrentFragmentName();
             muxer.restart(trackIndex, byteBuffer, bufferInfo);
-            fragmentListener.onFragmentSavedLocally(currentFragmentName);
+            if (fragmentListener != null) {
+                fragmentListener.onFragmentSavedLocally(currentFragmentName);
+            }
         } catch (LowLevelRecordingException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -54,12 +56,9 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Co
     }
 
     void start(@NonNull MediaEncoder.MediaEncoderListener mediaEncoderListener,
-               @NonNull VideoFragmentListener videoFragmentListener)
+               @NonNull VideoFragmentPath videoFragmentPath)
             throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException {
-        videoFragmentPath = new VideoFragmentPath();
-        fragmentListener = videoFragmentListener;
-        fragmentListener.recordWillStart(videoFragmentPath);
-
+        this.videoFragmentPath = videoFragmentPath;
         muxer = new MediaMuxerWrapper(videoFragmentPath,
                 this.context.getRecordRepositoriesController().getLocalStoragePath(),
                 this);
@@ -69,7 +68,6 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Co
         muxer.prepare();
         muxer.startRecording();
 
-        fragmentListener.recordDidStart();
         cameraStateListener.onRecordingStarted();
     }
 
@@ -102,5 +100,17 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Co
 
     void resume() {
         cameraGLView.onResume();
+    }
+
+    void setVideoFragmentListener(@NonNull VideoFragmentListener listener) {
+        fragmentListener = listener;
+    }
+
+    void removeVideoFragmentListener() { // TODO: Use
+        fragmentListener = null;
+    } // TODO: Use
+
+    void removeCameraStateListener() {
+        cameraStateListener = null;
     }
 }

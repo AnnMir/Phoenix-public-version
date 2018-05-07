@@ -1,5 +1,7 @@
 package nsu.fit.g14201.marchenko.phoenix.transmission;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -7,30 +9,22 @@ import java.io.FileInputStream;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.VideoFragmentListener;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoriesController;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRemoteRepoStateListener;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoriesController;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
-public class PeriodicRecordRemoteTransmitter implements VideoFragmentListener,
-        RecordRemoteRepoStateListener {
+public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateListener,
+        VideoFragmentListener {
     private RecordRepositoriesController recordRepositoriesController;
     private VideoFragmentPath videoFragmentPath;
-    private TransmissionListener listener;
+    private TransmissionListener transmissionListener;
 
-    public PeriodicRecordRemoteTransmitter(RecordRepositoriesController recordRepositoriesController) {
+    PeriodicRecordRemoteTransmitter(@NonNull RecordRepositoriesController recordRepositoriesController,
+                                    @NonNull VideoFragmentPath videoFragmentPath) {
         this.recordRepositoriesController = recordRepositoriesController;
-        recordRepositoriesController.setRemoteRepoStateListener(this);
-    }
-
-    @Override
-    public void recordWillStart(VideoFragmentPath videoFragmentPath) {
         this.videoFragmentPath = videoFragmentPath;
-        recordRepositoriesController.createVideoRepositoryLocally(videoFragmentPath.getDirectoryName());
-    }
 
-    @Override
-    public void recordDidStart() {
-        recordRepositoriesController.createVideoRepositoryRemotely(videoFragmentPath.getDirectoryName());
+        recordRepositoriesController.setRemoteRepoStateListener(this);
     }
 
     @Override
@@ -46,9 +40,13 @@ public class PeriodicRecordRemoteTransmitter implements VideoFragmentListener,
 
                     @Override
                     public void onRecordNotFound() {
-                        listener.onUnableToContinueTransmission(
-                                new TransmissionProblem(TransmissionProblem.RECORD_NOT_FOUND_LOCALLY)
-                        );
+                        Handler mainHandler = new Handler(Looper.getMainLooper());
+                        Runnable reaction = () -> {
+                            transmissionListener.onUnableToContinueTransmission(
+                                    new TransmissionProblem(TransmissionProblem.RECORD_NOT_FOUND_LOCALLY)
+                            );
+                        };
+                        mainHandler.post(reaction);
                     }
                 });
             }
@@ -60,15 +58,23 @@ public class PeriodicRecordRemoteTransmitter implements VideoFragmentListener,
         // TODO: Handle no internet access case
         e.printStackTrace();
         Log.e(App.getTag(), e.getLocalizedMessage());
-        listener.onUnableToContinueTransmission(
+        transmissionListener.onUnableToContinueTransmission(
                 new TransmissionDetailedProblem(
                         TransmissionProblem.FAILED_TO_CREATE_VIDEO_FOLDER, name
                 )
         );
     }
 
-    public void setListener(@NonNull TransmissionListener listener) {
-        this.listener = listener;
+    void createVideoRepositories() {
+        recordRepositoriesController.createVideoRepositoryRemotely(videoFragmentPath.getDirectoryName());
+    }
+
+    void setTransmissionListener(@NonNull TransmissionListener listener) {
+        transmissionListener = listener;
+    }
+
+    void removeTransmissionListener() { // TODO: Use
+        transmissionListener = null;
     }
 
     private void transmitVideoFragment(FileInputStream inputStream) {
