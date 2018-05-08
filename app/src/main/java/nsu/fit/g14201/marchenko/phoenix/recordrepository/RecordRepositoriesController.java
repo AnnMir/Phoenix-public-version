@@ -13,11 +13,9 @@ import java.util.Map;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.network.cloud.RecordFolder;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudServiceListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.LocalStorage;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.LocalStorageListener;
 
-public class RecordRepositoriesController implements LocalStorageListener, CloudServiceListener {
+public class RecordRepositoriesController implements RecordReposControllerProviding {
     private LocalStorage localStorage;
     private List<CloudService> cloudServices;
     private Map<CloudService, RecordFolder> recordFolders;
@@ -33,32 +31,49 @@ public class RecordRepositoriesController implements LocalStorageListener, Cloud
         recordFolders = new HashMap<>();
     }
 
-    public void addCloudService(CloudService cloudService) {
+    @Override
+    public void addCloudService(@NonNull CloudService cloudService) {
         cloudServices.add(cloudService);
     }
 
-    public void setLocalRepoStateListener(RecordLocalRepoStateListener localRepoListener) {
-        this.localRepoListener = localRepoListener;
-    }
-
-    public void setRemoteRepoStateListener(RecordRemoteRepoStateListener remoteRepoListener) {
-        this.remoteRepoListener = remoteRepoListener;
-    }
-
-    public String getLocalStoragePath() {
-        return localStorage.getPath();
-    }
-
+    @Override
     public void createVideoRepositoryLocally(@NonNull String repositoryName) {
         localStorage.createVideoRepository(repositoryName);
     }
 
+    @Override
     public void createVideoRepositoryRemotely(@NonNull String repositoryName) {
         for (CloudService cloudService : cloudServices) {
             cloudService.createVideoRepository(repositoryName);
         }
     }
 
+    @Override
+    public String getLocalStoragePath() {
+        return localStorage.getPath();
+    }
+
+    @Override
+    public void setLocalRepoStateListener(@NonNull RecordLocalRepoStateListener localRepoListener) {
+        this.localRepoListener = localRepoListener;
+    }
+
+    @Override
+    public void removeLocalRepoStateListener() { // TODO: Use
+        localRepoListener = null;
+    }
+
+    @Override
+    public void setRemoteRepoStateListener(@NonNull RecordRemoteRepoStateListener remoteRepoListener) {
+        this.remoteRepoListener = remoteRepoListener;
+    }
+
+    @Override
+    public void removeRemoteRepoStateListener() { // TODO: Use
+        remoteRepoListener = null;
+    }
+
+    @Override
     public void getRecord(@NonNull String name, @NonNull RecordGetter recordGetter) {
         localStorage.getRecord(name);
         this.recordGetter = recordGetter;
@@ -104,11 +119,5 @@ public class RecordRepositoriesController implements LocalStorageListener, Cloud
     @Override
     public void onFailedToCreateVideoRepository(@NonNull CloudService cloudService, Exception exception) {
         remoteRepoListener.onFailedToCreateVideoRepository(exception, cloudService.getName());
-    }
-
-    public interface RecordGetter {
-        void onRecordGot(FileInputStream record);
-
-        void onRecordNotFound();
     }
 }

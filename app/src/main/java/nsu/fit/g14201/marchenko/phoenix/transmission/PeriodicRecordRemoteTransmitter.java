@@ -10,16 +10,17 @@ import java.io.FileInputStream;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.VideoFragmentListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRemoteRepoStateListener;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordReposControllerProviding;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoriesController;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateListener,
         VideoFragmentListener {
-    private RecordRepositoriesController recordRepositoriesController;
+    private RecordReposControllerProviding recordRepositoriesController;
     private VideoFragmentPath videoFragmentPath;
     private TransmissionListener transmissionListener;
 
-    PeriodicRecordRemoteTransmitter(@NonNull RecordRepositoriesController recordRepositoriesController,
+    PeriodicRecordRemoteTransmitter(@NonNull RecordReposControllerProviding recordRepositoriesController,
                                     @NonNull VideoFragmentPath videoFragmentPath) {
         this.recordRepositoriesController = recordRepositoriesController;
         this.videoFragmentPath = videoFragmentPath;
