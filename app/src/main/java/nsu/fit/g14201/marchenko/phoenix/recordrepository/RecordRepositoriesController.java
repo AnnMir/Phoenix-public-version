@@ -33,7 +33,7 @@ public class RecordRepositoriesController implements RecordReposControllerProvid
 
     @Override
     public void addCloudService(@NonNull CloudService cloudService) {
-        cloudServices.add(cloudService);
+        cloudServices.add(cloudService); // FIXME: To disable cloud service
     }
 
     @Override
@@ -77,6 +77,12 @@ public class RecordRepositoriesController implements RecordReposControllerProvid
     public void getRecord(@NonNull String name, @NonNull RecordGetter recordGetter) {
         localStorage.getRecord(name);
         this.recordGetter = recordGetter;
+    }
+
+    @Override
+    public void transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name) {
+        CloudService currentCloudService = cloudServices.get(0);
+        currentCloudService.transmitFragment(recordFolders.get(currentCloudService), inputStream, name);
     }
 
     // LocalStorageListener

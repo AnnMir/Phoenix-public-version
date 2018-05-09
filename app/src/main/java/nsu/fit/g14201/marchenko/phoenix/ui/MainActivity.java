@@ -134,6 +134,7 @@ public class MainActivity extends BaseActivity implements
     @Override
     public void recordDidStop() {
         // TODO
+        transmissionPresenter.stop();
     }
 
     @Override

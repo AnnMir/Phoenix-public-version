@@ -32,6 +32,10 @@ public class VideoFragmentPath {
         return builder.toString();
     }
 
+    public String getFragmentFileNameByNumber(int fragmentNumber) {
+        return String.valueOf(fragmentNumber) + extension;
+    }
+
     public int getCurrentFragmentNumber() {
         return filenameIndex;
     }

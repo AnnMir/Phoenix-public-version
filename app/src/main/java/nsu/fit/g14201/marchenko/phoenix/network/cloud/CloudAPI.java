@@ -16,5 +16,7 @@ public interface CloudAPI {
         void onFailedToCreateFolder(@NonNull Exception exception);
     }
 
-    void transmitFragment(FileInputStream inputStream);
+    void transmitFragment(@NonNull RecordFolder folder,
+                          @NonNull FileInputStream inputStream,
+                          @NonNull String name);
 }

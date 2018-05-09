@@ -32,7 +32,7 @@ public class TransmissionPresenter implements TransmissionContract.Presenter, Tr
 
     @Override
     public void stop() {
-
+        transmitter.stop();
     }
 
     @Override

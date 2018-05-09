@@ -2,6 +2,8 @@ package nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice;
 
 import android.support.annotation.NonNull;
 
+import java.io.FileInputStream;
+
 import nsu.fit.g14201.marchenko.phoenix.network.cloud.CloudAPI;
 import nsu.fit.g14201.marchenko.phoenix.network.cloud.RecordFolder;
 import nsu.fit.g14201.marchenko.phoenix.network.cloud.googledrive.GoogleDriveAPI;
@@ -41,6 +43,14 @@ public class GoogleDriveService implements CloudService {
     public void getRecord(@NonNull String name) {
         // TODO
     }
+
+    @Override
+    public void transmitFragment(@NonNull RecordFolder folder,
+                                 @NonNull FileInputStream inputStream,
+                                 @NonNull String name) {
+        googleDriveAPI.transmitFragment(folder, inputStream, name);
+    }
+
 
     public void setListener(CloudServiceListener listener) {
         this.listener = listener;

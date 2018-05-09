@@ -20,6 +20,9 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
     private VideoFragmentPath videoFragmentPath;
     private TransmissionListener transmissionListener;
 
+//    private List<Instant> before = new ArrayList<>();
+//    private List<Instant> after = new ArrayList<>();
+
     PeriodicRecordRemoteTransmitter(@NonNull RecordReposControllerProviding recordRepositoriesController,
                                     @NonNull VideoFragmentPath videoFragmentPath) {
         this.recordRepositoriesController = recordRepositoriesController;
@@ -33,12 +36,14 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
         new Thread() {
             @Override
             public void run() {
+//                before.add(Instant.now());
                 recordRepositoriesController.getRecord(
                         videoFragmentPath.getRelativeNameByFragmentNumber(fragmentNum),
                         new RecordRepositoriesController.RecordGetter() {
                     @Override
                     public void onRecordGot(FileInputStream record) {
-                        transmitVideoFragment(record);
+//                        after.add(Instant.now());
+                        transmitVideoFragment(record, fragmentNum);
                     }
 
                     @Override
@@ -80,74 +85,22 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
         transmissionListener = null;
     }
 
-    private void transmitVideoFragment(FileInputStream inputStream) {
-        //                // Start by creating a new contents, and setting a callback.
-//                Drive.DriveApi.newDriveContents(googleApiClient).setResultCallback(
-//                        result -> {
-//                            // If the operation was not successful, we cannot do
-//                            // anything and must fail.
-//                            if (!result.getStatus().isSuccess()) {
-//                                Log.d(TAG, "Failed to create new contents.");
-//                                return;
-//                            }
-//                            Log.d(TAG, "Connection successful, creating new contents...");
-//                            // Otherwise, we can write our data to the new contents.
-//                            // Get an output stream for the contents.
-//                            OutputStream outputStream = result.getDriveContents()
-//                                    .getOutputStream();
-//                            FileInputStream fileInputStream = null;
-//
-//                            try {
-//                                final String realPath = VideoUtils.getRealPathFromURI(
-//                                        getBaseContext(), videoUri);
-//                                Log.d(TAG, "Path: " + realPath);
-////                        File video = new File(realPath);
-//                                fileInputStream = new FileInputStream(realPath);
-//                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//                                byte[] buf = new byte[1024];
-//                                int n;
-//                                while (-1 != (n = fileInputStream.read(buf)))
-//                                    baos.write(buf, 0, n);
-//                                byte[] photoBytes = baos.toByteArray();
-//                                outputStream.write(photoBytes);
-//                            } catch (FileNotFoundException e) {
-//                                Log.d(TAG, "FileNotFoundException: " + e.getMessage());
-//                            } catch (IOException e1) {
-//                                Log.d(TAG, "Unable to write file contents." + e1.getMessage());
-//                            } finally {
-//                                try {
-//                                    if (outputStream != null) {
-//                                        outputStream.close();
-//                                    }
-//                                } catch (IOException e) {
-//                                    Log.d(TAG, e.getMessage());
-//                                }
-//                                try {
-//                                    if (fileInputStream != null) {
-//                                        fileInputStream.close();
-//                                    }
-//                                } catch (IOException e) {
-//                                    Log.d(TAG, e.getMessage());
-//                                }
-//                            }
-//
-//                            Log.i(TAG, "Creating new video on Drive");
-//
-//                            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-//                                    .setMimeType("video/mp4")
-//                                    .setTitle(TEST_FILE_NAME)
-//                                    .build();
-//
-//                            appFolderId.asDriveFolder()
-//                                    .createFile(googleApiClient, changeSet, result.getDriveContents())
-//                                    .setResultCallback(createFileResult -> {
-//                                        if (!createFileResult.getStatus().isSuccess()) {
-//                                            Log.d(TAG, "Error while trying to create the file");
-//                                            return;
-//                                        }
-//                                        Log.d(TAG, "Created a file with content: " + createFileResult.getDriveFile().getDriveId());
-//                                    });
-//
-//                        });
+    void stop() {
+//        for (int i = 0; i < before.size(); i++) {
+//            if (i < after.size()) {
+//                Log.d(App.getTag(), "Fragment # " + i + ": " + Long.toString(
+//                        after.get(i).toEpochMilli() - before.get(i).toEpochMilli())
+//                );
+//            } else {
+//                Log.d(App.getTag(), "Fragment # " + i + ": never got");
+//            }
+//        }
+    }
+
+    private void transmitVideoFragment(@NonNull FileInputStream inputStream, int fragmentNum) {
+        recordRepositoriesController.transmitVideo(
+                inputStream,
+                videoFragmentPath.getFragmentFileNameByNumber(fragmentNum)
+        );
     }
 }

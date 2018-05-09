@@ -9,6 +9,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveClient;
+import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResourceClient;
@@ -17,13 +19,17 @@ import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.OutputStream;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
-import nsu.fit.g14201.marchenko.phoenix.network.cloud.CloudAPI;
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
+import nsu.fit.g14201.marchenko.phoenix.network.cloud.CloudAPI;
+import nsu.fit.g14201.marchenko.phoenix.network.cloud.RecordFolder;
 
 public class GoogleDriveAPI implements CloudAPI {
     private static final String FOLDER_NAME = App.getAppName();
@@ -97,8 +103,42 @@ public class GoogleDriveAPI implements CloudAPI {
     }
 
     @Override
-    public void transmitFragment(FileInputStream inputStream) {
+    public void transmitFragment(@NonNull RecordFolder folder,
+                                 @NonNull FileInputStream fileInputStream,
+                                 @NonNull String name) {
+        Task<DriveContents> createContentsTask = driveResourceClient.createContents();
+        createContentsTask.continueWithTask(new Continuation<DriveContents, Task<DriveFile>>() {
+                    @Override
+                    public Task<DriveFile> then(@NonNull Task<DriveContents> task) throws Exception {
+                        DriveFolder videoFolder = ((GoogleDriveRecordFolder) folder)
+                                .getDriveId().asDriveFolder();
+                        DriveContents contents = createContentsTask.getResult();
+                        OutputStream outputStream = contents.getOutputStream();
 
+                        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                            byte[] buffer = new byte[1024];
+                            int num;
+                            while ((num = fileInputStream.read(buffer)) != -1) {
+                                baos.write(buffer, 0, num);
+                            }
+                            outputStream.write(baos.toByteArray());
+                        } finally {
+                            fileInputStream.close();
+                        }
+
+                        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                                .setTitle(name)
+                                .setMimeType("video/mp4")
+                                .build();
+
+                        return driveResourceClient.createFile(videoFolder, changeSet, contents);
+                    }
+                })
+                .addOnSuccessListener(driveFile -> Log.d(App.getTag(), "Fragment " + name +
+                    " upload started"))
+                .addOnFailureListener(exception -> {
+                    Log.e(App.getTag(), "Didn't manage to send fragment " + name);
+                });
     }
 
     private Task<DriveFolder> createAppFolder() {

@@ -28,6 +28,8 @@ public interface RecordReposControllerProviding extends LocalStorageListener, Cl
 
     void getRecord(@NonNull String name, @NonNull RecordGetter recordGetter);
 
+    void transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name);
+
     interface RecordGetter {
         void onRecordGot(FileInputStream record);
 
