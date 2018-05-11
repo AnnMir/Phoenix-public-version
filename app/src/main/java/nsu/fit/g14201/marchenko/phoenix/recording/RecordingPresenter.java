@@ -38,7 +38,6 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     private CameraGLView cameraGLView;
     private boolean isVideoRecording = false;
     private RecordingListener recordingListener;
-    private VideoFragmentListener fragmentListener;
 
     public RecordingPresenter(Context applicationContext, RecordingContract.View recordingView) {
         context = applicationContext;
@@ -173,7 +172,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     public void onRecordingFinished(String path) {
         isVideoRecording = false;
 
-        recordingListener.recordDidStop();
+        fragmentRecorder.removeVideoFragmentListener();
         recordingView.onRecordingFinished(path);
     }
 
@@ -199,6 +198,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     @Override
     public void onError(@NonNull MediaCodec.CodecException e) {
         e.printStackTrace();
+
         Log.d(App.getTag(), e.getDiagnosticInfo());
         recordingView.showIncorrigibleErrorDialog(e.getMessage());
     }

@@ -20,7 +20,7 @@ import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 // TODO: Запретить горизонтальную ориентацию
 
-class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Contextual {
+class PeriodicFragmentRecorder implements MediaMuxerWrapper.SpecialFrameListener, Contextual {
     private CameraGLView cameraGLView;
     private MediaMuxerWrapper muxer;
 
@@ -48,6 +48,18 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Co
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void onLastFrameReceived() {
+        muxer.removeSpecialFrameListener();
+        muxer = null;
+        fragmentListener.onLastFragmentSaved(videoFragmentPath.getCurrentFragmentNumber());
+        cameraStateListener.onRecordingFinished(
+                videoFragmentPath.getFullDirectoryName(
+                        context.getRecordRepositoriesController().getLocalStoragePath()
+                )
+        );
     }
 
     @Override
@@ -87,10 +99,6 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Co
     void stop() {
         if (muxer != null) {
             muxer.stopRecording();
-            muxer = null;
-            cameraStateListener.onRecordingFinished(videoFragmentPath.getCurrentFragmentPath(
-                    context.getRecordRepositoriesController().getLocalStoragePath()));
-            fragmentListener = null;
         }
     }
 
@@ -108,7 +116,7 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.KeyFrameListener, Co
 
     void removeVideoFragmentListener() { // TODO: Use
         fragmentListener = null;
-    } // TODO: Use
+    }
 
     void removeCameraStateListener() {
         cameraStateListener = null;

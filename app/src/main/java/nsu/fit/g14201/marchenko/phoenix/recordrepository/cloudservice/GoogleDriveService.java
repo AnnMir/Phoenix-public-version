@@ -40,7 +40,7 @@ public class GoogleDriveService implements CloudService {
     }
 
     @Override
-    public void getRecord(@NonNull String name) {
+    public void getRecord(@NonNull String name, @NonNull RecordGetter recordGetter) {
         // TODO
     }
 

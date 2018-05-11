@@ -89,7 +89,6 @@ public abstract class MediaEncoder implements Runnable {
     }
 
     protected void release() {
-        listener.onStopped(this);
         if (mediaCodec != null) {
             mediaCodec.stop();
             mediaCodec.release();
@@ -104,6 +103,8 @@ public abstract class MediaEncoder implements Runnable {
         bufferInfo = null;
         isCapturing = false;
         Looper.myLooper().quit();
+
+        listener.onStopped(this);
     }
 
     /**
@@ -183,3 +184,5 @@ public abstract class MediaEncoder implements Runnable {
         void onError(@NonNull MediaCodec.CodecException e);
     }
 }
+
+// FIXME: Обработать ошибки записи в правильных местах, проверить, правильные ли слушатели

@@ -9,6 +9,4 @@ public interface RecordingListener {
     void recordWillStart(@NonNull VideoFragmentPath videoFragmentPath);
 
     void recordDidStart();
-
-    void recordDidStop();
 }

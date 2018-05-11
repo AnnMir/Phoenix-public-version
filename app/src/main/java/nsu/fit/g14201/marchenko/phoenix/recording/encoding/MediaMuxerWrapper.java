@@ -4,6 +4,8 @@ package nsu.fit.g14201.marchenko.phoenix.recording.encoding;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -25,18 +27,18 @@ public class MediaMuxerWrapper {
     private int trackNum = 0;
     private int tracksStarted = 0;
     private boolean isFirstKeyframe = true;
-    private KeyFrameListener keyFrameListener;
+    private SpecialFrameListener specialFrameListener;
 
     private MediaEncoder videoEncoder;
     private MediaEncoder audioEncoder;
 
     public MediaMuxerWrapper(@NonNull VideoFragmentPath fragmentPath,
                              @NonNull String localStoragePath,
-                             @NonNull KeyFrameListener keyFrameListener)
+                             @NonNull SpecialFrameListener specialFrameListener)
             throws LowLevelRecordingException {
         this.fragmentPath = fragmentPath;
         this.localStoragePath = localStoragePath;
-        this.keyFrameListener = keyFrameListener;
+        this.specialFrameListener = specialFrameListener;
         try {
             fragmentPath.nextFragment();
             muxer = new MediaMuxer(fragmentPath.getCurrentFragmentPath(localStoragePath),
@@ -106,6 +108,10 @@ public class MediaMuxerWrapper {
         }
     }
 
+    public void removeSpecialFrameListener() {
+        specialFrameListener = null;
+    }
+
     void addEncoder(@NonNull VideoEncoder encoder) throws MediaMuxerException {
         if (videoEncoder != null) {
             throw new MediaMuxerException(MediaMuxerException.VIDEO_ENCODER_ALREADY_EXISTS);
@@ -164,9 +170,14 @@ public class MediaMuxerWrapper {
      */
 	synchronized void writeSampleData(int trackIndex, ByteBuffer byteBuf,
                                       MediaCodec.BufferInfo bufferInfo) {
+        if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+            new Handler(Looper.getMainLooper()).post(() -> specialFrameListener.onLastFrameReceived());
+            return;
+        }
+
         if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0) {
             if (!isFirstKeyframe) {
-                keyFrameListener.onKeyFrameReceived(trackIndex, byteBuf, bufferInfo);
+                specialFrameListener.onKeyFrameReceived(trackIndex, byteBuf, bufferInfo);
                 return;
             }
             isFirstKeyframe = false;
@@ -192,7 +203,9 @@ public class MediaMuxerWrapper {
         }
     }
 
-    public interface KeyFrameListener {
+    public interface SpecialFrameListener {
 	    void onKeyFrameReceived(int trackIndex, ByteBuffer byteBuffer, MediaCodec.BufferInfo bufferInfo);
-    }
+
+	    void onLastFrameReceived();
+	}
 }

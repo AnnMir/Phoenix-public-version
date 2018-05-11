@@ -31,17 +31,12 @@ public class TransmissionPresenter implements TransmissionContract.Presenter, Tr
     }
 
     @Override
-    public void stop() {
-        transmitter.stop();
-    }
-
-    @Override
     public void setTransmissionModuleListener(TransmissionModuleListener listener) {
         this.listener = listener;
     }
 
     @Override
-    public void removeListener() { // TODO: Use
+    public void removeTransmissionListener() { // TODO: Use
         listener = null;
     }
 
@@ -49,8 +44,15 @@ public class TransmissionPresenter implements TransmissionContract.Presenter, Tr
 
     @Override
     public void onUnableToContinueTransmission(@NonNull TransmissionProblem problem) {
-        stop();
+        transmitter.stop();
         listener.onUnableToContinueTransmission(problem);
+    }
+
+    @Override
+    public void onTransmissionFinished() {
+        transmitter.stop();
+        transmitter.removeTransmissionListener();
+        listener.onTransmissionFinished();
     }
 }
 

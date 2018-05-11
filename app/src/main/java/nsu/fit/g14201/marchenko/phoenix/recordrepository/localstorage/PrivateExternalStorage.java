@@ -32,12 +32,12 @@ public class PrivateExternalStorage implements LocalStorage {
     }
 
     @Override
-    public void getRecord(@NonNull String name) {
+    public void getRecord(@NonNull String name, @NonNull RecordGetter recordGetter) {
         try {
-            listener.onRecordGot(new FileInputStream(path + "/" + name));
+            recordGetter.onRecordGot(new FileInputStream(path + "/" + name));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            listener.onRecordNotFound();
+            recordGetter.onRecordNotFound();
         }
     }
 

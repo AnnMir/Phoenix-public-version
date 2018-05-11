@@ -110,8 +110,11 @@ public class VideoEncoder extends MediaEncoder {
                     }
                     muxer.get().writeSampleData(trackIndex, encodedData, info);
                 }
-
+                if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                    muxer.get().writeSampleData(trackIndex, encodedData, info);
+                }
                 codec.releaseOutputBuffer(index, false);
+
                 if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                     release();
                 }

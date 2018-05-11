@@ -11,7 +11,7 @@ import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.VideoFragmentListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRemoteRepoStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordReposControllerProviding;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoriesController;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepository;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateListener,
@@ -39,7 +39,7 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
 //                before.add(Instant.now());
                 recordRepositoriesController.getRecord(
                         videoFragmentPath.getRelativeNameByFragmentNumber(fragmentNum),
-                        new RecordRepositoriesController.RecordGetter() {
+                        new RecordRepository.RecordGetter() {
                     @Override
                     public void onRecordGot(FileInputStream record) {
 //                        after.add(Instant.now());
@@ -62,6 +62,13 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
     }
 
     @Override
+    public void onLastFragmentSaved(int fragmentNum) {
+        onFragmentSavedLocally(fragmentNum);
+        stop();
+        transmissionListener.onTransmissionFinished();
+    }
+
+    @Override
     public void onFailedToCreateVideoRepository(@NonNull Exception e, @NonNull String name) {
         // TODO: Handle no internet access case
         e.printStackTrace();
@@ -74,7 +81,9 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
     }
 
     void createVideoRepositories() {
-        recordRepositoriesController.createVideoRepositoryRemotely(videoFragmentPath.getDirectoryName());
+        recordRepositoriesController.createVideoRepositoryRemotely(
+                videoFragmentPath.getDirectoryName()
+        );
     }
 
     void setTransmissionListener(@NonNull TransmissionListener listener) {

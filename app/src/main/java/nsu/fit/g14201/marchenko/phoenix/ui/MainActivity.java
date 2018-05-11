@@ -116,6 +116,13 @@ public class MainActivity extends BaseActivity implements
     }
 
     @Override
+    protected void onDestroy() {
+        recordingPresenter.removeRecordingListener();
+
+        super.onDestroy();
+    }
+
+    @Override
     public void recordWillStart(@NonNull VideoFragmentPath videoFragmentPath) {
         if (transmissionPresenter == null) {
             transmissionPresenter = new TransmissionPresenter(appContext);
@@ -129,12 +136,6 @@ public class MainActivity extends BaseActivity implements
     public void recordDidStart() {
         transmissionPresenter.setTransmissionModuleListener(this);
         transmissionPresenter.start();
-    }
-
-    @Override
-    public void recordDidStop() {
-        // TODO
-        transmissionPresenter.stop();
     }
 
     @Override
@@ -155,6 +156,11 @@ public class MainActivity extends BaseActivity implements
         message.append(".");
 
         showToast(message.toString());
+    }
+
+    @Override
+    public void onTransmissionFinished() {
+        transmissionPresenter.removeTransmissionListener();
     }
 
     @Override

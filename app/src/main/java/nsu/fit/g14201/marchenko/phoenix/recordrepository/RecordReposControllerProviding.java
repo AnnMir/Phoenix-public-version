@@ -26,13 +26,7 @@ public interface RecordReposControllerProviding extends LocalStorageListener, Cl
 
     void removeRemoteRepoStateListener();
 
-    void getRecord(@NonNull String name, @NonNull RecordGetter recordGetter);
+    void getRecord(@NonNull String name, @NonNull RecordRepository.RecordGetter recordGetter);
 
     void transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name);
-
-    interface RecordGetter {
-        void onRecordGot(FileInputStream record);
-
-        void onRecordNotFound();
-    }
 }

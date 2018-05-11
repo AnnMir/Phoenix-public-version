@@ -1,5 +1,7 @@
 package nsu.fit.g14201.marchenko.phoenix.recordrepository;
 
+import android.support.annotation.NonNull;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -19,6 +21,10 @@ public class VideoFragmentPath {
 
     public String getDirectoryName() {
         return directoryName;
+    }
+
+    public String getFullDirectoryName(@NonNull String appStoragePath) {
+        return appStoragePath + directoryName;
     }
 
     public String getRelativeNameByFragmentNumber(int fragmentNumber) {

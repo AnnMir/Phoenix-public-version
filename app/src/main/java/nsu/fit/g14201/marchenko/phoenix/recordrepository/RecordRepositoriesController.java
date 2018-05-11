@@ -23,7 +23,8 @@ public class RecordRepositoriesController implements RecordReposControllerProvid
     private RecordRemoteRepoStateListener remoteRepoListener;
     private RecordLocalRepoStateListener localRepoListener; // TODO local repositories listener
 
-    private RecordGetter recordGetter = null;
+    private final Object gettingRecordSync = new Object();
+    private final Object transmissionSync = new Object();
 
     public RecordRepositoriesController(LocalStorage localStorage) {
         this.localStorage = localStorage;
@@ -74,15 +75,20 @@ public class RecordRepositoriesController implements RecordReposControllerProvid
     }
 
     @Override
-    public void getRecord(@NonNull String name, @NonNull RecordGetter recordGetter) {
-        localStorage.getRecord(name);
-        this.recordGetter = recordGetter;
+    public void getRecord(@NonNull String name, @NonNull RecordRepository.RecordGetter recordGetter) {
+        synchronized (gettingRecordSync) {
+            localStorage.getRecord(name, recordGetter);
+        }
     }
 
     @Override
     public void transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name) {
-        CloudService currentCloudService = cloudServices.get(0);
-        currentCloudService.transmitFragment(recordFolders.get(currentCloudService), inputStream, name);
+        synchronized (transmissionSync) {
+            CloudService currentCloudService = cloudServices.get(0);
+            currentCloudService.transmitFragment(
+                    recordFolders.get(currentCloudService), inputStream, name
+            );
+        }
     }
 
     // LocalStorageListener
@@ -95,22 +101,6 @@ public class RecordRepositoriesController implements RecordReposControllerProvid
     @Override
     public void onFailedToCreateRepository() {
         // TODO WAITING FOR LOCAL REPO STATE LISTENER
-    }
-
-    @Override
-    public void onRecordGot(FileInputStream record) {
-        if (recordGetter != null) {
-            recordGetter.onRecordGot(record);
-            recordGetter = null;
-        }
-    }
-
-    @Override
-    public void onRecordNotFound() {
-        if (recordGetter != null) {
-            recordGetter.onRecordNotFound();
-            recordGetter = null;
-        }
     }
 
     // CloudServiceListener

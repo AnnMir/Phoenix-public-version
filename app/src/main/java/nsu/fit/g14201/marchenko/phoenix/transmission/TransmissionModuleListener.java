@@ -5,4 +5,8 @@ import android.support.annotation.NonNull;
 
 public interface TransmissionModuleListener {
     void onUnableToContinueTransmission(@NonNull TransmissionProblem problem);
+
+    void onTransmissionFinished();
 }
+
+// FIXME: Unite with TransmissionListener?

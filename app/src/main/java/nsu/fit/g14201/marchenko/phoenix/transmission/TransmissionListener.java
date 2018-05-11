@@ -5,4 +5,6 @@ import android.support.annotation.NonNull;
 
 public interface TransmissionListener {
     void onUnableToContinueTransmission(@NonNull TransmissionProblem problem);
+
+    void onTransmissionFinished();
 }
