@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
-import nsu.fit.g14201.marchenko.phoenix.network.cloud.RecordFolder;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.LocalStorage;
 
 public class RecordRepositoriesController implements RecordReposControllerProviding {

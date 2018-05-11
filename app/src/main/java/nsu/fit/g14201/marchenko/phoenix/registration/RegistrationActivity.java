@@ -54,3 +54,5 @@ public class RegistrationActivity extends BaseActivity implements Coordinator {
         startActivity(intent);
     }
 }
+
+// TODO: Повторный запуск приложения

@@ -1,8 +1,8 @@
-package nsu.fit.g14201.marchenko.phoenix.network.cloud.googledrive;
+package nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.googledrive;
 
 import com.google.android.gms.drive.DriveId;
 
-import nsu.fit.g14201.marchenko.phoenix.network.cloud.RecordFolder;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
 
 public class GoogleDriveRecordFolder implements RecordFolder {
     private DriveId driveId;
