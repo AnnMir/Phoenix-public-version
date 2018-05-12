@@ -9,7 +9,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveClient;
 import com.google.android.gms.drive.DriveContents;
-import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResourceClient;
@@ -18,13 +17,15 @@ import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
-import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 
+import io.reactivex.Completable;
+import io.reactivex.CompletableEmitter;
+import io.reactivex.Single;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
@@ -53,8 +54,9 @@ public class GoogleDriveService implements CloudService {
     }
 
     @Override
-    public void getRecord(@NonNull String name, @NonNull RecordGetter recordGetter) {
+    public Single<FileInputStream> getRecord(@NonNull String name) {
         // TODO
+        return null;
     }
 
     @Override
@@ -65,10 +67,13 @@ public class GoogleDriveService implements CloudService {
                 .build();
         driveResourceClient.createFolder(appFolderId.asDriveFolder(), changeSet)
                 .addOnSuccessListener(
-                        driveFolder -> listener.onVideoRepositoryCreated(
+                        driveFolder -> {
+                            listener.onVideoRepositoryCreated(
                                     GoogleDriveService.this,
                                     new GoogleDriveRecordFolder(driveFolder.getDriveId())
-                        )
+                            );
+                            Log.e(App.getTag(), Thread.currentThread().getName());
+                        }
                 )
                 .addOnFailureListener(exception -> listener.onFailedToCreateVideoRepository(
                         GoogleDriveService.this, exception));
@@ -117,13 +122,13 @@ public class GoogleDriveService implements CloudService {
     }
 
     @Override
-    public void transmitFragment(@NonNull RecordFolder folder,
-                                 @NonNull FileInputStream inputStream,
-                                 @NonNull String name) {
-        Task<DriveContents> createContentsTask = driveResourceClient.createContents();
-        createContentsTask.continueWithTask(new Continuation<DriveContents, Task<DriveFile>>() {
-            @Override
-            public Task<DriveFile> then(@NonNull Task<DriveContents> task) throws Exception {
+    public Completable transmitFragment(@NonNull RecordFolder folder,
+                                        @NonNull FileInputStream inputStream,
+                                        @NonNull String name) {
+        return Completable.create((CompletableEmitter emitter) -> {
+//            Log.e(App.getTag(), "Transmission 1 " + Thread.currentThread().getName());
+            Task<DriveContents> createContentsTask = driveResourceClient.createContents();
+            createContentsTask.continueWithTask(Runnable::run, task -> {
                 DriveFolder videoFolder = ((GoogleDriveRecordFolder) folder)
                         .getDriveId().asDriveFolder();
                 DriveContents contents = createContentsTask.getResult();
@@ -139,6 +144,7 @@ public class GoogleDriveService implements CloudService {
                 } finally {
                     inputStream.close();
                 }
+//                Log.e(App.getTag(), "Transmission 2 " + Thread.currentThread().getName());
 
                 MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
                         .setTitle(name)
@@ -146,13 +152,15 @@ public class GoogleDriveService implements CloudService {
                         .build();
 
                 return driveResourceClient.createFile(videoFolder, changeSet, contents);
-            }
-        })
-                .addOnSuccessListener(driveFile -> Log.d(App.getTag(), "Fragment " + name +
-                        " upload started"))
-                .addOnFailureListener(exception -> {
-                    Log.e(App.getTag(), "Didn't manage to send fragment " + name);
-                });
+            })
+                    .addOnSuccessListener(Runnable::run, driveFile -> {
+//                        Log.e(App.getTag(), "OnSuccess " + Thread.currentThread().getName());
+                        emitter.onComplete();
+                    })
+                    .addOnFailureListener(Runnable::run, emitter::onError);
+            //                            driveFile -> Log.d(App.getTag(), "Fragment " + name + " upload started")
+//                        Log.e(App.getTag(), "Didn't manage to send fragment " + name);
+        });
     }
 
 

@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import java.io.FileInputStream;
 
+import io.reactivex.Completable;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepository;
 
 public interface CloudService extends RecordRepository {
@@ -11,7 +12,7 @@ public interface CloudService extends RecordRepository {
 
     void createAppFolderIfNotExists();
 
-    void transmitFragment(@NonNull RecordFolder folder,
-                          @NonNull FileInputStream inputStream,
-                          @NonNull String name);
+    Completable transmitFragment(@NonNull RecordFolder folder,
+                                 @NonNull FileInputStream inputStream,
+                                 @NonNull String name);
 }

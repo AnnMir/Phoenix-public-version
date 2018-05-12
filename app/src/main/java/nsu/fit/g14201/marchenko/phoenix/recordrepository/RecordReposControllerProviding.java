@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 
 import java.io.FileInputStream;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudServiceListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.LocalStorageListener;
@@ -26,7 +28,7 @@ public interface RecordReposControllerProviding extends LocalStorageListener, Cl
 
     void removeRemoteRepoStateListener();
 
-    void getRecord(@NonNull String name, @NonNull RecordRepository.RecordGetter recordGetter);
+    Single<FileInputStream> getRecord(@NonNull String name);
 
-    void transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name);
+    Completable transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name);
 }

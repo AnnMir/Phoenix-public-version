@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
@@ -75,17 +77,17 @@ public class RecordRepositoriesController implements RecordReposControllerProvid
     }
 
     @Override
-    public void getRecord(@NonNull String name, @NonNull RecordRepository.RecordGetter recordGetter) {
-        synchronized (gettingRecordSync) {
-            localStorage.getRecord(name, recordGetter);
+    public Single<FileInputStream> getRecord(@NonNull String name) {
+        synchronized (gettingRecordSync) { // FIXME: Move from here?
+            return localStorage.getRecord(name);
         }
     }
 
     @Override
-    public void transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name) {
-        synchronized (transmissionSync) {
+    public Completable transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name) {
+        synchronized (transmissionSync) { // FIXME: Move from here?
             CloudService currentCloudService = cloudServices.get(0);
-            currentCloudService.transmitFragment(
+            return currentCloudService.transmitFragment(
                     recordFolders.get(currentCloudService), inputStream, name
             );
         }

@@ -4,15 +4,11 @@ import android.support.annotation.NonNull;
 
 import java.io.FileInputStream;
 
+import io.reactivex.Single;
+
 
 public interface RecordRepository {
     void createVideoRepository(@NonNull String name);
 
-    void getRecord(@NonNull String name, @NonNull RecordGetter recordGetter);
-
-    interface RecordGetter {
-        void onRecordGot(FileInputStream record);
-
-        void onRecordNotFound();
-    }
+    Single<FileInputStream> getRecord(@NonNull String name);
 }
