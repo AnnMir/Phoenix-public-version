@@ -84,6 +84,11 @@ public class RecordRepositoriesController implements RecordReposControllerProvid
     }
 
     @Override
+    public void getRecords() {
+        localStorage.getRecords();
+    }
+
+    @Override
     public Completable transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name) {
         synchronized (transmissionSync) { // FIXME: Move from here?
             CloudService currentCloudService = cloudServices.get(0);

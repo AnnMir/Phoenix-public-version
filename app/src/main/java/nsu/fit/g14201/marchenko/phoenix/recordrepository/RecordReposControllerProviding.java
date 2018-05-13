@@ -30,5 +30,7 @@ public interface RecordReposControllerProviding extends LocalStorageListener, Cl
 
     Single<FileInputStream> getRecord(@NonNull String name);
 
+    void getRecords();
+
     Completable transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name);
 }

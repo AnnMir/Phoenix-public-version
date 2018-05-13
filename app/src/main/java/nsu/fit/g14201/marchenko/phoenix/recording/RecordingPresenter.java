@@ -13,6 +13,7 @@ import android.util.Log;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.context.Contextual;
+import nsu.fit.g14201.marchenko.phoenix.model.RecordPath;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraWrapper;
@@ -73,10 +74,10 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     public void changeRecordingState() {
         if (isVideoRecording) {
             fragmentRecorder.stop();
-            // TODO: stop transmitter and remove itself as a listener
         } else {
             try {
-                VideoFragmentPath videoFragmentPath = new VideoFragmentPath();
+                VideoFragmentPath videoFragmentPath = new VideoFragmentPath(
+                        new RecordPath(appContext.getDirectoryPattern()));
                 createLocalVideoRepository(videoFragmentPath);
                 recordingListener.recordWillStart(videoFragmentPath);
                 fragmentRecorder.start(this, videoFragmentPath);

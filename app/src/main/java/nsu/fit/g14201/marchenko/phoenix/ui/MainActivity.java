@@ -26,6 +26,8 @@ import nsu.fit.g14201.marchenko.phoenix.recording.RecordingContract;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingFragment;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingPresenter;
+import nsu.fit.g14201.marchenko.phoenix.recordmanagement.RecordManagementFragment;
+import nsu.fit.g14201.marchenko.phoenix.recordmanagement.RecordManagementPresenter;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.registration.RegistrationActivity;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionContract;
@@ -95,6 +97,7 @@ public class MainActivity extends BaseActivity implements
 
         switch (itemId) {
             case R.id.nav_records_management:
+                runRecordManagementBlock();
                 break;
             case R.id.nav_settings:
                 break;
@@ -210,6 +213,18 @@ public class MainActivity extends BaseActivity implements
         recordingPresenter = new RecordingPresenter(getApplicationContext(), recordingFragment);
         recordingPresenter.setContext(appContext);
         recordingPresenter.setRecordingListener(this);
+    }
+
+    private void runRecordManagementBlock() {
+        RecordManagementFragment recordManagementFragment = RecordManagementFragment.newInstance();
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, recordManagementFragment)
+                .commit();
+
+        RecordManagementPresenter presenter = new RecordManagementPresenter(recordManagementFragment);
+        presenter.setContext(appContext);
+        presenter.start();
     }
 
     private void signOut() {
