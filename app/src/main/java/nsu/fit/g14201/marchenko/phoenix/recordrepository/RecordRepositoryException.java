@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 public class RecordRepositoryException extends Throwable {
-    public static final int RECORD_NOT_FOUND = 0;
+    public static final int RECORD_NOT_FOUND = 1;
 
     @Target(ElementType.PARAMETER)
     @Retention(RetentionPolicy.SOURCE)
@@ -20,6 +20,10 @@ public class RecordRepositoryException extends Throwable {
     public RecordRepositoryException(@RecordRepositoryError int problem) {
         super(getDefaultMessage(problem));
         reason = problem;
+    }
+
+    public int getReason() {
+        return reason;
     }
 
     public static String getDefaultMessage(@RecordRepositoryError int problem) {

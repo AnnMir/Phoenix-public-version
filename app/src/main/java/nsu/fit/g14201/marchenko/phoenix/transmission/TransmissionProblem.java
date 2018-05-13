@@ -9,8 +9,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 public class TransmissionProblem {
-    public static final int FAILED_TO_CREATE_VIDEO_FOLDER = 0;
-    public static final int RECORD_NOT_FOUND_LOCALLY = 1;
+    public static final int UNKNOWN = 0;
+    public static final int FAILED_TO_CREATE_VIDEO_FOLDER = 1;
+    public static final int RECORD_NOT_FOUND_LOCALLY = 2;
 
     @Target(ElementType.PARAMETER)
     @Retention(RetentionPolicy.SOURCE)

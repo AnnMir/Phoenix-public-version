@@ -18,8 +18,6 @@ import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.LowLevelRecordingException;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
-// TODO: Запретить горизонтальную ориентацию
-
 class PeriodicFragmentRecorder implements MediaMuxerWrapper.SpecialFrameListener, Contextual {
     private CameraGLView cameraGLView;
     private MediaMuxerWrapper muxer;

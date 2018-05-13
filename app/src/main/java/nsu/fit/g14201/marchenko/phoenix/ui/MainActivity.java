@@ -30,7 +30,7 @@ import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.registration.RegistrationActivity;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionContract;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionDetailedProblem;
-import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionModuleListener;
+import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionListener;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionPresenter;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem;
 import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
@@ -41,7 +41,7 @@ import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.
 public class MainActivity extends BaseActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         RecordingListener,
-        TransmissionModuleListener,
+        TransmissionListener,
         OnCompleteListener<Void> {
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
@@ -134,13 +134,14 @@ public class MainActivity extends BaseActivity implements
 
     @Override
     public void recordDidStart() {
-        transmissionPresenter.setTransmissionModuleListener(this);
+        transmissionPresenter.setTransmissionListener(this);
         transmissionPresenter.start();
     }
 
     @Override
     public void onUnableToContinueTransmission(@NonNull TransmissionProblem problem) {
         recordingPresenter.removeVideoFragmentListener();
+        transmissionPresenter.removeTransmissionListener();
 
         StringBuilder message = new StringBuilder();
         switch (problem.getType()) {
@@ -225,5 +226,3 @@ public class MainActivity extends BaseActivity implements
         }
     }
 }
-
-// TODO: Configure backstack: https://developer.android.com/guide/components/activities/tasks-and-back-stack.html

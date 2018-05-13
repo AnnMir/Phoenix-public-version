@@ -9,7 +9,7 @@ import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 public class TransmissionPresenter implements TransmissionContract.Presenter, TransmissionListener {
     private PeriodicRecordRemoteTransmitter transmitter;
-    private TransmissionModuleListener listener;
+    private TransmissionListener listener;
     private Context appContext;
 
     public TransmissionPresenter(Context appContext) {
@@ -31,7 +31,7 @@ public class TransmissionPresenter implements TransmissionContract.Presenter, Tr
     }
 
     @Override
-    public void setTransmissionModuleListener(TransmissionModuleListener listener) {
+    public void setTransmissionListener(TransmissionListener listener) {
         this.listener = listener;
     }
 
@@ -45,6 +45,7 @@ public class TransmissionPresenter implements TransmissionContract.Presenter, Tr
     @Override
     public void onUnableToContinueTransmission(@NonNull TransmissionProblem problem) {
         transmitter.stop();
+        transmitter.removeTransmissionListener();
         listener.onUnableToContinueTransmission(problem);
     }
 

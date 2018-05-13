@@ -153,13 +153,8 @@ public class GoogleDriveService implements CloudService {
 
                 return driveResourceClient.createFile(videoFolder, changeSet, contents);
             })
-                    .addOnSuccessListener(Runnable::run, driveFile -> {
-//                        Log.e(App.getTag(), "OnSuccess " + Thread.currentThread().getName());
-                        emitter.onComplete();
-                    })
+                    .addOnSuccessListener(Runnable::run, driveFile -> emitter.onComplete())
                     .addOnFailureListener(Runnable::run, emitter::onError);
-            //                            driveFile -> Log.d(App.getTag(), "Fragment " + name + " upload started")
-//                        Log.e(App.getTag(), "Didn't manage to send fragment " + name);
         });
     }
 

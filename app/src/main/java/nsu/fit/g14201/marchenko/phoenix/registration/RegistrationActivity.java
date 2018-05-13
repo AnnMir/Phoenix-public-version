@@ -55,4 +55,3 @@ public class RegistrationActivity extends BaseActivity implements Coordinator {
     }
 }
 
-// TODO: Повторный запуск приложения

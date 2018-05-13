@@ -11,7 +11,7 @@ public interface TransmissionContract {
     interface Presenter extends BasePresenter, TransmissionListener {
         VideoFragmentListener prepareForNewTransmission(@NonNull VideoFragmentPath videoFragmentPath);
 
-        void setTransmissionModuleListener(TransmissionModuleListener listener);
+        void setTransmissionListener(TransmissionListener listener);
 
         void removeTransmissionListener();
     }

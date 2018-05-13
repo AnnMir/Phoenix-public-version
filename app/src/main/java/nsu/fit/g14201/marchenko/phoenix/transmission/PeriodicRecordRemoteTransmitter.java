@@ -3,17 +3,25 @@ package nsu.fit.g14201.marchenko.phoenix.transmission;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import java.util.concurrent.Executors;
+
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.VideoFragmentListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRemoteRepoStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordReposControllerProviding;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoryException;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateListener,
         VideoFragmentListener {
+    private static final int THREAD_NUM = 4;
+
     private RecordReposControllerProviding recordRepositoriesController;
+    private Scheduler scheduler;
     private VideoFragmentPath videoFragmentPath;
     private TransmissionListener transmissionListener;
 
@@ -26,53 +34,34 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
         this.videoFragmentPath = videoFragmentPath;
 
         recordRepositoriesController.setRemoteRepoStateListener(this);
+        scheduler = Schedulers.from(Executors.newFixedThreadPool(THREAD_NUM));
     }
 
     @Override
     public void onFragmentSavedLocally(int fragmentNum) {
         final Disposable subscribe = recordRepositoriesController.getRecord(
                 videoFragmentPath.getRelativeNameByFragmentNumber(fragmentNum))
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(Schedulers.io())
+                .subscribeOn(scheduler)
+                .observeOn(scheduler)
                 .flatMapCompletable(record ->
                         recordRepositoriesController.transmitVideo(
                                 record, videoFragmentPath.getFragmentFileNameByNumber(fragmentNum)
                         ))
-                .observeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(() -> {
-                    Log.e(App.getTag(), "Observer " + Thread.currentThread().getName());
                     Log.d(App.getTag(), "Fragment " + fragmentNum + " upload started");
                 }, throwable -> {
                     throwable.printStackTrace();
+                    int problem = TransmissionProblem.UNKNOWN;
+                    if (throwable instanceof RecordRepositoryException) {
+                        switch (((RecordRepositoryException) throwable).getReason()) {
+                            case RecordRepositoryException.RECORD_NOT_FOUND:
+                                problem = TransmissionProblem.RECORD_NOT_FOUND_LOCALLY;
+                        }
+                    }
+                    transmissionListener.onUnableToContinueTransmission(new TransmissionProblem(problem));
                     Log.e(App.getTag(), "Didn't manage to send fragment " + fragmentNum);
                 });
-
-//        new Thread() {
-//            @Override
-//            public void run() {
-////                before.add(Instant.now());
-//                recordRepositoriesController.getRecord(
-//                        videoFragmentPath.getRelativeNameByFragmentNumber(fragmentNum),
-//                        new RecordRepository.RecordGetter() {
-//                    @Override
-//                    public void onRecordGot(FileInputStream record) {
-////                        after.add(Instant.now());
-//                        transmitVideoFragment(record, fragmentNum);
-//                    }
-//
-//                    @Override
-//                    public void onRecordNotFound() {
-//                        Handler mainHandler = new Handler(Looper.getMainLooper());
-//                        Runnable reaction = () -> {
-//                            transmissionListener.onUnableToContinueTransmission(
-//                                    new TransmissionProblem(TransmissionProblem.RECORD_NOT_FOUND_LOCALLY)
-//                            );
-//                        };
-//                        mainHandler.post(reaction);
-//                    }
-//                });
-//            }
-//        }.start();
     }
 
     @Override
@@ -104,7 +93,7 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
         transmissionListener = listener;
     }
 
-    void removeTransmissionListener() { // TODO: Use
+    void removeTransmissionListener() {
         transmissionListener = null;
     }
 
