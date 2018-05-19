@@ -99,6 +99,8 @@ public class MainActivity extends BaseActivity implements
             case R.id.nav_records_management:
                 runRecordManagementBlock();
                 break;
+            case R.id.sync:
+                break;
             case R.id.nav_settings:
                 break;
             case R.id.nav_logout:

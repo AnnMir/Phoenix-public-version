@@ -8,6 +8,10 @@
             android:icon="@drawable/ic_folder_open"
             android:title="@string/records_management" />
         <item
+            android:id="@+id/sync"
+            android:icon="@drawable/ic_sync"
+            android:title="@string/synchronization" />
+        <item
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings"
             android:title="@string/settings" />
