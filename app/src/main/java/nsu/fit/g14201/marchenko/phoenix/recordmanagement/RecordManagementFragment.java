@@ -9,20 +9,22 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import java.util.Arrays;
-import java.util.List;
-
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
-import nsu.fit.g14201.marchenko.phoenix.model.record.RecordDateComparator;
 import nsu.fit.g14201.marchenko.phoenix.ui.BaseFragment;
+import nsu.fit.g14201.marchenko.phoenix.utils.ItemClickSupport;
 
 public class RecordManagementFragment extends BaseFragment implements RecordManagementContract.View {
     private RecordManagementContract.Presenter presenter;
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private ProgressBar spinner;
-    private List<Record> recordsToShow = null;
+    private ItemClickSupport.OnItemClickListener onItemClickListener = new ItemClickSupport.OnItemClickListener() {
+        @Override
+        public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+            presenter.onRecordSelected(position);
+        }
+    };
 
     public static RecordManagementFragment newInstance() {
         return new RecordManagementFragment();
@@ -36,17 +38,9 @@ public class RecordManagementFragment extends BaseFragment implements RecordMana
         recyclerView.setHasFixedSize(true);
 
         layoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.addItemDecoration(new DividerItemDecoration(
-                getActivity(), LinearLayoutManager.VERTICAL));
 
-        if (recordsToShow == null) {
+        if (recyclerView == null) {
             spinner = view.findViewById(R.id.video_list_progress_bar);
-            spinner.setVisibility(View.VISIBLE);
-        } else {
-            showData(recordsToShow);
-            recordsToShow.clear();
-            recordsToShow = null;
         }
     }
 
@@ -54,7 +48,9 @@ public class RecordManagementFragment extends BaseFragment implements RecordMana
     public void onStart() {
         super.onStart();
 
-        spinner.setVisibility(View.VISIBLE);
+        if (recyclerView == null) {
+            spinner.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -68,19 +64,17 @@ public class RecordManagementFragment extends BaseFragment implements RecordMana
     }
 
     @Override
-    public void setDataForVideoList(List<Record> records) {
-        if (recyclerView != null) {
-            showData(records);
-        } else {
-            recordsToShow = records;
-        }
-    }
+    public void configureVideoList(Record[] records) {
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addItemDecoration(new DividerItemDecoration(
+                getActivity(), LinearLayoutManager.VERTICAL));
+        ItemClickSupport itemClickSupport = ItemClickSupport.addTo(recyclerView);
+        itemClickSupport.setOnItemClickListener(onItemClickListener);
 
-    private void showData(List<Record> records) {
-        Record[] recordArray = records.toArray(new Record[records.size()]);
-        Arrays.sort(recordArray, new RecordDateComparator(false));
-        RecyclerView.Adapter adapter = new RecordsViewAdapter(recordArray);
+        RecyclerView.Adapter adapter = new RecordsViewAdapter(records);
         recyclerView.setAdapter(adapter);
-        spinner.setVisibility(View.GONE);
+        if (spinner != null) {
+            spinner.setVisibility(View.GONE);
+        }
     }
 }

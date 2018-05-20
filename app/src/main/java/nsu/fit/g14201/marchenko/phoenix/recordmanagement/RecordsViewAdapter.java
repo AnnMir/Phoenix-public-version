@@ -14,11 +14,13 @@ class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewAdapter.ViewHol
     private Record[] records;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        View itemView;
         TextView videoTitle;
 
         ViewHolder(View itemView) {
             super(itemView);
 
+            this.itemView = itemView;
             videoTitle = itemView.findViewById(R.id.title);
         }
     }

@@ -28,4 +28,5 @@
     <string name="error_working_with_cloud">Невозможно обмениваться данными с %1$s</string>
     <string name="can_not_find_fragment_locally">Не получилось найти локальный фрагмент</string>
     <string name="stop_uploading_data">Передача данных в облако прекращена</string>
+    <string name="assemble">Собрать</string>
 </resources>

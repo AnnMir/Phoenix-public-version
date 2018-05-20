@@ -227,6 +227,7 @@ public class MainActivity extends BaseActivity implements
         RecordManagementPresenter presenter = new RecordManagementPresenter(recordManagementFragment,
                 appContext.getLocalStorage(),
                 appContext.getRemoteRepositoriesController());
+        recordManagementFragment.setPresenter(presenter);
         presenter.start();
     }
 
