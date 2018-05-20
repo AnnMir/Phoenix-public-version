@@ -241,8 +241,6 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     }
 
     private void createLocalVideoRepository(@NonNull VideoFragmentPath videoFragmentPath) {
-        appContext.getRecordRepositoriesController().createVideoRepositoryLocally(
-                videoFragmentPath.getDirectoryName()
-        );
+        appContext.getLocalStorage().createVideoRepository(videoFragmentPath.getDirectoryName());
     }
 }

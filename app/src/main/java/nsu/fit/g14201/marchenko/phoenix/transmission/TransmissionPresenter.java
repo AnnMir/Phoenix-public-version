@@ -23,7 +23,8 @@ public class TransmissionPresenter implements TransmissionContract.Presenter, Tr
 
     @Override
     public VideoFragmentListener prepareForNewTransmission(@NonNull VideoFragmentPath videoFragmentPath) {
-        transmitter = new PeriodicRecordRemoteTransmitter(appContext.getRecordRepositoriesController(),
+        transmitter = new PeriodicRecordRemoteTransmitter(appContext.getLocalStorage(),
+                appContext.getRemoteRepositoriesController(),
                 videoFragmentPath);
         transmitter.setTransmissionListener(this);
 

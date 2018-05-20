@@ -22,6 +22,8 @@ public class PrivateExternalStorage implements LocalStorage {
     private final Pattern directoryPattern;
     private LocalStorageListener listener;
 
+    private final Object gettingRecordSync = new Object();
+
     public PrivateExternalStorage(@NonNull Context context, @NonNull String directoryPattern) {
         path = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES);
         Log.e(App.getTag(), "PATTERN: " + directoryPattern);
@@ -40,16 +42,18 @@ public class PrivateExternalStorage implements LocalStorage {
 
     @Override
     public Single<FileInputStream> getRecord(@NonNull String name) {
-        return Single.create(emitter -> {
-            try {
-                Log.e(App.getTag(), "getRecord " + Thread.currentThread().getName());
-                emitter.onSuccess(new FileInputStream(path + File.separator + name));
-            } catch (FileNotFoundException e) {
-                emitter.onError(new RecordRepositoryException(
-                        RecordRepositoryException.RECORD_NOT_FOUND
-                ));
-            }
-        });
+        synchronized (gettingRecordSync) {
+            return Single.create(emitter -> {
+                try {
+                    Log.e(App.getTag(), "getRecord " + Thread.currentThread().getName());
+                    emitter.onSuccess(new FileInputStream(path + File.separator + name));
+                } catch (FileNotFoundException e) {
+                    emitter.onError(new RecordRepositoryException(
+                            RecordRepositoryException.RECORD_NOT_FOUND
+                    ));
+                }
+            });
+        }
     }
 
     @Override

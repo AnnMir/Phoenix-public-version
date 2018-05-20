@@ -12,15 +12,17 @@ import io.reactivex.schedulers.Schedulers;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.VideoFragmentListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRemoteRepoStateListener;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordReposControllerProviding;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoryException;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.RemoteReposControllerProviding;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
+import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.LocalStorage;
 
 public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateListener,
         VideoFragmentListener {
     private static final int THREAD_NUM = 4;
 
-    private RecordReposControllerProviding recordRepositoriesController;
+    private LocalStorage localStorage;
+    private RemoteReposControllerProviding recordRepositoriesController;
     private Scheduler scheduler;
     private VideoFragmentPath videoFragmentPath;
     private TransmissionListener transmissionListener;
@@ -28,8 +30,10 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
 //    private List<Instant> before = new ArrayList<>();
 //    private List<Instant> after = new ArrayList<>();
 
-    PeriodicRecordRemoteTransmitter(@NonNull RecordReposControllerProviding recordRepositoriesController,
+    PeriodicRecordRemoteTransmitter(@NonNull LocalStorage localStorage,
+                                    @NonNull RemoteReposControllerProviding recordRepositoriesController,
                                     @NonNull VideoFragmentPath videoFragmentPath) {
+        this.localStorage = localStorage;
         this.recordRepositoriesController = recordRepositoriesController;
         this.videoFragmentPath = videoFragmentPath;
 
@@ -39,7 +43,7 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
 
     @Override
     public void onFragmentSavedLocally(int fragmentNum) {
-        final Disposable subscribe = recordRepositoriesController.getRecord(
+        final Disposable subscribe = localStorage.getRecord(
                 videoFragmentPath.getRelativeNameByFragmentNumber(fragmentNum))
                 .subscribeOn(scheduler)
                 .observeOn(scheduler)
@@ -84,7 +88,7 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
     }
 
     void createVideoRepositories() {
-        recordRepositoriesController.createVideoRepositoryRemotely(
+        recordRepositoriesController.createVideoRepository(
                 videoFragmentPath.getDirectoryName()
         );
     }

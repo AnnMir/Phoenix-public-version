@@ -22,7 +22,7 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.SpecialFrameListener
     private CameraGLView cameraGLView;
     private MediaMuxerWrapper muxer;
 
-    private nsu.fit.g14201.marchenko.phoenix.context.Context context;
+    private nsu.fit.g14201.marchenko.phoenix.context.Context appContext;
     private VideoFragmentPath videoFragmentPath;
     private CameraStateListener cameraStateListener;
     private VideoFragmentListener fragmentListener;
@@ -55,14 +55,14 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.SpecialFrameListener
         fragmentListener.onLastFragmentSaved(videoFragmentPath.getCurrentFragmentNumber());
         cameraStateListener.onRecordingFinished(
                 videoFragmentPath.getFullDirectoryName(
-                        context.getRecordRepositoriesController().getLocalStoragePath()
+                        appContext.getLocalStorage().getPath()
                 )
         );
     }
 
     @Override
     public void setContext(nsu.fit.g14201.marchenko.phoenix.context.Context context) {
-        this.context = context;
+        this.appContext = context;
     }
 
     void start(@NonNull MediaEncoder.MediaEncoderListener mediaEncoderListener,
@@ -70,7 +70,7 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.SpecialFrameListener
             throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException {
         this.videoFragmentPath = videoFragmentPath;
         muxer = new MediaMuxerWrapper(videoFragmentPath,
-                this.context.getRecordRepositoriesController().getLocalStoragePath(),
+                this.appContext.getLocalStorage().getPath(),
                 this);
         new VideoEncoder(muxer, cameraGLView.getVideoWidth(), cameraGLView.getVideoHeight(),
                 mediaEncoderListener);
