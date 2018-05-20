@@ -10,11 +10,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import nsu.fit.g14201.marchenko.phoenix.App;
+import nsu.fit.g14201.marchenko.phoenix.model.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.recording.VideoFragmentListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRemoteRepoStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoryException;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RemoteReposControllerProviding;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.LocalStorage;
 
 public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateListener,

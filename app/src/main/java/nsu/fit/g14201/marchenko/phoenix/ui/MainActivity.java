@@ -22,13 +22,13 @@ import nsu.fit.g14201.marchenko.phoenix.connection.GoogleUserConnection;
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
 import nsu.fit.g14201.marchenko.phoenix.connection.UserConnection;
 import nsu.fit.g14201.marchenko.phoenix.context.Context;
+import nsu.fit.g14201.marchenko.phoenix.model.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingContract;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingFragment;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingPresenter;
 import nsu.fit.g14201.marchenko.phoenix.recordmanagement.RecordManagementFragment;
 import nsu.fit.g14201.marchenko.phoenix.recordmanagement.RecordManagementPresenter;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.registration.RegistrationActivity;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionContract;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionDetailedProblem;
@@ -224,8 +224,9 @@ public class MainActivity extends BaseActivity implements
                 .replace(R.id.main_content, recordManagementFragment)
                 .commit();
 
-        RecordManagementPresenter presenter = new RecordManagementPresenter(recordManagementFragment);
-        presenter.setContext(appContext);
+        RecordManagementPresenter presenter = new RecordManagementPresenter(recordManagementFragment,
+                appContext.getLocalStorage(),
+                appContext.getRemoteRepositoriesController());
         presenter.start();
     }
 

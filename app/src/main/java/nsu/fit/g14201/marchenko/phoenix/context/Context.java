@@ -2,6 +2,8 @@ package nsu.fit.g14201.marchenko.phoenix.context;
 
 
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
+import nsu.fit.g14201.marchenko.phoenix.model.VideoTitleHandler;
+import nsu.fit.g14201.marchenko.phoenix.model.VideoTitleHandlerProviding;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RemoteReposControllerProviding;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RemoteRepositoriesController;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.googledrive.GoogleDriveService;
@@ -11,14 +13,14 @@ import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.PrivateExt
 public class Context {
     private LocalStorage localStorage;
     private RemoteReposControllerProviding remoteRepositoriesController;
-    private String directoryPattern;
+    private VideoTitleHandlerProviding videoTitleHandler;
 
     public Context(LocalStorage localStorage,
                    RemoteReposControllerProviding remoteRepositoriesController,
-                   String directoryPattern) {
+                   VideoTitleHandlerProviding videoTitleHandler) {
         this.localStorage = localStorage;
         this.remoteRepositoriesController = remoteRepositoriesController;
-        this.directoryPattern = directoryPattern;
+        this.videoTitleHandler = videoTitleHandler;
     }
 
     public LocalStorage getLocalStorage() {
@@ -29,20 +31,21 @@ public class Context {
         return remoteRepositoriesController;
     }
 
-    public String getDirectoryPattern() {
-        return directoryPattern;
+    public VideoTitleHandlerProviding getVideoTitleHandler() {
+        return videoTitleHandler;
     }
 
     public static Context createContext(android.content.Context context) throws SignInException {
-        PrivateExternalStorage localStorage = new PrivateExternalStorage(
-                context,
-                "[\\d]{2}-[\\d]{2}-[\\d]{4}_[\\d]{2}:[\\d]{2}:[\\d]{2}"
+        VideoTitleHandlerProviding videoTitleHandler = new VideoTitleHandler(
+                "[\\d]{2}-[\\d]{2}-[\\d]{4}_[\\d]{2}:[\\d]{2}:[\\d]{2}",
+                "[\\d]*",
+                ".mp4",
+                "dd-MM-yyyy_HH:mm:ss"
         );
+        PrivateExternalStorage localStorage = new PrivateExternalStorage(context, videoTitleHandler);
         RemoteReposControllerProviding recordRepositoriesController =
                 new RemoteRepositoriesController();
-        Context newContext = new Context(localStorage,
-                recordRepositoriesController,
-                "dd-MM-yyyy_HH:mm:ss");
+        Context newContext = new Context(localStorage, recordRepositoriesController, videoTitleHandler);
         localStorage.setListener(recordRepositoriesController);
 
         GoogleDriveService googleDriveService = new GoogleDriveService(context);

@@ -1,18 +1,17 @@
-package nsu.fit.g14201.marchenko.phoenix.recordrepository;
+package nsu.fit.g14201.marchenko.phoenix.model;
 
 import android.support.annotation.NonNull;
 
 import java.io.File;
 
-import nsu.fit.g14201.marchenko.phoenix.model.RecordPath;
-
 public class VideoFragmentPath {
     private final RecordPath recordPath;
-    private final String extension = ".mp4";
+    private final String extension;
     private int filenameIndex = -1;
 
-    public VideoFragmentPath(@NonNull RecordPath recordPath) {
+    public VideoFragmentPath(@NonNull RecordPath recordPath, @NonNull String extension) {
         this.recordPath = recordPath;
+        this.extension = extension;
     }
 
     public void nextFragment() {

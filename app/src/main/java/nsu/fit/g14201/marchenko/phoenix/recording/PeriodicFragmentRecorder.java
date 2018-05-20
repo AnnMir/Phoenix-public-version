@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import nsu.fit.g14201.marchenko.phoenix.context.Contextual;
+import nsu.fit.g14201.marchenko.phoenix.model.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaEncoder;
@@ -16,7 +17,6 @@ import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaMuxerWrapper;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.LowLevelRecordingException;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 class PeriodicFragmentRecorder implements MediaMuxerWrapper.SpecialFrameListener, Contextual {
     private CameraGLView cameraGLView;

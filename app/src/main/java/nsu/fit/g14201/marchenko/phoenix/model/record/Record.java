@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.model;
+package nsu.fit.g14201.marchenko.phoenix.model.record;
 
 import android.support.annotation.NonNull;
 
@@ -9,5 +9,9 @@ public class Record {
 
     public Record(@NonNull File path) {
         this.path = path;
+    }
+
+    public String getTitle() {
+        return path.getName();
     }
 }

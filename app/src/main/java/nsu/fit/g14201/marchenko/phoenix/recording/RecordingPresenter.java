@@ -14,13 +14,14 @@ import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.context.Contextual;
 import nsu.fit.g14201.marchenko.phoenix.model.RecordPath;
+import nsu.fit.g14201.marchenko.phoenix.model.VideoFragmentPath;
+import nsu.fit.g14201.marchenko.phoenix.model.VideoTitleHandlerProviding;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraWrapper;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.VideoFragmentPath;
 
 public class RecordingPresenter implements RecordingContract.Presenter,
         CameraStateListener,
@@ -76,8 +77,11 @@ public class RecordingPresenter implements RecordingContract.Presenter,
             fragmentRecorder.stop();
         } else {
             try {
+                VideoTitleHandlerProviding videoTitleHandler = appContext.getVideoTitleHandler();
                 VideoFragmentPath videoFragmentPath = new VideoFragmentPath(
-                        new RecordPath(appContext.getDirectoryPattern()));
+                        new RecordPath(videoTitleHandler.getNewVideoTitle()),
+                        videoTitleHandler.getExtension()
+                );
                 createLocalVideoRepository(videoFragmentPath);
                 recordingListener.recordWillStart(videoFragmentPath);
                 fragmentRecorder.start(this, videoFragmentPath);
