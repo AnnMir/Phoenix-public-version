@@ -14,6 +14,11 @@ class LocalStorageUtils {
         return directory.listFiles(titleHandler.getVideoTitleFilter());
     }
 
+    static File[] getFragmentTitles(@NonNull File directory,
+                                    @NonNull VideoTitleHandlerProviding titleHandler) {
+        return directory.listFiles(titleHandler.getFragmentTitleFilter());
+    }
+
     static boolean isVideo(@NonNull File file,
                            @NonNull VideoTitleHandlerProviding titleHandler) {
         String extension = getFileExtension(file);
@@ -25,15 +30,10 @@ class LocalStorageUtils {
         return extension.equals(titleHandler.getExtension()) && titleHandler.isVideoTitle(filename);
     }
 
-    /**
-     * @return 0 if file isn't a fragmented video, number of fragments otherwise
-     */
-    static int isFragmentedVideo(@NonNull File file,
+    static boolean isFragmentedVideo(@NonNull File file,
                                  @NonNull VideoTitleHandlerProviding titleHandler) {
-        if (!titleHandler.isVideoTitle(file.getName())) {
-            return 0;
-        }
-        return file.listFiles(titleHandler.getFragmentTitleFilter()).length;
+        return titleHandler.isVideoTitle(file.getName()) &&
+                file.listFiles(titleHandler.getFragmentTitleFilter()).length > 0;
     }
 
     private static String getFileExtension(File file) {

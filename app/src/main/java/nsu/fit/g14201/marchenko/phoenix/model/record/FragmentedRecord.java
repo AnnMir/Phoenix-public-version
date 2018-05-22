@@ -5,14 +5,17 @@ import android.support.annotation.NonNull;
 import java.io.File;
 
 public class FragmentedRecord extends Record {
-    private int fragmentsNum;
+    private String[] fragmentNames;
 
-    public FragmentedRecord(@NonNull File path, int fragmentsNum) {
+    public FragmentedRecord(@NonNull File path) {
         super(path);
-        this.fragmentsNum = fragmentsNum;
     }
 
-    public int getFragmentsNum() {
-        return fragmentsNum;
+    public void setFragmentNames(@NonNull String[] fragmentNames) {
+        this.fragmentNames = fragmentNames;
+    }
+
+    public String[] getFragmentNames() {
+        return fragmentNames;
     }
 }

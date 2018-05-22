@@ -14,4 +14,8 @@ public class Record {
     public String getTitle() {
         return path.getName();
     }
+
+    public File getPath() {
+        return path;
+    }
 }

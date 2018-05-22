@@ -12,6 +12,6 @@ public class RecordInfoContract {
     }
 
     interface Presenter extends BasePresenter {
-
+        void assemble();
     }
 }

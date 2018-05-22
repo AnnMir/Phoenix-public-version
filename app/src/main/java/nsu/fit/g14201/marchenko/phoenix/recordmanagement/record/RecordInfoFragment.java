@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.TextView;
 
+import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.ui.fragments.BaseFragment;
 
@@ -39,5 +40,10 @@ public class RecordInfoFragment extends BaseFragment implements RecordInfoContra
     @Override
     public void showTitle(@NonNull String title) {
         titleTextView.setText(title);
+    }
+
+    @OnClick(R.id.assemble_button)
+    void onAssembleClick() {
+        presenter.assemble();
     }
 }

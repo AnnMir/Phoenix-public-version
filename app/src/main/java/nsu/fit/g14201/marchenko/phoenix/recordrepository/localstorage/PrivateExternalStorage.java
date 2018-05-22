@@ -71,11 +71,22 @@ public class PrivateExternalStorage implements LocalStorage {
                     continue;
                 }
                 if (file.isDirectory()) {
-                    int fragmentsNum = LocalStorageUtils.isFragmentedVideo(file, videoTitleHandler);
-                    if (fragmentsNum > 0) {
-                        emitter.onNext(new FragmentedRecord(file, fragmentsNum));
+                    if (LocalStorageUtils.isFragmentedVideo(file, videoTitleHandler)) {
+                        emitter.onNext(new FragmentedRecord(file));
                     }
                 }
+            }
+            emitter.onComplete();
+        });
+    }
+
+    @Override
+    public Observable<String> getFragmentTitles(@NonNull String videoTitle) {
+        return Observable.create(emitter -> {
+            File[] fragmentTitles = LocalStorageUtils.getFragmentTitles(
+                    new File(path, videoTitle), videoTitleHandler);
+            for (File fragmentTitle : fragmentTitles) {
+                emitter.onNext(fragmentTitle.getName());
             }
             emitter.onComplete();
         });
