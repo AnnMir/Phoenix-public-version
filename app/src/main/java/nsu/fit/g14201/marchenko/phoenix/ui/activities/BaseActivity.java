@@ -1,4 +1,4 @@
-package nsu.fit.g14201.marchenko.phoenix.ui;
+package nsu.fit.g14201.marchenko.phoenix.ui.activities;
 
 import android.content.Context;
 import android.os.Bundle;

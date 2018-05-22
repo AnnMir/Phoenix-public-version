@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
-import nsu.fit.g14201.marchenko.phoenix.ui.BaseFragment;
+import nsu.fit.g14201.marchenko.phoenix.ui.fragments.BaseFragment;
 
 public class NoRequiredPermissionFragment extends BaseFragment {
     private static final String ARG_PERMISSION = "arg_permission";

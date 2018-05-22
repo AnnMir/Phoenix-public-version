@@ -11,7 +11,7 @@ import com.google.android.gms.common.SignInButton;
 
 import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
-import nsu.fit.g14201.marchenko.phoenix.ui.BaseFragment;
+import nsu.fit.g14201.marchenko.phoenix.ui.fragments.BaseFragment;
 
 public class AuthorizationFragment extends BaseFragment implements
         AuthorizationContract.View {

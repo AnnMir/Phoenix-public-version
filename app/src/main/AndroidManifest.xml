@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".camerapermission.RequiredPermissionsActivity" />
-        <activity android:name="nsu.fit.g14201.marchenko.phoenix.ui.MainActivity" />
+        <activity android:name="nsu.fit.g14201.marchenko.phoenix.ui.activities.MainActivity" />
     </application>
 
 </manifest>

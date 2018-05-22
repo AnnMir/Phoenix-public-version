@@ -1,14 +1,12 @@
 package nsu.fit.g14201.marchenko.phoenix.recordmanagement;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.util.Arrays;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
 import nsu.fit.g14201.marchenko.phoenix.model.record.RecordDateComparator;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RemoteReposControllerProviding;
@@ -19,6 +17,7 @@ public class RecordManagementPresenter implements RecordManagementContract.Prese
     private LocalStorage localStorage;
     private RemoteReposControllerProviding remoteReposController;
     private Record[] records;
+    private RecordManagementContract.RecordSelectionListener recordSelectionListener;
 
     public RecordManagementPresenter(@NonNull RecordManagementContract.View view,
                                      @NonNull LocalStorage localStorage,
@@ -29,8 +28,13 @@ public class RecordManagementPresenter implements RecordManagementContract.Prese
     }
 
     @Override
+    public void setRecordSelectionListener(RecordManagementContract.RecordSelectionListener listener) {
+        recordSelectionListener = listener;
+    }
+
+    @Override
     public void onRecordSelected(int position) {
-        Log.e(App.getTag(), "SELECTED: " + records[position].getTitle()); // TODO NEXT
+        recordSelectionListener.onRecordSelected(records[position]);
     }
 
     @Override

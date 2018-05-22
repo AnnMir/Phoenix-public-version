@@ -12,8 +12,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 
 import nsu.fit.g14201.marchenko.phoenix.R;
-import nsu.fit.g14201.marchenko.phoenix.ui.BaseActivity;
-import nsu.fit.g14201.marchenko.phoenix.ui.MainActivity;
+import nsu.fit.g14201.marchenko.phoenix.ui.activities.BaseActivity;
+import nsu.fit.g14201.marchenko.phoenix.ui.activities.MainActivity;
 import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
 
 public class RequiredPermissionsActivity extends BaseActivity {

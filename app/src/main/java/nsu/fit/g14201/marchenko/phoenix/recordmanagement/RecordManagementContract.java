@@ -10,8 +10,14 @@ public interface RecordManagementContract {
     }
 
     interface Presenter extends BasePresenter {
+        void setRecordSelectionListener(RecordSelectionListener listener);
+
         void onRecordSelected(int position);
 
         void onViewDestroyed();
+    }
+
+    interface RecordSelectionListener {
+        void onRecordSelected(Record record);
     }
 }

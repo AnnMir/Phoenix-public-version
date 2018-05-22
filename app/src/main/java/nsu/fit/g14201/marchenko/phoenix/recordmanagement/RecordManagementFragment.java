@@ -1,5 +1,6 @@
 package nsu.fit.g14201.marchenko.phoenix.recordmanagement;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,7 +12,7 @@ import android.widget.ProgressBar;
 
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
-import nsu.fit.g14201.marchenko.phoenix.ui.BaseFragment;
+import nsu.fit.g14201.marchenko.phoenix.ui.fragments.BaseFragment;
 import nsu.fit.g14201.marchenko.phoenix.utils.ItemClickSupport;
 
 public class RecordManagementFragment extends BaseFragment implements RecordManagementContract.View {
@@ -28,6 +29,19 @@ public class RecordManagementFragment extends BaseFragment implements RecordMana
 
     public static RecordManagementFragment newInstance() {
         return new RecordManagementFragment();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof RecordManagementContract.RecordSelectionListener) {
+            presenter.setRecordSelectionListener(
+                    (RecordManagementContract.RecordSelectionListener) context);
+        } else {
+            throw new RuntimeException(context.toString() +
+                    " must implement RecordSelectionListener");
+        }
     }
 
     @Override
@@ -48,6 +62,7 @@ public class RecordManagementFragment extends BaseFragment implements RecordMana
     public void onStart() {
         super.onStart();
 
+        presenter.start();
         if (recyclerView == null) {
             spinner.setVisibility(View.VISIBLE);
         }

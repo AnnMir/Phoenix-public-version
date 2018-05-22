@@ -8,7 +8,7 @@ import android.support.annotation.Nullable;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.camerapermission.RequiredPermissionsActivity;
 import nsu.fit.g14201.marchenko.phoenix.coordination.Coordinator;
-import nsu.fit.g14201.marchenko.phoenix.ui.BaseActivity;
+import nsu.fit.g14201.marchenko.phoenix.ui.activities.BaseActivity;
 import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
 
 public class RegistrationActivity extends BaseActivity implements Coordinator {

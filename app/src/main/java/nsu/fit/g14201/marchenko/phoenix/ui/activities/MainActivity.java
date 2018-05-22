@@ -1,15 +1,10 @@
-package nsu.fit.g14201.marchenko.phoenix.ui;
+package nsu.fit.g14201.marchenko.phoenix.ui.activities;
 
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -23,12 +18,16 @@ import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
 import nsu.fit.g14201.marchenko.phoenix.connection.UserConnection;
 import nsu.fit.g14201.marchenko.phoenix.context.Context;
 import nsu.fit.g14201.marchenko.phoenix.model.VideoFragmentPath;
+import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingContract;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingFragment;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingPresenter;
+import nsu.fit.g14201.marchenko.phoenix.recordmanagement.RecordManagementContract;
 import nsu.fit.g14201.marchenko.phoenix.recordmanagement.RecordManagementFragment;
 import nsu.fit.g14201.marchenko.phoenix.recordmanagement.RecordManagementPresenter;
+import nsu.fit.g14201.marchenko.phoenix.recordmanagement.record.RecordInfoFragment;
+import nsu.fit.g14201.marchenko.phoenix.recordmanagement.record.RecordInfoPresenter;
 import nsu.fit.g14201.marchenko.phoenix.registration.RegistrationActivity;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionContract;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionDetailedProblem;
@@ -40,13 +39,11 @@ import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
 import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.FAILED_TO_CREATE_VIDEO_FOLDER;
 import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.RECORD_NOT_FOUND_LOCALLY;
 
-public class MainActivity extends BaseActivity implements
-        NavigationView.OnNavigationItemSelectedListener,
+public class MainActivity extends DrawerActivity implements
         RecordingListener,
         TransmissionListener,
+        RecordManagementContract.RecordSelectionListener,
         OnCompleteListener<Void> {
-    private DrawerLayout drawerLayout;
-    private ActionBarDrawerToggle toggle;
     private Context appContext;
 
     private RecordingContract.Presenter recordingPresenter;
@@ -55,7 +52,6 @@ public class MainActivity extends BaseActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        configureToolbarAndNavigationView();
         try {
             appContext = Context.createContext(this);
             configureRecordingBlock();
@@ -63,12 +59,6 @@ public class MainActivity extends BaseActivity implements
             showSnack(getString(R.string.some_error));
             e.printStackTrace();
         }
-    }
-
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        toggle.syncState();
     }
 
     @Override
@@ -80,15 +70,6 @@ public class MainActivity extends BaseActivity implements
     @Override
     public int getLayoutId() {
         return R.layout.activity_main;
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
     }
 
     @Override
@@ -170,6 +151,19 @@ public class MainActivity extends BaseActivity implements
     }
 
     @Override
+    public void onRecordSelected(Record record) {
+        RecordInfoFragment fragment = RecordInfoFragment.newInstance();
+
+        RecordInfoPresenter presenter = new RecordInfoPresenter(fragment, record);
+        fragment.setPresenter(presenter);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    @Override
     public void onComplete(@NonNull Task<Void> task) {
         if (task.isSuccessful()) {
             Log.d(App.getTag(), "Signed out");
@@ -182,19 +176,6 @@ public class MainActivity extends BaseActivity implements
                 Log.e(App.getTag(), exception.getMessage());
             }
         }
-    }
-
-    private void configureToolbarAndNavigationView() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        drawerLayout = findViewById(R.id.drawer_layout);
-        toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-
-        NavigationView navigationView = findViewById(R.id.navigation_view);
-        navigationView.setNavigationItemSelectedListener(this);
     }
 
     private void configureRecordingBlock() {
@@ -220,15 +201,14 @@ public class MainActivity extends BaseActivity implements
     private void runRecordManagementBlock() {
         RecordManagementFragment recordManagementFragment = RecordManagementFragment.newInstance();
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_content, recordManagementFragment)
-                .commit();
-
         RecordManagementPresenter presenter = new RecordManagementPresenter(recordManagementFragment,
                 appContext.getLocalStorage(),
                 appContext.getRemoteRepositoriesController());
         recordManagementFragment.setPresenter(presenter);
-        presenter.start();
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, recordManagementFragment)
+                .commit();
     }
 
     private void signOut() {
