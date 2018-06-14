@@ -3,14 +3,18 @@
     package="nsu.fit.g14201.marchenko.phoenix">
 
     <uses-permission android:name="android.permission.CAMERA" />
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
+
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <!-- Tell the system this app requires OpenGL ES 2.0. -->
-    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true" />
 
     <application
         android:name=".App"
@@ -20,7 +24,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="nsu.fit.g14201.marchenko.phoenix.registration.RegistrationActivity"
+            android:name=".registration.RegistrationActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,7 +33,17 @@
             </intent-filter>
         </activity>
         <activity android:name=".camerapermission.RequiredPermissionsActivity" />
-        <activity android:name="nsu.fit.g14201.marchenko.phoenix.ui.activities.MainActivity" />
+        <activity android:name=".ui.activities.MainActivity" />
+
+        <receiver android:name=".widget.AppWidget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info" />
+        </receiver>
     </application>
 
 </manifest>

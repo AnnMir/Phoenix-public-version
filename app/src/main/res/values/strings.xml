@@ -6,4 +6,6 @@
     <string name="navigation_drawer_close">Закрыть Navigation Drawer</string>
     <string name="records_management">Управление записями</string>
     <string name="logout">Выйти</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>
