@@ -32,7 +32,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".camerapermission.RequiredPermissionsActivity" />
-        <activity android:name=".ui.activities.MainActivity" />
+        <activity android:name=".ui.activities.MainActivity"
+            android:screenOrientation="portrait" />
 
         <receiver android:name=".widget.AppWidget">
             <intent-filter>
