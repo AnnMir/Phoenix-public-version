@@ -93,15 +93,15 @@ public class CameraGLView extends GLSurfaceView {
 
     public void setVideoSize(int width, int height) {
         if ((rotation % 180) == 0) {
-            Log.d("SAFARI2", "Orientation: Horizontal");
+            Log.d(App.getTag(), "Orientation: Horizontal");
             videoWidth = width;
             videoHeight = height;
         } else {
-            Log.d("SAFARI2", "Orientation: Vertical");
+            Log.d(App.getTag(), "Orientation: Vertical");
             videoWidth = height;
             videoHeight = width;
         }
-        Log.d("SAFARI2", "Width = " + videoWidth + ", height: " + videoHeight);
+        Log.d(App.getTag(), "Width = " + videoWidth + ", height: " + videoHeight);
 
         queueEvent(renderer::updateViewport);
     }

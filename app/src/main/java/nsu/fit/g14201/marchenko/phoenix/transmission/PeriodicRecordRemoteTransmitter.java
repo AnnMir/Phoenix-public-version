@@ -76,10 +76,15 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
     }
 
     @Override
-    public void onFailedToCreateVideoRepository(@NonNull Exception e, @NonNull String name) {
+    public void onFailedToCreateAppRepository() {
+        Log.e(App.getTag(), "Failed to create app repository");
+    }
+
+    @Override
+    public void onFailedToCreateVideoRepository(@NonNull Throwable throwable, @NonNull String name) {
         // TODO: Handle no internet access case
-        e.printStackTrace();
-        Log.e(App.getTag(), e.getLocalizedMessage());
+        throwable.printStackTrace();
+        Log.e(App.getTag(), throwable.getLocalizedMessage());
         transmissionListener.onUnableToContinueTransmission(
                 new TransmissionDetailedProblem(
                         TransmissionProblem.FAILED_TO_CREATE_VIDEO_FOLDER, name

@@ -43,16 +43,14 @@ public class Context {
                 "dd-MM-yyyy_HH:mm:ss"
         );
         PrivateExternalStorage localStorage = new PrivateExternalStorage(context, videoTitleHandler);
-        RemoteReposControllerProviding recordRepositoriesController =
+        RemoteReposControllerProviding remoteReposController =
                 new RemoteRepositoriesController();
-        Context newContext = new Context(localStorage, recordRepositoriesController, videoTitleHandler);
-        localStorage.setListener(recordRepositoriesController);
+        Context newContext = new Context(localStorage, remoteReposController, videoTitleHandler);
+        localStorage.setListener(remoteReposController);
 
         GoogleDriveService googleDriveService = new GoogleDriveService(context);
-        googleDriveService.createAppFolderIfNotExists();
-
-        recordRepositoriesController.addCloudService(googleDriveService);
-        googleDriveService.setListener(recordRepositoriesController);
+        remoteReposController.addCloudService(googleDriveService);
+        remoteReposController.createAppFolderIfNotExists();
 
         return newContext;
     }

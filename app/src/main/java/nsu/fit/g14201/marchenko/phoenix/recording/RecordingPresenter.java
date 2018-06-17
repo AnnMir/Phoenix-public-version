@@ -7,6 +7,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.media.MediaCodec;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -38,6 +39,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     private CameraWrapper selectedCamera;
     private PeriodicFragmentRecorder fragmentRecorder;
     private CameraGLView cameraGLView;
+    private boolean isWaitingForCameraConfiguration = false;
     private boolean isVideoRecording = false;
     private RecordingListener recordingListener;
 
@@ -76,19 +78,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         if (isVideoRecording) {
             fragmentRecorder.stop();
         } else {
-            try {
-                VideoTitleHandlerProviding videoTitleHandler = appContext.getVideoTitleHandler();
-                VideoFragmentPath videoFragmentPath = new VideoFragmentPath(
-                        new RecordPath(videoTitleHandler.getNewVideoTitle()),
-                        videoTitleHandler.getExtension()
-                );
-                createLocalVideoRepository(videoFragmentPath);
-                recordingListener.recordWillStart(videoFragmentPath);
-                fragmentRecorder.start(this, videoFragmentPath);
-            } catch (Throwable e) {
-                e.printStackTrace();
-                recordingView.showIncorrigibleErrorDialog(e.getMessage());
-            }
+            startRecording();
         }
     }
 
@@ -128,6 +118,15 @@ public class RecordingPresenter implements RecordingContract.Presenter,
             fragmentRecorder.stop();
         }
         fragmentRecorder.removeCameraStateListener();
+    }
+
+    @Override
+    public synchronized void onCameraConfigured() {
+        if (isWaitingForCameraConfiguration) {
+            isWaitingForCameraConfiguration = false;
+            Handler mainHandler = new Handler(context.getMainLooper());
+            mainHandler.post(() -> startRecording());
+        }
     }
 
     @Override
@@ -246,5 +245,26 @@ public class RecordingPresenter implements RecordingContract.Presenter,
 
     private void createLocalVideoRepository(@NonNull VideoFragmentPath videoFragmentPath) {
         appContext.getLocalStorage().createVideoRepository(videoFragmentPath.getDirectoryName());
+    }
+
+    private synchronized void startRecording() {
+        if (cameraGLView.getVideoWidth() == 0) {
+            isWaitingForCameraConfiguration = true;
+            return;
+        }
+
+        try {
+            VideoTitleHandlerProviding videoTitleHandler = appContext.getVideoTitleHandler();
+            VideoFragmentPath videoFragmentPath = new VideoFragmentPath(
+                    new RecordPath(videoTitleHandler.getNewVideoTitle()),
+                    videoTitleHandler.getExtension()
+            );
+            createLocalVideoRepository(videoFragmentPath);
+            recordingListener.recordWillStart(videoFragmentPath);
+            fragmentRecorder.start(this, videoFragmentPath);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            recordingView.showIncorrigibleErrorDialog(e.getMessage());
+        }
     }
 }
