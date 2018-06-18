@@ -8,7 +8,5 @@ import io.reactivex.Single;
 
 
 public interface RecordRepository {
-    void createVideoRepository(@NonNull String name);
-
     Single<FileInputStream> getRecord(@NonNull String name);
 }

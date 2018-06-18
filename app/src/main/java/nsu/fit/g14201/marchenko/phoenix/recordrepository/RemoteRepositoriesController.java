@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Completable;
+import io.reactivex.Scheduler;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
@@ -21,11 +24,15 @@ public class RemoteRepositoriesController implements RemoteReposControllerProvid
 
     private RecordRemoteRepoStateListener remoteRepoListener;
 
+    private final Scheduler scheduler;
     private final Object transmissionSync = new Object();
+    private boolean appFolderCreated = false;
+    private boolean videoRepositoryCreated = false;
 
     public RemoteRepositoriesController() {
         cloudServices = new ArrayList<>();
         recordFolders = new HashMap<>();
+        scheduler = Schedulers.single();
     }
 
     @Override
@@ -34,9 +41,38 @@ public class RemoteRepositoriesController implements RemoteReposControllerProvid
     }
 
     @Override
+    public void createAppFolderIfNotExists() {
+        final Disposable disposable = cloudServices.get(0).createAppFolderIfNotExists()
+                .subscribeOn(scheduler)
+                .observeOn(scheduler)
+                .subscribe(() -> {
+                    synchronized (transmissionSync) {
+                        appFolderCreated = true;
+                    }
+                }, throwable -> {
+                    throwable.printStackTrace();
+                    remoteRepoListener.onFailedToCreateAppRepository();
+                });
+    }
+
+    @Override
     public void createVideoRepository(@NonNull String repositoryName) {
+        videoRepositoryCreated = false;
         for (CloudService cloudService : cloudServices) {
-            cloudService.createVideoRepository(repositoryName);
+            final Disposable disposable = cloudService.createVideoRepository(repositoryName)
+                    .subscribeOn(scheduler)
+                    .observeOn(scheduler)
+                    .subscribe(recordFolder -> {
+                        recordFolders.put(cloudService, recordFolder);
+                        synchronized (transmissionSync) {
+                            videoRepositoryCreated = true;
+                            transmissionSync.notifyAll();
+                        }
+                    }, throwable -> {
+                        throwable.printStackTrace();
+                        remoteRepoListener.onFailedToCreateVideoRepository(throwable,
+                                cloudService.getName());
+                    });
         }
     }
 
@@ -53,6 +89,11 @@ public class RemoteRepositoriesController implements RemoteReposControllerProvid
     @Override
     public Completable transmitVideo(@NonNull FileInputStream inputStream, @NonNull String name) {
         synchronized (transmissionSync) { // FIXME: Move from here?
+            while (!appFolderCreated || !videoRepositoryCreated) {
+                try {
+                    transmissionSync.wait();
+                } catch (InterruptedException e) {}
+            }
             CloudService currentCloudService = cloudServices.get(0);
             return currentCloudService.transmitFragment(
                     recordFolders.get(currentCloudService), inputStream, name
@@ -70,19 +111,5 @@ public class RemoteRepositoriesController implements RemoteReposControllerProvid
     @Override
     public void onFailedToCreateRepository() {
         // TODO WAITING FOR LOCAL REPO STATE LISTENER
-    }
-
-    // CloudServiceListener
-
-    @Override
-    public void onVideoRepositoryCreated(@NonNull CloudService cloudService,
-                                         @NonNull RecordFolder repository) {
-        Log.d(App.getTag(), "Video repository created on " + cloudService.getName());
-        recordFolders.put(cloudService, repository);
-    }
-
-    @Override
-    public void onFailedToCreateVideoRepository(@NonNull CloudService cloudService, Exception exception) {
-        remoteRepoListener.onFailedToCreateVideoRepository(exception, cloudService.getName());
     }
 }

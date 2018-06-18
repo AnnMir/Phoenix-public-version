@@ -12,4 +12,6 @@ public interface LocalStorage extends RecordRepository {
     Observable<Record> getRecords();
 
     Observable<String> getFragmentTitles(@NonNull String videoTitle);
+
+    void createVideoRepository(@NonNull String name);
 }

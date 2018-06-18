@@ -1,6 +1,8 @@
 package nsu.fit.g14201.marchenko.phoenix.recording.camera;
 
 public interface CameraStateListener {
+    void onCameraConfigured();
+
     void onCameraDisconnected();
 
     void onCameraStandardError(int error);

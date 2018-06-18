@@ -45,9 +45,10 @@ public class MainActivity extends DrawerActivity implements
         RecordManagementContract.RecordSelectionListener,
         OnCompleteListener<Void> {
     private Context appContext;
-
     private RecordingContract.Presenter recordingPresenter;
     private TransmissionContract.Presenter transmissionPresenter;
+
+    public final static String ACTION_START_RECORDING = "nsu.fit.g14201.marchenko.phoenix.ui.activities.start_recording";
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +66,16 @@ public class MainActivity extends DrawerActivity implements
     protected void onStart() {
         recordingPresenter.start();
         super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String action = getIntent().getAction();
+        getIntent().setAction(null);
+        if (action != null && action.equalsIgnoreCase(MainActivity.ACTION_START_RECORDING)) {
+            recordingPresenter.changeRecordingState();
+        }
     }
 
     @Override

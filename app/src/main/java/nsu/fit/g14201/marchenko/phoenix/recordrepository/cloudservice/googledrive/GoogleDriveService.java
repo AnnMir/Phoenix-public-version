@@ -29,7 +29,6 @@ import io.reactivex.Single;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
-import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudServiceListener;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
 
 public class GoogleDriveService implements CloudService {
@@ -39,8 +38,6 @@ public class GoogleDriveService implements CloudService {
     private DriveResourceClient driveResourceClient;
     private DriveId appFolderId;
     private DriveFolder rootFolder;
-
-    private CloudServiceListener listener;
 
     public GoogleDriveService(Context context) throws SignInException {
         GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(context);
@@ -60,23 +57,20 @@ public class GoogleDriveService implements CloudService {
     }
 
     @Override
-    public void createVideoRepository(@NonNull String name) {
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle(name)
-                .setMimeType(DriveFolder.MIME_TYPE)
-                .build();
-        driveResourceClient.createFolder(appFolderId.asDriveFolder(), changeSet)
-                .addOnSuccessListener(
-                        driveFolder -> {
-                            listener.onVideoRepositoryCreated(
-                                    GoogleDriveService.this,
-                                    new GoogleDriveRecordFolder(driveFolder.getDriveId())
-                            );
-                            Log.e(App.getTag(), Thread.currentThread().getName());
-                        }
-                )
-                .addOnFailureListener(exception -> listener.onFailedToCreateVideoRepository(
-                        GoogleDriveService.this, exception));
+    public Single<RecordFolder> createVideoRepository(@NonNull String name) {
+        return Single.create(emitter -> {
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                    .setTitle(name)
+                    .setMimeType(DriveFolder.MIME_TYPE)
+                    .build();
+            driveResourceClient.createFolder(appFolderId.asDriveFolder(), changeSet)
+                    .addOnSuccessListener(Runnable::run,
+                            driveFolder -> {
+                                emitter.onSuccess(new GoogleDriveRecordFolder(driveFolder.getDriveId()));
+                            }
+                    )
+                    .addOnFailureListener(Runnable::run, emitter::onError);
+        });
     }
 
     @Override
@@ -84,41 +78,43 @@ public class GoogleDriveService implements CloudService {
         return "Google Drive";
     }
 
-    // TODO: Move listeners to background
-    // TODO: Add outer listeners
     @Override
-    public void createAppFolderIfNotExists() {
-        driveResourceClient
-                .getRootFolder()
-                .continueWithTask(task -> {
-                    Query query = new Query.Builder()
-                            .addFilter(Filters.and(
-                                    Filters.eq(SearchableField.MIME_TYPE, "application/vnd.google-apps.folder"),
-                                    Filters.eq(SearchableField.TITLE, FOLDER_NAME),
-                                    Filters.eq(SearchableField.TRASHED, false)))
-                            .build();
-                    rootFolder = task.getResult();
-                    return driveResourceClient.queryChildren(rootFolder, query);
+    public Completable createAppFolderIfNotExists() {
+        return Completable.create((CompletableEmitter emitter) -> {
+            driveResourceClient
+                    .getRootFolder()
+                    .continueWithTask(Runnable::run, task -> {
+                        Query query = new Query.Builder()
+                                .addFilter(Filters.and(
+                                        Filters.eq(SearchableField.MIME_TYPE, "application/vnd.google-apps.folder"),
+                                        Filters.eq(SearchableField.TITLE, FOLDER_NAME),
+                                        Filters.eq(SearchableField.TRASHED, false)))
+                                .build();
+                        rootFolder = task.getResult();
+                        return driveResourceClient.queryChildren(rootFolder, query);
 
-                })
-                .addOnSuccessListener(metadataBuffer -> {
-                    for (Metadata metadata : metadataBuffer) {
-                        if (metadata.getTitle().equals(FOLDER_NAME)) {
-                            Log.d(App.getTag(), "Folder already exists");
-                            appFolderId = metadata.getDriveId();
-                            return;
+                    })
+                    .addOnSuccessListener(Runnable::run, metadataBuffer -> {
+                        for (Metadata metadata : metadataBuffer) {
+                            if (metadata.getTitle().equals(FOLDER_NAME)) {
+                                Log.d(App.getTag(), "Folder already exists");
+                                appFolderId = metadata.getDriveId();
+                                emitter.onComplete();
+                                return;
+                            }
                         }
-                    }
-                    createAppFolder()
-                            .addOnFailureListener(e -> {
-                                Log.e(App.getTag(), "Failed to create app folder");
-                                e.printStackTrace();
-                            });
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(App.getTag(), "Failed to create app folder");
-                    e.printStackTrace();
-                });
+                        createAppFolder()
+                                .addOnSuccessListener(Runnable::run, buffer -> emitter.onComplete())
+                                .addOnFailureListener(Runnable::run, e -> {
+                                    Log.e(App.getTag(), "Failed to create app folder");
+                                    emitter.onError(e);
+                                });
+                    })
+                    .addOnFailureListener(Runnable::run, e -> {
+                        Log.e(App.getTag(), "Failed to create app folder");
+                        emitter.onError(e);
+                    });
+        });
     }
 
     @Override
@@ -156,11 +152,6 @@ public class GoogleDriveService implements CloudService {
                     .addOnSuccessListener(Runnable::run, driveFile -> emitter.onComplete())
                     .addOnFailureListener(Runnable::run, emitter::onError);
         });
-    }
-
-
-    public void setListener(CloudServiceListener listener) {
-        this.listener = listener;
     }
 
     private Task<DriveFolder> createAppFolder() {

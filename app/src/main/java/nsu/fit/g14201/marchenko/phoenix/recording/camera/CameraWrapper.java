@@ -171,6 +171,7 @@ public class CameraWrapper {
 
         try {
             previewSession.setRepeatingRequest(previewBuilder.build(), null, null);
+            listener.onCameraConfigured();
         } catch (CameraAccessException e) {
             e.printStackTrace();
             listener.onCameraError(CameraStateListener.CAMERA_ACCESS_ERROR);
