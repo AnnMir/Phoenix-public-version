@@ -13,7 +13,7 @@ import nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage.LocalStora
 public interface RemoteReposControllerProviding extends LocalStorageListener, CloudServiceListener {
     void addCloudService(@NonNull CloudService cloudService);
 
-    void createVideoRepository(@NonNull String repositoryName);
+    void createVideoRepository(@NonNull String repositoryName); // FIXME: Delete
 
     void setRemoteRepoStateListener(@NonNull RecordRemoteRepoStateListener remoteRepoListener);
 

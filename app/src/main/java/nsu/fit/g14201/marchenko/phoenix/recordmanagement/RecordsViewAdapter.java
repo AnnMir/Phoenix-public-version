@@ -16,12 +16,14 @@ class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewAdapter.ViewHol
     static class ViewHolder extends RecyclerView.ViewHolder {
         View itemView;
         TextView videoTitle;
+        TextView date;
 
         ViewHolder(View itemView) {
             super(itemView);
 
             this.itemView = itemView;
             videoTitle = itemView.findViewById(R.id.title);
+            date = itemView.findViewById(R.id.date);
         }
     }
 
@@ -40,7 +42,15 @@ class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewAdapter.ViewHol
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.videoTitle.setText(records[position].getTitle());
+//        holder.videoTitle.setText(records[position].getTitle());
+        holder.videoTitle.setText(records[position].getTitle2());
+        holder.date.setText(records[position].date);
+
+        if (records[position].fromCloud) {
+            holder.itemView.setBackgroundColor(holder.itemView.getResources().getColor(R.color.colorCloud));
+        } else {
+            holder.itemView.setBackgroundColor(holder.itemView.getResources().getColor(android.R.color.white));
+        }
     }
 
     @Override

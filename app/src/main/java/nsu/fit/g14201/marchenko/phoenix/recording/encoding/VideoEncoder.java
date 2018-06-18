@@ -34,7 +34,7 @@ public class VideoEncoder extends MediaEncoder {
     private RenderHandler renderHandler;
 
     public VideoEncoder(MediaMuxerWrapper muxer, int videoWidth, int videoHeight,
-                        MediaEncoderListener listener)
+                        Listener listener)
             throws MediaMuxerException {
         super(listener);
         WeakReference<MediaMuxerWrapper> weakMuxer = new WeakReference<>(muxer);

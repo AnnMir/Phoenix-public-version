@@ -7,6 +7,16 @@ import java.io.File;
 public class Record {
     private File path;
 
+    public String title;
+    public String date;
+    public boolean fromCloud = false;
+
+    public Record() {}
+
+    public String getTitle2() {
+        return title;
+    }
+
     public Record(@NonNull File path) {
         this.path = path;
     }

@@ -26,7 +26,7 @@ public abstract class MediaEncoder implements Runnable {
     protected Handler handler;
     protected WeakReference<MediaMuxerWrapper> muxer;
     protected MediaCodec mediaCodec;
-    protected MediaEncoderListener listener;
+    protected Listener listener;
 
     protected int trackIndex;
     protected boolean EOS; // Flag that indicates that encoder received EOS
@@ -35,7 +35,7 @@ public abstract class MediaEncoder implements Runnable {
 
     private MediaCodec.BufferInfo bufferInfo;
 
-    MediaEncoder(MediaEncoderListener listener) {
+    MediaEncoder(Listener listener) {
         this.listener = listener;
 
         synchronized (sync) {
@@ -176,7 +176,7 @@ public abstract class MediaEncoder implements Runnable {
         }
     }
 
-    public interface MediaEncoderListener {
+    public interface Listener {
         void onPrepared(MediaEncoder encoder);
 
         void onStopped(MediaEncoder encoder);

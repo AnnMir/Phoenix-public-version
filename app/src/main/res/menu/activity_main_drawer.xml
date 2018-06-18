@@ -4,17 +4,13 @@
         android:id="@+id/main_functions_group"
         android:checkableBehavior="single">
         <item
+            android:id="@+id/recording"
+            android:icon="@drawable/ic_camera"
+            android:title="@string/recording" />
+        <item
             android:id="@+id/nav_records_management"
             android:icon="@drawable/ic_folder_open"
             android:title="@string/records_management" />
-        <item
-            android:id="@+id/sync"
-            android:icon="@drawable/ic_sync"
-            android:title="@string/synchronization" />
-        <item
-            android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_settings"
-            android:title="@string/settings" />
     </group>
 
     <group

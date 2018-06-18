@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="synchronization">Синхронизация</string>
+    <string name="recording">Запись</string>
     <string name="already_signed_in">Пользователь уже авторизован</string>
     <string name="already_signed_out">Пользователь уже деавторизован</string>
     <string name="signed_out">Пользователь деавторизован</string>

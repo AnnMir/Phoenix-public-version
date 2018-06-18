@@ -25,7 +25,7 @@ import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 
 public class RecordingPresenter implements RecordingContract.Presenter,
         CameraStateListener,
-        MediaEncoder.MediaEncoderListener,
+        MediaEncoder.Listener,
         Contextual {
     private final boolean VERBOSE = true;
 

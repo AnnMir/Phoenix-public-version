@@ -65,7 +65,7 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.SpecialFrameListener
         this.appContext = context;
     }
 
-    void start(@NonNull MediaEncoder.MediaEncoderListener mediaEncoderListener,
+    void start(@NonNull MediaEncoder.Listener mediaEncoderListener,
                @NonNull VideoFragmentPath videoFragmentPath)
             throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException {
         this.videoFragmentPath = videoFragmentPath;

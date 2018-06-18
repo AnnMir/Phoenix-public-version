@@ -77,12 +77,10 @@ public class MainActivity extends DrawerActivity implements
         int itemId = item.getItemId();
 
         switch (itemId) {
+            case R.id.recording:
+                break;
             case R.id.nav_records_management:
                 runRecordManagementBlock();
-                break;
-            case R.id.sync:
-                break;
-            case R.id.nav_settings:
                 break;
             case R.id.nav_logout:
                 signOut();

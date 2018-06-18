@@ -23,7 +23,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/D:/Tools/Android/Android%20Studio%20v1/plugins/android/lib/android.jar!/images/material_design_icons/notification/ic_sync_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/D:/Tools/Android/Android%20Studio%20v1/plugins/android/lib/android.jar!/images/material_design_icons/image/ic_camera_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -33,7 +33,7 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="ic_sync" />
+                            <entry key="outputName" value="camera" />
                             <entry key="sourceFile" value="C:\Users\DNS" />
                           </map>
                         </option>

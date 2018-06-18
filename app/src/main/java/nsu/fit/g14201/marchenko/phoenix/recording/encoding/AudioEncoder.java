@@ -24,7 +24,7 @@ public class AudioEncoder extends MediaEncoder {
     public static final int SAMPLES_PER_FRAME = 1024;	// AAC, bytes/frame/channel
     public static final int FRAMES_PER_BUFFER = 25; 	// AAC, frame/buffer/sec
 
-    public AudioEncoder(MediaMuxerWrapper muxer, MediaEncoderListener listener)
+    public AudioEncoder(MediaMuxerWrapper muxer, Listener listener)
             throws MediaMuxerException {
         super(listener);
         WeakReference<MediaMuxerWrapper> weakMuxer = new WeakReference<>(muxer);
