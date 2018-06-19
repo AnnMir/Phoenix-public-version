@@ -12,6 +12,9 @@ public class App extends Application {
     public static String getTag() {
         return TAG;
     }
+    public static String getTag2() {
+        return "safari5";
+    }
     public static String getAppName() {
         return APP_NAME;
     }

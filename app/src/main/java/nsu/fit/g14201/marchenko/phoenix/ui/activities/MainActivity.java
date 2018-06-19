@@ -4,6 +4,7 @@ package nsu.fit.g14201.marchenko.phoenix.ui.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.util.Log;
 import android.view.MenuItem;
@@ -34,7 +35,6 @@ import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionDetailedProblem
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionListener;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionPresenter;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem;
-import nsu.fit.g14201.marchenko.phoenix.utils.ActivityUtils;
 
 import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.FAILED_TO_CREATE_VIDEO_FOLDER;
 import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.RECORD_NOT_FOUND_LOCALLY;
@@ -49,12 +49,16 @@ public class MainActivity extends DrawerActivity implements
     private TransmissionContract.Presenter transmissionPresenter;
 
     public final static String ACTION_START_RECORDING = "nsu.fit.g14201.marchenko.phoenix.ui.activities.start_recording";
+    private final static String RECORDING_FRAGMENT_TAG = "nsu.fit.g14201.marchenko.phoenix.ui.activities.recording_fragment";
+    private final static String RECORDS_MANAGMEENT_FRAGMENT_TAG =
+            "nsu.fit.g14201.marchenko.phoenix.ui.activities.records_management";
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         try {
             appContext = Context.createContext(this);
+            Log.d("safari5", "on create");
             configureRecordingBlock();
         } catch (SignInException e) {
             showSnack(getString(R.string.some_error));
@@ -64,6 +68,8 @@ public class MainActivity extends DrawerActivity implements
 
     @Override
     protected void onStart() {
+        Log.d("safari5", "on start");
+
         recordingPresenter.start();
         super.onStart();
     }
@@ -89,6 +95,7 @@ public class MainActivity extends DrawerActivity implements
 
         switch (itemId) {
             case R.id.recording:
+//                configureRecordingBlock();
                 break;
             case R.id.nav_records_management:
                 runRecordManagementBlock();
@@ -189,26 +196,30 @@ public class MainActivity extends DrawerActivity implements
     }
 
     private void configureRecordingBlock() {
-        RecordingFragment recordingFragment =
-                (RecordingFragment) getSupportFragmentManager()
-                        .findFragmentById(R.id.main_content);
-
-        if (recordingFragment == null) {
-            recordingFragment = RecordingFragment.newInstance();
-
-            ActivityUtils.addFragmentToActivity(
-                    getSupportFragmentManager(),
-                    recordingFragment,
-                    R.id.main_content,
-                    null
-            );
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(RECORDING_FRAGMENT_TAG);
+        if (fragment != null) {
+            Log.d("safari5", "not null");
+            return;
         }
+        Log.d("safari5", "null");
+
+        RecordingFragment recordingFragment = RecordingFragment.newInstance();
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_content, recordingFragment, RECORDING_FRAGMENT_TAG)
+                .commit();
+
         recordingPresenter = new RecordingPresenter(getApplicationContext(), recordingFragment);
         recordingPresenter.setContext(appContext);
         recordingPresenter.setRecordingListener(this);
     }
 
     private void runRecordManagementBlock() {
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(RECORDS_MANAGMEENT_FRAGMENT_TAG);
+        if (fragment != null) {
+            return;
+        }
+
         RecordManagementFragment recordManagementFragment = RecordManagementFragment.newInstance();
 
         RecordManagementPresenter presenter = new RecordManagementPresenter(recordManagementFragment,
@@ -217,7 +228,8 @@ public class MainActivity extends DrawerActivity implements
         recordManagementFragment.setPresenter(presenter);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_content, recordManagementFragment)
+                .replace(R.id.main_content, recordManagementFragment, RECORDS_MANAGMEENT_FRAGMENT_TAG)
+                .addToBackStack(null)
                 .commit();
     }
 

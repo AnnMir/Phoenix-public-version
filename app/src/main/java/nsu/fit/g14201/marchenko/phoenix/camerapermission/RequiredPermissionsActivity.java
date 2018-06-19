@@ -24,6 +24,7 @@ public class RequiredPermissionsActivity extends BaseActivity {
     private static final String NO_WRITE_EXTERNAL_ACCESS_TAG = "NO_WRITE_EXTERNAL_ACCESS_TAG";
 
     private boolean permissionIsBeingRequested = false;
+    private boolean determinedToGoToNextView = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,7 +36,7 @@ public class RequiredPermissionsActivity extends BaseActivity {
     protected void onStart() {
         super.onStart();
 
-        if (!permissionIsBeingRequested) {
+        if (!permissionIsBeingRequested && !determinedToGoToNextView) {
             requestPermissions();
         }
     }
@@ -134,7 +135,10 @@ public class RequiredPermissionsActivity extends BaseActivity {
                     .remove(fragment)
                     .commit();
         }
-        startActivity(new Intent(this, MainActivity.class));
+        determinedToGoToNextView = true;
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
     private boolean ifCameraGranted() {
