@@ -11,10 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import nsu.fit.g14201.marchenko.phoenix.App;
+import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
 
@@ -74,6 +76,11 @@ public class RemoteRepositoriesController implements RemoteReposControllerProvid
                                 cloudService.getName());
                     });
         }
+    }
+
+    @Override
+    public Observable<Record> getRecords() {
+        return cloudServices.get(0).getRecords();
     }
 
     @Override

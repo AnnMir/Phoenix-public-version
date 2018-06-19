@@ -42,11 +42,17 @@ class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewAdapter.ViewHol
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-//        holder.videoTitle.setText(records[position].getTitle());
-        holder.videoTitle.setText(records[position].getTitle2());
-        holder.date.setText(records[position].date);
+        Record record = records[position];
+        String userNameTitle = record.getUserNamedTitle();
+        if (userNameTitle == null) {
+            holder.videoTitle.setText(record.getDateTime());
+            holder.date.setText(null);
+        } else {
+            holder.videoTitle.setText(userNameTitle);
+            holder.date.setText(record.getDateTime());
+        }
 
-        if (records[position].fromCloud) {
+        if (record.isInCloud()) {
             holder.itemView.setBackgroundColor(holder.itemView.getResources().getColor(R.color.colorCloud));
         } else {
             holder.itemView.setBackgroundColor(holder.itemView.getResources().getColor(android.R.color.white));

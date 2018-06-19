@@ -58,7 +58,6 @@ public class MainActivity extends DrawerActivity implements
 
         try {
             appContext = Context.createContext(this);
-            Log.d("safari5", "on create");
             configureRecordingBlock();
         } catch (SignInException e) {
             showSnack(getString(R.string.some_error));
@@ -68,8 +67,6 @@ public class MainActivity extends DrawerActivity implements
 
     @Override
     protected void onStart() {
-        Log.d("safari5", "on start");
-
         recordingPresenter.start();
         super.onStart();
     }
@@ -198,10 +195,8 @@ public class MainActivity extends DrawerActivity implements
     private void configureRecordingBlock() {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(RECORDING_FRAGMENT_TAG);
         if (fragment != null) {
-            Log.d("safari5", "not null");
             return;
         }
-        Log.d("safari5", "null");
 
         RecordingFragment recordingFragment = RecordingFragment.newInstance();
 

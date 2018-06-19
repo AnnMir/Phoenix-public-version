@@ -8,12 +8,13 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.model.VideoTitleHandlerProviding;
-import nsu.fit.g14201.marchenko.phoenix.model.record.FragmentedRecord;
 import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.RecordRepositoryException;
 
@@ -61,23 +62,43 @@ public class PrivateExternalStorage implements LocalStorage {
         return path.getAbsolutePath() + File.separator;
     }
 
+//    @Override
+//    public Observable<Record> getRecords() {
+//        return Observable.create(emitter -> {
+//            File[] videoTitles = LocalStorageUtils.getVideoTitles(path, videoTitleHandler);
+//            for (File file : videoTitles) {
+//                if (file.isFile() && LocalStorageUtils.isVideo(file, videoTitleHandler)) {
+//                    emitter.onNext(new Record(file));
+//                    continue;
+//                }
+//                if (file.isDirectory()) {
+//                    if (LocalStorageUtils.isFragmentedVideo(file, videoTitleHandler)) {
+//                        emitter.onNext(new FragmentedRecord(file));
+//                    }
+//                }
+//            }
+//            emitter.onComplete();
+//        });
+//    }
+
     @Override
-    public Observable<Record> getRecords() {
-        return Observable.create(emitter -> {
-            File[] videoTitles = LocalStorageUtils.getVideoTitles(path, videoTitleHandler);
-            for (File file : videoTitles) {
-                if (file.isFile() && LocalStorageUtils.isVideo(file, videoTitleHandler)) {
-                    emitter.onNext(new Record(file));
-                    continue;
-                }
-                if (file.isDirectory()) {
-                    if (LocalStorageUtils.isFragmentedVideo(file, videoTitleHandler)) {
-                        emitter.onNext(new FragmentedRecord(file));
-                    }
+    public List<Record> getRecords() {
+        File[] videoTitles = LocalStorageUtils.getVideoTitles(path, videoTitleHandler);
+        List<Record> records = new ArrayList<>(videoTitles.length);
+
+        for (File file : videoTitles) {
+            if (file.isFile()) {
+                records.add(new Record(file));
+                continue;
+            }
+            if (file.isDirectory()) {
+                if (LocalStorageUtils.isFragmentedVideo(file, videoTitleHandler)) {
+                    records.add(new Record(file));
                 }
             }
-            emitter.onComplete();
-        });
+        }
+
+        return records;
     }
 
     @Override

@@ -13,6 +13,7 @@ import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResourceClient;
 import com.google.android.gms.drive.Metadata;
+import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
@@ -22,12 +23,15 @@ import com.google.android.gms.tasks.Task;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.OutputStream;
+import java.util.Date;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
+import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
 
@@ -54,6 +58,27 @@ public class GoogleDriveService implements CloudService {
     public Single<FileInputStream> getRecord(@NonNull String name) {
         // TODO
         return null;
+    }
+
+    @Override
+    public Observable<Record> getRecords() {
+        return Observable.create(emitter -> {
+            Query query = new Query.Builder()
+                    .addFilter(Filters.eq(SearchableField.TRASHED, false))
+                    .build();
+            Task<MetadataBuffer> queryTask = driveResourceClient.queryChildren(appFolderId.asDriveFolder(), query);
+            queryTask
+                    .addOnSuccessListener(Runnable::run, metadataBuffer -> {
+                        for (Metadata metadata : metadataBuffer) {
+                            String title = metadata.getTitle();
+                            Date dateTime = metadata.getCreatedDate();
+                            emitter.onNext(new Record(title, dateTime));
+                        }
+                        metadataBuffer.release();
+                        emitter.onComplete();
+                    })
+                    .addOnFailureListener(Runnable::run, e -> emitter.onError(e));
+        });
     }
 
     @Override
