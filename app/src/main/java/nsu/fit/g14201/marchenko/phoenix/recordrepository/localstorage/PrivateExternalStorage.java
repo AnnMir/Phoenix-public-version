@@ -8,8 +8,8 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -82,9 +82,9 @@ public class PrivateExternalStorage implements LocalStorage {
 //    }
 
     @Override
-    public List<Record> getRecords() {
+    public Set<Record> getRecords() {
         File[] videoTitles = LocalStorageUtils.getVideoTitles(path, videoTitleHandler);
-        List<Record> records = new ArrayList<>(videoTitles.length);
+        Set<Record> records = new HashSet<>(videoTitles.length);
 
         for (File file : videoTitles) {
             if (file.isFile()) {

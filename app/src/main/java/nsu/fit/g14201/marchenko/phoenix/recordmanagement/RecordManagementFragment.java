@@ -19,7 +19,7 @@ public class RecordManagementFragment extends BaseFragment implements RecordMana
     private RecordManagementContract.Presenter presenter;
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
-    private ProgressBar spinner;
+    private ProgressBar progressBar;
     private ItemClickSupport.OnItemClickListener onItemClickListener = new ItemClickSupport.OnItemClickListener() {
         @Override
         public void onItemClicked(RecyclerView recyclerView, int position, View v) {
@@ -53,19 +53,15 @@ public class RecordManagementFragment extends BaseFragment implements RecordMana
 
         layoutManager = new LinearLayoutManager(getContext());
 
-        if (recyclerView == null) {
-            spinner = view.findViewById(R.id.video_list_progress_bar);
-        }
+        progressBar = view.findViewById(R.id.video_list_progress_bar);
     }
 
     @Override
     public void onStart() {
         super.onStart();
 
+        progressBar.setVisibility(View.VISIBLE);
         presenter.start();
-        if (recyclerView == null) {
-            spinner.setVisibility(View.VISIBLE);
-        }
     }
 
     @Override
@@ -88,8 +84,6 @@ public class RecordManagementFragment extends BaseFragment implements RecordMana
 
         RecyclerView.Adapter adapter = new RecordsViewAdapter(records);
         recyclerView.setAdapter(adapter);
-        if (spinner != null) {
-            spinner.setVisibility(View.GONE);
-        }
+        progressBar.setVisibility(View.GONE);
     }
 }

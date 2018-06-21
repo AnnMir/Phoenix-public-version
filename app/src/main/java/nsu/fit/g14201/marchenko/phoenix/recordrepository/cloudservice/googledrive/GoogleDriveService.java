@@ -18,6 +18,8 @@ import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
+import com.google.android.gms.drive.query.SortOrder;
+import com.google.android.gms.drive.query.SortableField;
 import com.google.android.gms.tasks.Task;
 
 import java.io.ByteArrayOutputStream;
@@ -63,7 +65,9 @@ public class GoogleDriveService implements CloudService {
     @Override
     public Observable<Record> getRecords() {
         return Observable.create(emitter -> {
+            SortOrder sortOrder = new SortOrder.Builder().addSortDescending(SortableField.CREATED_DATE).build();
             Query query = new Query.Builder()
+                    .setSortOrder(sortOrder)
                     .addFilter(Filters.eq(SearchableField.TRASHED, false))
                     .build();
             Task<MetadataBuffer> queryTask = driveResourceClient.queryChildren(appFolderId.asDriveFolder(), query);

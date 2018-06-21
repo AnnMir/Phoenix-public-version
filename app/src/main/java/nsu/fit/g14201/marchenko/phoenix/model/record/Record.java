@@ -8,10 +8,13 @@ import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 public class Record {
     private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormat.forPattern("dd-MM-yyyy_HH:mm:ss");
     private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss");
+    private static final Pattern VIDEO_TITLE_PATTERN = Pattern.compile(
+            "[\\d]{2}-[\\d]{2}-[\\d]{4}_[\\d]{2}:[\\d]{2}:[\\d]{2}");
 
     private File path = null;
 
@@ -26,9 +29,10 @@ public class Record {
 
     public Record(@NonNull String title, @NonNull Date date) {
         dateTime = new DateTime(date);
-        if (!INPUT_FORMATTER.print(dateTime).equals(title)) {
+        if (!VIDEO_TITLE_PATTERN.matcher(title).matches()) {
             userNamedTitle = title;
         }
+        isInCloud = true;
     }
 
     public String getTitle() {

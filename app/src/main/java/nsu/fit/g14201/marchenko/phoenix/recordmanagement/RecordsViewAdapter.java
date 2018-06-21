@@ -52,7 +52,7 @@ class RecordsViewAdapter extends RecyclerView.Adapter<RecordsViewAdapter.ViewHol
             holder.date.setText(record.getDateTime());
         }
 
-        if (record.isInCloud()) {
+        if (!record.isHereLocally()) {
             holder.itemView.setBackgroundColor(holder.itemView.getResources().getColor(R.color.colorCloud));
         } else {
             holder.itemView.setBackgroundColor(holder.itemView.getResources().getColor(android.R.color.white));
