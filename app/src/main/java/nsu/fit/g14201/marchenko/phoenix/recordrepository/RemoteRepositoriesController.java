@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
@@ -82,6 +83,16 @@ public class RemoteRepositoriesController implements RemoteReposControllerProvid
     public Observable<Record> getRecords() {
         return cloudServices.get(0).getRecords();
     }
+
+    @Override
+    public Maybe<RecordFolder> getRecordFolder(@NonNull Record record) {
+        return cloudServices.get(0).getRecordFolder(record);
+    }
+
+//    @Override
+//    public Observable<String> getFragments(Record record) {
+//        return cloudServices.get(0).getFragments(record);
+//    }
 
     @Override
     public void setRemoteRepoStateListener(@NonNull RecordRemoteRepoStateListener remoteRepoListener) {

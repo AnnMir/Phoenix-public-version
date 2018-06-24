@@ -168,7 +168,8 @@ public class MainActivity extends DrawerActivity implements
         RecordInfoFragment fragment = RecordInfoFragment.newInstance();
 
         RecordInfoPresenter presenter = new RecordInfoPresenter(fragment,
-                record, appContext.getLocalStorage(), appContext.getRemoteRepositoriesController());
+                record, appContext.getLocalStorage(), appContext.getRemoteRepositoriesController(),
+                this);
         fragment.setPresenter(presenter);
 
         getSupportFragmentManager().beginTransaction()

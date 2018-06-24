@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import java.io.FileInputStream;
 
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
@@ -22,4 +23,8 @@ public interface CloudService extends RecordRepository {
                                  @NonNull String name);
 
     Observable<Record> getRecords();
+
+    Maybe<RecordFolder> getRecordFolder(@NonNull Record record);
+
+//    Observable<String> getFragments(Record record);
 }

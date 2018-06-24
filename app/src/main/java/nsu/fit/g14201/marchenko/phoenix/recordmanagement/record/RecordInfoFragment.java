@@ -4,6 +4,7 @@ package nsu.fit.g14201.marchenko.phoenix.recordmanagement.record;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -61,8 +62,45 @@ public class RecordInfoFragment extends BaseFragment implements RecordInfoContra
         progressBar.setVisibility(View.GONE);
     }
 
+    @Override
+    public void showNoInternetDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.no_internet_connection)
+                .setMessage(getString(R.string.assemble_without_internet) + "\n" +
+                        getString(R.string.local_fragments_assemble));
+        alertDialogRoutine(builder);
+    }
+
+    @Override
+    public void showNoRecordInCloud() {
+        showSnack(getString(R.string.no_record_in_cloud));
+    }
+
+    @Override
+    public void showErrorDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage(getString(R.string.something_went_wrong) + "\n" +
+                getString(R.string.local_fragments_assemble));
+        alertDialogRoutine(builder);
+    }
+
+    @Override
+    public void showError(String errorMessage) {
+        showToast(errorMessage);
+    }
+
     @OnClick(R.id.assemble_button)
     void onAssembleClick() {
         presenter.assemble();
+    }
+
+    private void alertDialogRoutine(AlertDialog.Builder builder) {
+        builder.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+            presenter.assembleWithoutInternet(null);
+        });
+        builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+            quitLoadingMode();
+        });
+        builder.create().show();
     }
 }

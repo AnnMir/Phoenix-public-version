@@ -25,10 +25,10 @@ import com.google.android.gms.tasks.Task;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.OutputStream;
-import java.util.Date;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import nsu.fit.g14201.marchenko.phoenix.App;
@@ -75,8 +75,7 @@ public class GoogleDriveService implements CloudService {
                     .addOnSuccessListener(Runnable::run, metadataBuffer -> {
                         for (Metadata metadata : metadataBuffer) {
                             String title = metadata.getTitle();
-                            Date dateTime = metadata.getCreatedDate();
-                            emitter.onNext(new Record(title, dateTime));
+                            emitter.onNext(new Record(title));
                         }
                         metadataBuffer.release();
                         emitter.onComplete();
@@ -84,6 +83,37 @@ public class GoogleDriveService implements CloudService {
                     .addOnFailureListener(Runnable::run, e -> emitter.onError(e));
         });
     }
+
+    @Override
+    public Maybe<RecordFolder> getRecordFolder(@NonNull Record record) {
+        return Maybe.create(emitter -> {
+            Query recordQuery = new Query.Builder()
+                    .addFilter(Filters.eq(SearchableField.TITLE, record.getTitle()))
+                    .addFilter(Filters.eq(SearchableField.TRASHED, false))
+                    .build();
+            Task<MetadataBuffer> recordTask = driveResourceClient.queryChildren(
+                    appFolderId.asDriveFolder(), recordQuery)
+                    .addOnSuccessListener(Runnable::run, metadataBuffer -> {
+                        try {
+                            if (metadataBuffer.getCount() == 0) {
+                                emitter.onComplete();
+                            }
+
+                            Metadata metadata = metadataBuffer.get(0);
+                            emitter.onSuccess(new GoogleDriveRecordFolder(metadata.getDriveId()));
+                        } finally {
+                            metadataBuffer.release();
+                        }
+                    })
+                    .addOnFailureListener(Runnable::run, e -> emitter.onError(e) );
+        });
+    }
+
+//    @Override
+//    public Observable<String> getFragments(Record record) {
+//        return Observable.create(emitter -> {
+//
+//    }
 
     @Override
     public Single<RecordFolder> createVideoRepository(@NonNull String name) {

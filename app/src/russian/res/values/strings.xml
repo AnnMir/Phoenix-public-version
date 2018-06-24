@@ -29,4 +29,13 @@
     <string name="can_not_find_fragment_locally">Не получилось найти локальный фрагмент</string>
     <string name="stop_uploading_data">Передача данных в облако прекращена</string>
     <string name="assemble">Собрать</string>
+    <string name="no_internet_connection">Нет доступа в интернет</string>
+    <string name="assemble_without_internet">Возможно, в облачном сервисе есть фрагменты, которых
+        нет на мобильном устройстве.</string>
+    <string name="local_fragments_assemble">Хотите ли вы осуществить сборку на основе локальных
+        фрагментов?</string>
+    <string name="something_went_wrong">Что-то пошло не так, не удаётся синхронизоваться с сервером.</string>
+    <string name="no_record_in_cloud">В облачном сервисе нет такой записи. Осуществляем сборку из
+    локальных фрагментов</string>
+    <string name="unexpected_error">Непредвиденная ошибка</string>
 </resources>

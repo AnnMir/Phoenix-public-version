@@ -28,9 +28,7 @@ public class SyncModule {
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.io())
                     .subscribe(
-                            record -> {
-                                recordSet.add(record);
-                            },
+                            recordSet::add,
                             error -> {
                                 emitter.onError(error);
                             },

@@ -7,7 +7,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
-import java.util.Date;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class Record {
@@ -27,16 +27,18 @@ public class Record {
         dateTime = INPUT_FORMATTER.parseDateTime(path.getName()); // TODO: Get data if file was renamed
     }
 
-    public Record(@NonNull String title, @NonNull Date date) {
-        dateTime = new DateTime(date);
-        if (!VIDEO_TITLE_PATTERN.matcher(title).matches()) {
+    public Record(@NonNull String title) {
+        try {
+            dateTime = INPUT_FORMATTER.parseDateTime(title);
+        } catch (IllegalArgumentException e) {
             userNamedTitle = title;
         }
+
         isInCloud = true;
     }
 
     public String getTitle() {
-        return path == null ? getDateTime() : path.getName();
+        return path == null ? INPUT_FORMATTER.print(dateTime) : path.getName();
     }
 
     public String getUserNamedTitle() {
@@ -57,5 +59,18 @@ public class Record {
 
     public File getPath() {
         return path;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Record record = (Record) o;
+        return Objects.equals(dateTime, record.dateTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dateTime);
     }
 }
