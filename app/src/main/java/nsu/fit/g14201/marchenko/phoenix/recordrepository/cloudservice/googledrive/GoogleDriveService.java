@@ -9,6 +9,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveClient;
 import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResourceClient;
@@ -23,7 +24,10 @@ import com.google.android.gms.drive.query.SortableField;
 import com.google.android.gms.tasks.Task;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import io.reactivex.Completable;
@@ -109,11 +113,38 @@ public class GoogleDriveService implements CloudService {
         });
     }
 
-//    @Override
-//    public Observable<String> getFragments(Record record) {
-//        return Observable.create(emitter -> {
-//
-//    }
+    @Override
+    public Observable<String> getFragments(@NonNull RecordFolder recordFolder) {
+        return Observable.create(emitter -> {
+            if (!(recordFolder instanceof GoogleDriveRecordFolder)) {
+                emitter.onError(new IllegalArgumentException());
+                return;
+            }
+            GoogleDriveRecordFolder googleDriveRecordFolder = (GoogleDriveRecordFolder) recordFolder;
+
+            Query fragmentsQuery = new Query.Builder()
+                    .addFilter(Filters.eq(SearchableField.TRASHED, false))
+                    .build();
+            Task<MetadataBuffer> fragmentsTask = driveResourceClient.queryChildren(
+                    googleDriveRecordFolder.getDriveId().asDriveFolder(), fragmentsQuery)
+                    .addOnSuccessListener(Runnable::run, metadataBuffer -> {
+                        try {
+                            if (metadataBuffer.getCount() == 0) {
+                                emitter.onComplete();
+                                return;
+                            }
+
+                            for (Metadata metadata : metadataBuffer) {
+                                emitter.onNext(metadata.getTitle());
+                            }
+                        } finally {
+                            metadataBuffer.release();
+                        }
+                        emitter.onComplete();
+                    })
+                    .addOnFailureListener(Runnable::run, e -> emitter.onError(e) );
+        });
+    }
 
     @Override
     public Single<RecordFolder> createVideoRepository(@NonNull String name) {
@@ -209,6 +240,55 @@ public class GoogleDriveService implements CloudService {
                 return driveResourceClient.createFile(videoFolder, changeSet, contents);
             })
                     .addOnSuccessListener(Runnable::run, driveFile -> emitter.onComplete())
+                    .addOnFailureListener(Runnable::run, emitter::onError);
+        });
+    }
+
+    @Override
+    public Completable downloadFragment(@NonNull RecordFolder recordFolder, @NonNull File file) {
+        return Completable.create(emitter -> {
+            if (!(recordFolder instanceof GoogleDriveRecordFolder)) {
+                emitter.onError(new IllegalArgumentException());
+                return;
+            }
+            GoogleDriveRecordFolder googleDriveRecordFolder = (GoogleDriveRecordFolder) recordFolder;
+
+            Query fragmentsQuery = new Query.Builder()
+                    .addFilter(Filters.and(
+                            Filters.eq(SearchableField.TRASHED, false),
+                            Filters.eq(SearchableField.TITLE, file.getName())))
+                    .build();
+            Task<MetadataBuffer> fragmentsTask = driveResourceClient.queryChildren(
+                    googleDriveRecordFolder.getDriveId().asDriveFolder(), fragmentsQuery);
+
+            fragmentsTask.continueWithTask(Runnable::run, task -> {
+                MetadataBuffer metadataBuffer = task.getResult();
+                try {
+                    if (metadataBuffer.getCount() != 1) {
+                        throw new Exception("Google Drive returned info about more than one fragment");
+                    }
+                    Metadata metadata = metadataBuffer.get(0);
+                    DriveFile driveFile = metadata.getDriveId().asDriveFile();
+
+                    return driveResourceClient.openFile(driveFile, DriveFile.MODE_READ_ONLY);
+                } finally {
+                    metadataBuffer.release();
+                }
+            }).continueWithTask(Runnable::run, task -> {
+                DriveContents contents = task.getResult();
+
+                InputStream inputStream = contents.getInputStream();
+                try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+                    byte[] buffer = new byte[1024];
+                    int bufferLength;
+                    while ( (bufferLength = inputStream.read(buffer)) != -1 ) {
+                        fileOutputStream.write(buffer, 0, bufferLength);
+                    }
+                }
+
+                return driveResourceClient.discardContents(contents);
+            })
+                    .addOnSuccessListener(Runnable::run, s -> emitter.onComplete())
                     .addOnFailureListener(Runnable::run, emitter::onError);
         });
     }

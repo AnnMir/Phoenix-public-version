@@ -38,4 +38,6 @@
     <string name="no_record_in_cloud">В облачном сервисе нет такой записи. Осуществляем сборку из
     локальных фрагментов</string>
     <string name="unexpected_error">Непредвиденная ошибка</string>
+    <string name="assembly_completed">Сборка завершена</string>
+    <string name="missing_fragments_downloaded">Недостающие фрагменты загружены</string>
 </resources>

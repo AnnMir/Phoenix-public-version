@@ -89,6 +89,16 @@ public class RecordInfoFragment extends BaseFragment implements RecordInfoContra
         showToast(errorMessage);
     }
 
+    @Override
+    public void showMissingFragmentsDownloaded() {
+        showToast(getString(R.string.missing_fragments_downloaded));
+    }
+
+    @Override
+    public void showAssemblyCompletion() {
+        showToast(getString(R.string.assembly_completed));
+    }
+
     @OnClick(R.id.assemble_button)
     void onAssembleClick() {
         presenter.assemble();
@@ -96,7 +106,7 @@ public class RecordInfoFragment extends BaseFragment implements RecordInfoContra
 
     private void alertDialogRoutine(AlertDialog.Builder builder) {
         builder.setPositiveButton(android.R.string.ok, (dialog, which) -> {
-            presenter.assembleWithoutInternet(null);
+            presenter.assembleWithoutCloudFragments(null);
         });
         builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> {
             quitLoadingMode();

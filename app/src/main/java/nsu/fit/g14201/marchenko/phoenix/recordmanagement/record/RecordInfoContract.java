@@ -23,11 +23,15 @@ public class RecordInfoContract {
         void showErrorDialog();
 
         void showError(String errorMessage);
+
+        void showMissingFragmentsDownloaded();
+
+        void showAssemblyCompletion();
     }
 
     interface Presenter extends BasePresenter {
         void assemble();
 
-        void assembleWithoutInternet(Set<String> fragmentNames);
+        void assembleWithoutCloudFragments(Set<String> fragmentNames);
     }
 }

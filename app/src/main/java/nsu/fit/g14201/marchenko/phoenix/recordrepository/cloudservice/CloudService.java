@@ -2,6 +2,7 @@ package nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice;
 
 import android.support.annotation.NonNull;
 
+import java.io.File;
 import java.io.FileInputStream;
 
 import io.reactivex.Completable;
@@ -26,5 +27,7 @@ public interface CloudService extends RecordRepository {
 
     Maybe<RecordFolder> getRecordFolder(@NonNull Record record);
 
-//    Observable<String> getFragments(Record record);
+    Observable<String> getFragments(@NonNull RecordFolder recordFolder);
+
+    Completable downloadFragment(@NonNull RecordFolder recordFolder, @NonNull File file);
 }

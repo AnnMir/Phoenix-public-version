@@ -89,10 +89,15 @@ public class RemoteRepositoriesController implements RemoteReposControllerProvid
         return cloudServices.get(0).getRecordFolder(record);
     }
 
-//    @Override
-//    public Observable<String> getFragments(Record record) {
-//        return cloudServices.get(0).getFragments(record);
-//    }
+    @Override
+    public Observable<String> getFragments(@NonNull RecordFolder recordFolder) {
+        return cloudServices.get(0).getFragments(recordFolder);
+    }
+
+    @Override
+    public Completable downloadFragment(@NonNull RecordFolder recordFolder, @NonNull File file) {
+        return cloudServices.get(0).downloadFragment(recordFolder, file);
+    }
 
     @Override
     public void setRemoteRepoStateListener(@NonNull RecordRemoteRepoStateListener remoteRepoListener) {
