@@ -24,6 +24,8 @@ public class RecordInfoContract {
 
         void showError(String errorMessage);
 
+        void showLoadingMissingFragments();
+
         void showMissingFragmentsDownloaded();
 
         void showAssemblyCompletion();

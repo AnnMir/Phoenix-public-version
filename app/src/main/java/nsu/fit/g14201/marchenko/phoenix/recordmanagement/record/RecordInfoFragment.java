@@ -90,6 +90,11 @@ public class RecordInfoFragment extends BaseFragment implements RecordInfoContra
     }
 
     @Override
+    public void showLoadingMissingFragments() {
+        showToast(getString(R.string.loading_missing_fragments));
+    }
+
+    @Override
     public void showMissingFragmentsDownloaded() {
         showToast(getString(R.string.missing_fragments_downloaded));
     }

@@ -170,6 +170,9 @@ public class RecordInfoPresenter implements RecordInfoContract.Presenter {
                             if (missingFragments.isEmpty()) {
                                 assembleWithoutCloudFragments(localFragmentNames);
                             } else {
+                                new Handler(Looper.getMainLooper()).post(() -> {
+                                    view.showLoadingMissingFragments();
+                                });
                                 AtomicInteger fragmentsToDownload = new AtomicInteger(
                                         missingFragments.size());
                                 for (Completable missingFragmentCompletable : missingFragments) {
@@ -177,9 +180,6 @@ public class RecordInfoPresenter implements RecordInfoContract.Presenter {
                                             () -> {
                                                 int fragmentsLeft = fragmentsToDownload.decrementAndGet();
                                                 if (fragmentsLeft == 0) {
-                                                    new Handler(Looper.getMainLooper()).post(() -> {
-                                                        view.showMissingFragmentsDownloaded();
-                                                    });
                                                     assembleWithoutCloudFragments(null);
                                                 }
                                             },
