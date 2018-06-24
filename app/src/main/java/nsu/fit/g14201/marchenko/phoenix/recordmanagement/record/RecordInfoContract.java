@@ -9,6 +9,10 @@ import nsu.fit.g14201.marchenko.phoenix.BaseView;
 public class RecordInfoContract {
     interface View extends BaseView<Presenter> {
         void showTitle(@NonNull String title);
+
+        void enterLoadingMode();
+
+        void quitLoadingMode();
     }
 
     interface Presenter extends BasePresenter {

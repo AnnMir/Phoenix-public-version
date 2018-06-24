@@ -7,6 +7,8 @@ import android.util.Log;
 import java.io.File;
 import java.util.Arrays;
 
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import nsu.fit.g14201.marchenko.phoenix.App;
@@ -33,33 +35,32 @@ public class RecordInfoPresenter implements RecordInfoContract.Presenter {
 
     @Override
     public void start() {
-        view.showTitle(record.getTitle());
+        view.showTitle(record.getDateTime());
     }
 
     @Override
     public void assemble() {
-        Log.e(App.getTag(), record.getTitle());
+        view.enterLoadingMode();
         Disposable disposable = localStorage.getFragmentTitles(record.getTitle())
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .toList()
                 .observeOn(Schedulers.io())
-                .subscribe(
-                        fragmentNames -> {
-                            String[] fragmentNamesArray = fragmentNames.toArray(
-                                    new String[fragmentNames.size()]);
-                            Arrays.sort(fragmentNamesArray);
-                            VideoJoiner.joinFragments(
-                                    record.getPath(),
-                                    fragmentNamesArray,
-                                    new File(record.getPath() + ".mp4")
-                            ); // FIXME: Architecture
-                            // TODO NEXT: Удаление после сборки
-                            Log.e(App.getTag(), "DONE");
-                        },
-                        error -> {
-                            Log.e(App.getTag(), "ERROR");
-                        }
-                );
+                .flatMapCompletable(fragmentNames -> {
+                    String[] fragmentNamesArray = fragmentNames.toArray(
+                            new String[fragmentNames.size()]);
+                    Arrays.sort(fragmentNamesArray);
+                    VideoJoiner.joinFragments(
+                            record.getPath(),
+                            fragmentNamesArray,
+                            new File(record.getPath() + ".mp4")
+                    ); // FIXME: Architecture
+                    // TODO NEXT: Удаление после сборки
+                    return Completable.complete();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(view::quitLoadingMode, error -> {
+                    Log.e(App.getTag(), "ERROR");
+                });
     }
 }
