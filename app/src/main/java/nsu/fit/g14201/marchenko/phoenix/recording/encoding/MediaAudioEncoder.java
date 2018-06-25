@@ -1,6 +1,5 @@
 package nsu.fit.g14201.marchenko.phoenix.recording.encoding;
 
-
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.os.Handler;
@@ -15,9 +14,8 @@ import java.nio.ByteBuffer;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 
-public abstract class MediaEncoder implements Runnable {
+public abstract class MediaAudioEncoder implements Runnable {
     private final boolean VERBOSE = true;
-    private final boolean EXTREMELY_VERBOSE = false;
 
     protected static final int TIMEOUT_USEC = 10000;	// 10[msec]
 
@@ -32,10 +30,11 @@ public abstract class MediaEncoder implements Runnable {
     protected boolean EOS; // Flag that indicates that encoder received EOS
     protected boolean muxerStarted; // Flag that indicates that the muxer is running
     protected volatile boolean isCapturing = false;
+    protected volatile boolean requestStop;
 
     private MediaCodec.BufferInfo bufferInfo;
 
-    MediaEncoder(Listener listener) {
+    MediaAudioEncoder(Listener listener) {
         this.listener = listener;
 
         synchronized (sync) {
@@ -45,8 +44,7 @@ public abstract class MediaEncoder implements Runnable {
             new Thread(this, getClass().getSimpleName()).start();
             try {
                 sync.wait();
-            } catch (InterruptedException e) {
-            }
+            } catch (InterruptedException e) {}
         }
     }
 
@@ -59,12 +57,17 @@ public abstract class MediaEncoder implements Runnable {
         Looper.prepare();
         handler = new Handler();
         Looper.loop();
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
     }
 
     public abstract void prepare() throws CameraException, IOException;
 
     void startRecording() {
-        isCapturing = true;
+        synchronized (sync) {
+            isCapturing = true;
+            requestStop = false;
+            sync.notifyAll();
+        }
     }
 
     void stopRecording() {
@@ -118,7 +121,7 @@ public abstract class MediaEncoder implements Runnable {
     /**
      * previous presentationTimeUs for writing
      */
-    private long prevOutputPTSUs = 0;
+    protected long prevOutputPTSUs = 0;
     /**
      * get nextFragment encoding presentationTimeUs
      * @return
@@ -177,12 +180,11 @@ public abstract class MediaEncoder implements Runnable {
     }
 
     public interface Listener {
-        void onPrepared(MediaEncoder encoder);
+        void onPrepared(MediaAudioEncoder encoder);
 
-        void onStopped(MediaEncoder encoder);
+        void onStopped(MediaAudioEncoder encoder);
 
         void onError(@NonNull MediaCodec.CodecException e);
     }
 }
 
-// FIXME: Обработать ошибки записи в правильных местах, проверить, правильные ли слушатели

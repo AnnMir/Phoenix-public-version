@@ -148,6 +148,8 @@ public class VideoEncoder extends MediaEncoder {
         if (listener != null) {
             listener.onPrepared(this);
         }
+
+        Log.d(App.getTag2(), "Prepared");
     }
 
     @Override

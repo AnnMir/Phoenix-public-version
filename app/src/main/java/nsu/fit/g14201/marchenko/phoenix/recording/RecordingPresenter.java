@@ -20,6 +20,7 @@ import nsu.fit.g14201.marchenko.phoenix.model.VideoTitleHandlerProviding;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraWrapper;
+import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaAudioEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.VideoEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
@@ -27,6 +28,7 @@ import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 public class RecordingPresenter implements RecordingContract.Presenter,
         CameraStateListener,
         MediaEncoder.Listener,
+        MediaAudioEncoder.Listener,
         Contextual {
     private final boolean VERBOSE = true;
 
@@ -200,6 +202,21 @@ public class RecordingPresenter implements RecordingContract.Presenter,
     }
 
     @Override
+    public void onPrepared(MediaAudioEncoder encoder) {
+        if (VERBOSE) {
+            Log.d(App.getTag(), "on Prepared: encoder = " + encoder);
+        }
+    }
+
+    @Override
+    public void onStopped(MediaAudioEncoder encoder) {
+        if (VERBOSE) {
+            Log.d(App.getTag(), "on Stopped: encoder = " + encoder);
+        }
+
+    }
+
+    @Override
     public void onError(@NonNull MediaCodec.CodecException e) {
         e.printStackTrace();
 
@@ -261,7 +278,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
             );
             createLocalVideoRepository(videoFragmentPath);
             recordingListener.recordWillStart(videoFragmentPath);
-            fragmentRecorder.start(this, videoFragmentPath);
+            fragmentRecorder.start(this, this, videoFragmentPath);
         } catch (Throwable e) {
             e.printStackTrace();
             recordingView.showIncorrigibleErrorDialog(e.getMessage());

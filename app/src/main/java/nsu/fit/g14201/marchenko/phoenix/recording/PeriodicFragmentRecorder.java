@@ -3,14 +3,18 @@ package nsu.fit.g14201.marchenko.phoenix.recording;
 
 import android.media.MediaCodec;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.context.Contextual;
 import nsu.fit.g14201.marchenko.phoenix.model.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraStateListener;
+import nsu.fit.g14201.marchenko.phoenix.recording.encoding.AudioEncoder;
+import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaAudioEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaEncoder;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaMuxerException;
 import nsu.fit.g14201.marchenko.phoenix.recording.encoding.MediaMuxerWrapper;
@@ -36,6 +40,7 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.SpecialFrameListener
     @Override
     public void onKeyFrameReceived(int trackIndex, ByteBuffer byteBuffer,
                                    MediaCodec.BufferInfo bufferInfo) {
+        Log.d(App.getTag2(), "Key frame received");
         try {
             int currentFragmentNum = videoFragmentPath.getCurrentFragmentNumber();
             muxer.restart(trackIndex, byteBuffer, bufferInfo);
@@ -66,6 +71,7 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.SpecialFrameListener
     }
 
     void start(@NonNull MediaEncoder.Listener mediaEncoderListener,
+               @NonNull MediaAudioEncoder.Listener mediaAudioRecorderListener,
                @NonNull VideoFragmentPath videoFragmentPath)
             throws LowLevelRecordingException, MediaMuxerException, CameraException, IOException {
         this.videoFragmentPath = videoFragmentPath;
@@ -74,7 +80,7 @@ class PeriodicFragmentRecorder implements MediaMuxerWrapper.SpecialFrameListener
                 this);
         new VideoEncoder(muxer, cameraGLView.getVideoWidth(), cameraGLView.getVideoHeight(),
                 mediaEncoderListener);
-//        new AudioEncoder(muxer, listener); // TODO: Audio track
+        new AudioEncoder(muxer, mediaAudioRecorderListener);
         muxer.prepare();
         muxer.startRecording();
 

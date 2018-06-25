@@ -30,7 +30,7 @@ public class MediaMuxerWrapper {
     private SpecialFrameListener specialFrameListener;
 
     private MediaEncoder videoEncoder;
-    private MediaEncoder audioEncoder;
+    private MediaAudioEncoder audioEncoder;
 
     public MediaMuxerWrapper(@NonNull VideoFragmentPath fragmentPath,
                              @NonNull String localStoragePath,
@@ -54,28 +54,37 @@ public class MediaMuxerWrapper {
                                      MediaCodec.BufferInfo bufferInfo)
             throws LowLevelRecordingException {
         muxer.stop();
+        Log.d(App.getTag2(), "Muxer stopped");
         muxer.release();
+        Log.d(App.getTag2(), "Muxer released");
         try {
             fragmentPath.nextFragment();
             muxer = new MediaMuxer(fragmentPath.getCurrentFragmentPath(localStoragePath),
                     MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            Log.d(App.getTag2(), "New muxer created");
         } catch (IOException e) {
             e.printStackTrace();
+            Log.d(App.getTag2(), "EXCEPTION!");
             throw new LowLevelRecordingException(LowLevelRecordingException.MEDIA_MUXER_INIT_ERROR);
         }
         int oldVideoRecorderTrackIndex = -1;
         if (videoEncoder != null) {
             oldVideoRecorderTrackIndex = videoEncoder.renewTrackIndex(
                     muxer.addTrack(videoEncoder.getOutputFormat()));
+            Log.d(App.getTag2(), "Video renewed");
+
         }
         if (audioEncoder != null) {
             audioEncoder.renewTrackIndex(muxer.addTrack(audioEncoder.getOutputFormat()));
+            Log.d(App.getTag2(), "Audio renewed");
         }
 
         muxer.start();
+        Log.d(App.getTag2(), "Muxer started");
 
         if (oldVideoRecorderTrackIndex == trackIndex) {
             muxer.writeSampleData(videoEncoder.trackIndex, byteBuffer, bufferInfo);
+            Log.d(App.getTag2(), "Muxer stopped");
         }
     }
 
@@ -139,7 +148,7 @@ public class MediaMuxerWrapper {
         }
         int trackIndex = muxer.addTrack(format);
         if (VERBOSE) {
-            Log.d(App.getTag(), "Add track with number = " + trackIndex + " of " + trackNum +
+            Log.d(App.getTag2(), "Add track with number = " + trackIndex + " of " + trackNum +
                     ", format = " + format);
         }
         return trackIndex;
@@ -170,6 +179,7 @@ public class MediaMuxerWrapper {
      */
 	synchronized void writeSampleData(int trackIndex, ByteBuffer byteBuf,
                                       MediaCodec.BufferInfo bufferInfo) {
+	    Log.d(App.getTag2(), "writeSampleData: " + Integer.toString(trackIndex));
         if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
             new Handler(Looper.getMainLooper()).post(() -> specialFrameListener.onLastFrameReceived());
             return;
