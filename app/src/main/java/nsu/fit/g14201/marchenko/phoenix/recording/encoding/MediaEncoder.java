@@ -32,6 +32,7 @@ public abstract class MediaEncoder implements Runnable {
     protected boolean EOS; // Flag that indicates that encoder received EOS
     protected boolean muxerStarted; // Flag that indicates that the muxer is running
     protected volatile boolean isCapturing = false;
+    protected volatile boolean requestStop;
 
     private MediaCodec.BufferInfo bufferInfo;
 
