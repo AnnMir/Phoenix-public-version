@@ -162,6 +162,10 @@ public class MediaMuxerWrapper {
         if ((trackNum > 0) && (tracksStarted == trackNum)) {
             muxer.start();
             muxerStarted = true;
+            notifyAll();
+            if (VERBOSE) {
+                Log.v(App.getTag2(), "MediaMuxer started");
+            }
         }
 
         return muxerStarted;
