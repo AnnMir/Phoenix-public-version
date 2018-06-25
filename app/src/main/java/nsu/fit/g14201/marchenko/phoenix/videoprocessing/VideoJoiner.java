@@ -35,9 +35,13 @@ public class VideoJoiner {
         }
 
         List<Track> videoTracks = new LinkedList<>();
+        List<Track> audioTracks = new LinkedList<>();
 
         for (Movie movie : inMovies) {
             for (Track track : movie.getTracks()) {
+                if (track.getHandler().equals("soun")) {
+                    audioTracks.add(track);
+                }
                 if (track.getHandler().equals("vide")) {
                     videoTracks.add(track);
                 }
@@ -46,6 +50,9 @@ public class VideoJoiner {
 
         Movie result = new Movie();
 
+        if (!audioTracks.isEmpty()) {
+            result.addTrack(new AppendTrack(audioTracks.toArray(new Track[audioTracks.size()])));
+        }
         if (!videoTracks.isEmpty()) {
             result.addTrack(new AppendTrack(videoTracks.toArray(new Track[videoTracks.size()])));
         }
