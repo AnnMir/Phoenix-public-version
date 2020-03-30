@@ -2,9 +2,6 @@ package nsu.fit.g14201.marchenko.phoenix.ui.activities;
 
 
 import android.os.Bundle;
-
-
-
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.Nullable;
