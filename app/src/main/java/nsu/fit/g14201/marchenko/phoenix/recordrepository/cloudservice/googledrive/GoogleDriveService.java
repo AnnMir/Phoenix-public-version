@@ -1,27 +1,11 @@
 package nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.googledrive;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.DriveClient;
-import com.google.android.gms.drive.DriveContents;
-import com.google.android.gms.drive.DriveFile;
-import com.google.android.gms.drive.DriveFolder;
-import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.DriveResourceClient;
-import com.google.android.gms.drive.Metadata;
-import com.google.android.gms.drive.MetadataBuffer;
-import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.query.Filters;
-import com.google.android.gms.drive.query.Query;
-import com.google.android.gms.drive.query.SearchableField;
-import com.google.android.gms.drive.query.SortOrder;
-import com.google.android.gms.drive.query.SortableField;
-import com.google.android.gms.tasks.Task;
+import com.google.api.services.drive.Drive;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import androidx.annotation.NonNull;
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
 import io.reactivex.Maybe;
@@ -41,7 +26,57 @@ import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
 
-public class GoogleDriveService implements CloudService {
+public class GoogleDriveService implements CloudService{
+
+    public GoogleDriveService(Context context){}
+
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public Completable createAppFolderIfNotExists() {
+        return null;
+    }
+
+    @Override
+    public Single<RecordFolder> createVideoRepository(@NonNull String name) {
+        return null;
+    }
+
+    @Override
+    public Completable transmitFragment(@NonNull RecordFolder folder, @NonNull FileInputStream inputStream, @NonNull String name) {
+        return null;
+    }
+
+    @Override
+    public Observable<Record> getRecords() {
+        return null;
+    }
+
+    @Override
+    public Maybe<RecordFolder> getRecordFolder(@NonNull Record record) {
+        return null;
+    }
+
+    @Override
+    public Observable<String> getFragments(@NonNull RecordFolder recordFolder) {
+        return null;
+    }
+
+    @Override
+    public Completable downloadFragment(@NonNull RecordFolder recordFolder, @NonNull File file) {
+        return null;
+    }
+
+    @Override
+    public Single<FileInputStream> getRecord(@NonNull String name) {
+        return null;
+    }
+}
+
+/*public class GoogleDriveService implements CloudService {
     private static final String FOLDER_NAME = App.getAppName();
 
     private DriveClient driveClient;
@@ -301,3 +336,4 @@ public class GoogleDriveService implements CloudService {
         return driveResourceClient.createFolder(rootFolder, changeSet);
     }
 }
+*/

@@ -2,11 +2,12 @@ package nsu.fit.g14201.marchenko.phoenix.recording.camera;
 
 import android.hardware.camera2.CameraAccessException;
 import android.os.Looper;
-import android.support.annotation.NonNull;
+
 import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
+import androidx.annotation.NonNull;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 

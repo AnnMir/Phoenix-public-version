@@ -2,12 +2,12 @@ package nsu.fit.g14201.marchenko.phoenix.recording;
 
 
 import android.media.MediaCodec;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import androidx.annotation.NonNull;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.context.Contextual;
 import nsu.fit.g14201.marchenko.phoenix.model.VideoFragmentPath;

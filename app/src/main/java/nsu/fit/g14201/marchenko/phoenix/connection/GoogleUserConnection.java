@@ -7,8 +7,9 @@ import android.content.Intent;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.drive.Drive;
+
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.api.services.drive.Drive;
 
 public class GoogleUserConnection implements UserConnection {
     private GoogleSignInClient googleSignInClient;
@@ -50,10 +51,11 @@ public class GoogleUserConnection implements UserConnection {
     }
 
     private void setGoogleSignInClient(Context context) {
-        GoogleSignInOptions signInOptions =
+        //TODO setGoogleSignInClient
+        /*GoogleSignInOptions signInOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestScopes(Drive.SCOPE_FILE)
                         .build();
-        googleSignInClient = GoogleSignIn.getClient(context, signInOptions);
+        googleSignInClient = GoogleSignIn.getClient(context, signInOptions);*/
     }
 }

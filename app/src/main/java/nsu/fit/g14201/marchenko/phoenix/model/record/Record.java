@@ -1,6 +1,5 @@
 package nsu.fit.g14201.marchenko.phoenix.model.record;
 
-import android.support.annotation.NonNull;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -9,6 +8,8 @@ import org.joda.time.format.DateTimeFormatter;
 import java.io.File;
 import java.util.Objects;
 import java.util.regex.Pattern;
+
+import androidx.annotation.NonNull;
 
 public class Record {
     private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormat.forPattern("dd-MM-yyyy_HH:mm:ss");

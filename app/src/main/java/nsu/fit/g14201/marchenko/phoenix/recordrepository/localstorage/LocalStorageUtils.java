@@ -1,9 +1,8 @@
 package nsu.fit.g14201.marchenko.phoenix.recordrepository.localstorage;
 
-import android.support.annotation.NonNull;
-
 import java.io.File;
 
+import androidx.annotation.NonNull;
 import nsu.fit.g14201.marchenko.phoenix.model.VideoTitleHandlerProviding;
 
 class LocalStorageUtils {

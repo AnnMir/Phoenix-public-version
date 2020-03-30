@@ -8,9 +8,9 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.media.MediaCodec;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.context.Contextual;
@@ -271,6 +271,9 @@ public class RecordingPresenter implements RecordingContract.Presenter,
         }
 
         try {
+            if(appContext == null){
+                Log.i("Phoenix","null");
+            }
             VideoTitleHandlerProviding videoTitleHandler = appContext.getVideoTitleHandler();
             VideoFragmentPath videoFragmentPath = new VideoFragmentPath(
                     new RecordPath(videoTitleHandler.getNewVideoTitle()),

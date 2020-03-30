@@ -3,8 +3,9 @@ package nsu.fit.g14201.marchenko.phoenix.registration;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 
+
+import androidx.annotation.Nullable;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.camerapermission.RequiredPermissionsActivity;
 import nsu.fit.g14201.marchenko.phoenix.coordination.Coordinator;

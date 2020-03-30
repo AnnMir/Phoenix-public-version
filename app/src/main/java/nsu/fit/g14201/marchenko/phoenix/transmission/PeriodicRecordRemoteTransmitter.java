@@ -1,6 +1,6 @@
 package nsu.fit.g14201.marchenko.phoenix.transmission;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import java.util.concurrent.Executors;

@@ -11,7 +11,7 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
-import android.support.annotation.NonNull;
+
 import android.util.Log;
 import android.util.Size;
 import android.view.Display;
@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.Semaphore;
 
+import androidx.annotation.NonNull;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 

@@ -3,12 +3,13 @@ package nsu.fit.g14201.marchenko.phoenix.registration;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+
 import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.gms.common.SignInButton;
 
+import androidx.annotation.Nullable;
 import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.ui.fragments.BaseFragment;

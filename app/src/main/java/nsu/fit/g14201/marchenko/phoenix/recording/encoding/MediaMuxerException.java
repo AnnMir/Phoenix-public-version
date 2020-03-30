@@ -1,12 +1,14 @@
 package nsu.fit.g14201.marchenko.phoenix.recording.encoding;
 
 
-import android.support.annotation.IntDef;
+
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import androidx.annotation.IntDef;
 
 public class MediaMuxerException extends Throwable {
     public static final int AUDIO_ENCODER_ALREADY_EXISTS = 0;

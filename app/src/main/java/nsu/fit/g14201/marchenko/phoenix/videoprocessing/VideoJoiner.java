@@ -1,6 +1,6 @@
 package nsu.fit.g14201.marchenko.phoenix.videoprocessing;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.authoring.Movie;

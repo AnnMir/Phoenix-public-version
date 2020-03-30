@@ -1,12 +1,12 @@
 package nsu.fit.g14201.marchenko.phoenix.model;
 
-import android.support.annotation.NonNull;
-
 import java.io.FileFilter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.regex.Pattern;
+
+import androidx.annotation.NonNull;
 
 public class VideoTitleHandler implements VideoTitleHandlerProviding {
     private final Pattern videoTitlePattern;

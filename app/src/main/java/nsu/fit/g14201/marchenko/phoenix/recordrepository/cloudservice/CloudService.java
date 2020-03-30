@@ -1,10 +1,9 @@
 package nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice;
 
-import android.support.annotation.NonNull;
-
 import java.io.File;
 import java.io.FileInputStream;
 
+import androidx.annotation.NonNull;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;

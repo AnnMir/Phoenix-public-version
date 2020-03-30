@@ -1,7 +1,7 @@
 package nsu.fit.g14201.marchenko.phoenix.recordrepository;
 
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.FileInputStream;

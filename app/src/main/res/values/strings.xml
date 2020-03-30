@@ -8,4 +8,45 @@
     <string name="logout">Выйти</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
+    <string name="recording">Запись</string>
+    <string name="already_signed_in">Пользователь уже авторизован</string>
+    <string name="already_signed_out">Пользователь уже деавторизован</string>
+    <string name="signed_out">Пользователь деавторизован</string>
+    <string name="sign_in_failure">Не удалось авторизоваться</string>
+    <string name="sign_out_failure">Не удалось деавторизоваться</string>
+    <string name="signed_in_as">Авторизован как %1$s</string>
+    <string name="some_error">Произошла некая ошибка. Приложение может работать некорректно</string>
+    <string name="cant_record_video">Не получается записать видео</string>
+    <string name="start_recording">Начать запись</string>
+    <string name="stop_recording">Стоп</string>
+    <string name="video_saved">Видео сохранено</string>
+    <string name="no_camera_no_app">Невозможно продолжить работу без камеры</string>
+    <string name="camera_access_error">Возникла ошибка при попытке доступа к камере</string>
+    <string name="camera_error">Возникла ошибка при работе с камерой</string>
+    <string name="disconnected_camera">Камера недоступна</string>
+    <string name="camera_already_in_use">Камера уже используется другим приложением</string>
+    <string name="grant_camera_access">Необходим доступ к камере</string>
+    <string name="need_for_camera_explanation">Для работы приложения необходимо разрешить ему
+    доступ к камере. Иначе мы не сможем выполнять свою главную цель :(</string>
+    <string name="grant_write_external_storage_access">Необходимо разрешение на сохранение
+    во внешнее хранилище</string>
+    <string name="need_for_write_external_storage_explanation">Если не дать этот доступ,
+    нам некуда будет сохранять файлы</string>
+    <string name="record_repository_storage_error">Возникла ошибка при работе с хранилищем данных</string>
+    <string name="error_working_with_cloud">Невозможно обмениваться данными с %1$s</string>
+    <string name="can_not_find_fragment_locally">Не получилось найти локальный фрагмент</string>
+    <string name="stop_uploading_data">Передача данных в облако прекращена</string>
+    <string name="assemble">Собрать</string>
+    <string name="no_internet_connection">Нет доступа в интернет</string>
+    <string name="assemble_without_internet">Возможно, в облачном сервисе есть фрагменты, которых
+        нет на мобильном устройстве.</string>
+    <string name="local_fragments_assemble">Хотите ли вы осуществить сборку на основе локальных
+        фрагментов?</string>
+    <string name="something_went_wrong">Что-то пошло не так, не удаётся синхронизоваться с сервером.</string>
+    <string name="no_record_in_cloud">В облачном сервисе нет такой записи. Осуществляем сборку из
+    локальных фрагментов</string>
+    <string name="unexpected_error">Непредвиденная ошибка</string>
+    <string name="assembly_completed">Сборка завершена</string>
+    <string name="loading_missing_fragments">Загрузка недостающих фрагментов</string>
+    <string name="missing_fragments_downloaded">Недостающие фрагменты загружены</string>
 </resources>

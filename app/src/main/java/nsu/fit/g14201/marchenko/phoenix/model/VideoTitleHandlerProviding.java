@@ -1,8 +1,8 @@
 package nsu.fit.g14201.marchenko.phoenix.model;
 
-import android.support.annotation.NonNull;
-
 import java.io.FileFilter;
+
+import androidx.annotation.NonNull;
 
 public interface VideoTitleHandlerProviding {
     String getExtension();

@@ -1,8 +1,10 @@
 package nsu.fit.g14201.marchenko.phoenix.model.record;
 
-import android.support.annotation.NonNull;
+
 
 import java.io.File;
+
+import androidx.annotation.NonNull;
 
 public class FragmentedRecord extends Record {
     private String[] fragmentNames;

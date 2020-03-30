@@ -1,10 +1,12 @@
 package nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.googledrive;
 
-import com.google.android.gms.drive.DriveId;
+
 
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
 
-public class GoogleDriveRecordFolder implements RecordFolder {
+//TODO понять, зачем этот класс
+
+public class GoogleDriveRecordFolder implements RecordFolder {/*
     private DriveId driveId;
 
     public GoogleDriveRecordFolder(DriveId driveId) {
@@ -13,5 +15,5 @@ public class GoogleDriveRecordFolder implements RecordFolder {
 
     public DriveId getDriveId() {
         return driveId;
-    }
+    }*/
 }

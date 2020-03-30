@@ -1,9 +1,9 @@
 package nsu.fit.g14201.marchenko.phoenix.utils;
 
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import androidx.recyclerview.widget.RecyclerView;
 import nsu.fit.g14201.marchenko.phoenix.R;
 
 public class ItemClickSupport {

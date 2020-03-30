@@ -1,17 +1,19 @@
 package nsu.fit.g14201.marchenko.phoenix.ui.activities;
 
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.RestrictionEntry;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.GravityCompat;
+import androidx.annotation.NonNull;
 import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import androidx.core.view.GravityCompat;
+import androidx.fragment.app.Fragment;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.connection.GoogleUserConnection;
@@ -24,6 +26,8 @@ import nsu.fit.g14201.marchenko.phoenix.recording.RecordingContract;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingFragment;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingListener;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingPresenter;
+import nsu.fit.g14201.marchenko.phoenix.recording.VideoFragmentListener;
+import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.recordmanagement.RecordManagementContract;
 import nsu.fit.g14201.marchenko.phoenix.recordmanagement.RecordManagementFragment;
 import nsu.fit.g14201.marchenko.phoenix.recordmanagement.RecordManagementPresenter;
@@ -55,11 +59,9 @@ public class MainActivity extends DrawerActivity implements
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         try {
             appContext = Context.createContext(this);
-            configureRecordingBlock();
-        } catch (SignInException e) {
+            }catch (SignInException e) {
             showSnack(getString(R.string.some_error));
             e.printStackTrace();
         }
@@ -67,6 +69,7 @@ public class MainActivity extends DrawerActivity implements
 
     @Override
     protected void onStart() {
+        configureRecordingBlock();
         recordingPresenter.start();
         super.onStart();
     }
@@ -137,6 +140,7 @@ public class MainActivity extends DrawerActivity implements
         transmissionPresenter.start();
     }
 
+    @SuppressLint("StringFormatInvalid")
     @Override
     public void onUnableToContinueTransmission(@NonNull TransmissionProblem problem) {
         recordingPresenter.removeVideoFragmentListener();
@@ -195,6 +199,7 @@ public class MainActivity extends DrawerActivity implements
 
     private void configureRecordingBlock() {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(RECORDING_FRAGMENT_TAG);
+
         if (fragment != null) {
             return;
         }

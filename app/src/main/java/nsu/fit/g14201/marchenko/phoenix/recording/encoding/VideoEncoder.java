@@ -6,7 +6,6 @@ import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.opengl.EGLContext;
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 
@@ -14,6 +13,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
+import androidx.annotation.NonNull;
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.recording.camera.CameraException;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.glutils.RenderHandler;

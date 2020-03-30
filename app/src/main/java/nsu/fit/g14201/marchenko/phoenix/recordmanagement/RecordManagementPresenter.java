@@ -1,7 +1,7 @@
 package nsu.fit.g14201.marchenko.phoenix.recordmanagement;
 
-import android.support.annotation.NonNull;
 
+import androidx.annotation.NonNull;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;

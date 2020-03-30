@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
@@ -55,15 +57,18 @@ class AuthorizationPresenter implements AuthorizationContract.Presenter, Coordin
     @Override
     public void handleSignInResult(int resultCode, Intent data) {
         Log.i(App.getTag(), "Handling sign in result");
+        Log.i(App.getTag(), String.valueOf(RESULT_OK));
         if (resultCode == RESULT_OK) {
-//            GoogleSignInAccount googleSignInAccount =
-//                    GoogleSignIn.getLastSignedInAccount(context);
-//            String displayedName = googleSignInAccount == null ?
-//                    "null" :
-//                    googleSignInAccount.getDisplayName();
-//            authView.showSnack(context.getString(R.string.signed_in_as, displayedName));
+            GoogleSignInAccount googleSignInAccount =
+                    GoogleSignIn.getLastSignedInAccount(context);
+            String displayedName = googleSignInAccount == null ?
+                    "null" :
+                    googleSignInAccount.getDisplayName();
+            authView.showSnack(context.getString(R.string.signed_in_as, displayedName));
             coordinator.next();
-        } else {
+        } else if(resultCode == GoogleSignInStatusCodes.SUCCESS){
+            coordinator.next();
+        }else {
             Log.e(App.getTag(), "FAILED TO SIGN IN");
             int resultStatusCode = Auth.GoogleSignInApi
                     .getSignInResultFromIntent(data)

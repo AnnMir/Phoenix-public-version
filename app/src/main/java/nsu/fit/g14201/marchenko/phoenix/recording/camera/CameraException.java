@@ -1,12 +1,13 @@
 package nsu.fit.g14201.marchenko.phoenix.recording.camera;
 
 
-import android.support.annotation.IntDef;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import androidx.annotation.IntDef;
 
 public class CameraException extends Throwable {
     public static final int NO_CAMERAS_FOUND = 0;

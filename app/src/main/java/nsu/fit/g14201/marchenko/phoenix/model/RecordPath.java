@@ -1,6 +1,7 @@
 package nsu.fit.g14201.marchenko.phoenix.model;
 
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 public class RecordPath {
     private final String directoryName;

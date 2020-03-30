@@ -2,13 +2,16 @@ package nsu.fit.g14201.marchenko.phoenix.ui.activities;
 
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.Toolbar;
 
+
+
+import com.google.android.material.navigation.NavigationView;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import nsu.fit.g14201.marchenko.phoenix.R;
 
 public abstract class DrawerActivity extends BaseActivity implements
