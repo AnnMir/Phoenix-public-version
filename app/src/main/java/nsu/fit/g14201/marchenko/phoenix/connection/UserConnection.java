@@ -7,7 +7,6 @@ import android.content.Intent;
 import com.google.android.gms.tasks.OnCompleteListener;
 
 public interface UserConnection {
-    Intent startSignInAndGetIntent(Context context) throws SignInException;
 
     boolean isSignedIn(Context context);
 

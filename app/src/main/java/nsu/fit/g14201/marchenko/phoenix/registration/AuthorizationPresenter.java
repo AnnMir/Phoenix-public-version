@@ -49,13 +49,13 @@ class AuthorizationPresenter implements AuthorizationContract.Presenter, Coordin
         if (userConnection.isSignedIn(context)) {
             authView.showSnack(context.getString(R.string.already_signed_in));
         } else {
-            try {
+            //try {
                 Log.d(App.getTag(), "Start sign in");
-                authView.startSignInActivity(userConnection.startSignInAndGetIntent(context));
-            } catch (SignInException e) {
+//                authView.startSignInActivity(userConnection.startSignInAndGetIntent(context));
+     /*       } catch (SignInException e) {
                 Log.e(App.getTag(), e.getMessage());
                 authView.showSnack(context.getString(R.string.sign_in_failure));
-            }
+            }*/
         }
     }
 
@@ -69,7 +69,7 @@ class AuthorizationPresenter implements AuthorizationContract.Presenter, Coordin
                     Log.i(App.getTag(), "success sign in");
 
                     GoogleAccountCredential credential = GoogleAccountCredential
-                            .usingOAuth2(context, Collections.singleton(DriveScopes.DRIVE_FILE));
+                            .usingOAuth2(context, Collections.singleton(DriveScopes.DRIVE));
                     credential.setSelectedAccount(googleSignInAccount.getAccount());
                     credential.setBackOff(new ExponentialBackOff());
                     GoogleUserConnection.getInstance().setCredential(credential);

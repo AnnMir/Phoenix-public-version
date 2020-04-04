@@ -52,27 +52,26 @@ public class GoogleDriveService implements CloudService{
     @Override
     public Completable createAppFolderIfNotExists() {
         //mime-type of folder application/vnd.google-apps.folder
-       // return Completable.create((CompletableEmitter emitter) -> {
-                    //try {
-                       /* service = new Drive.Builder(
+        return Completable.create((CompletableEmitter emitter) -> {
+                    try {
+                        service = new Drive.Builder(
                                 AndroidHttp.newCompatibleTransport(),
                                 new GsonFactory(),
                                 credential)
                                 .setApplicationName("Phoenix")
                                 .build();
-                        rootFolder = service.files().get("root").setFields("id").execute().getId();*/
-        /*               try{
-                        URL url = new URL("https://www.googleapis.com/drive/v3?fileId=root&fields=id");
+                        //rootFolder = service.files().get("root").setFields("id").execute().getId();
+                        URL url = new URL("https://www.googleapis.com/drive/v3/root?fields=id");
                         HttpURLConnection request = (HttpURLConnection) url.openConnection();
                         request.setRequestMethod("GET");
                         request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
                         //request.setRequestProperty("Accept", "application/json");
-
+                        request.setDoInput(true);
                         request.connect();
+
                         if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
                             rootFolder = request.getHeaderField("id");
-                            //rootFolder = request.getResponseMessage();
-                            emitter.onComplete();
+                            //emitter.onComplete();
                             Log.i(App.getTag(), rootFolder);
                             return;
                         }
@@ -81,14 +80,10 @@ public class GoogleDriveService implements CloudService{
                            emitter.onError(e);
                            e.printStackTrace();
                        }
-                        //System.out.println("Folder ID: " + file.getId());
-                        //Log.i(App.getTag(), rootFolder);
-                        createAppFolder();
-                        if(rootFolder != null)
-                            emitter.onComplete();
 
-        });*/
-        return null;
+                        createAppFolder();
+        });
+
     }
 
     private File createAppFolder() {
@@ -106,8 +101,7 @@ public class GoogleDriveService implements CloudService{
         return file;
     }
 
-    /*@Override
-    public Completable createAppFolderIfNotExists() {
+    /*Completable createAppFolderIfNotExists() {
         return Completable.create((CompletableEmitter emitter) -> {
             driveResourceClient
                     .getRootFolder()

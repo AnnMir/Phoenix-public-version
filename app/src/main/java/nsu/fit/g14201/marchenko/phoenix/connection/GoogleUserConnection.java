@@ -35,20 +35,17 @@ public class GoogleUserConnection implements UserConnection {
         return credential;
     }
 
-    @Override
-    public Intent startSignInAndGetIntent(Context context) throws SignInException {
-        if (isSignedIn(context)) {
-            throw new SignInException("Already signed in");
-        }
-        if (googleSignInClient == null) {
-            setGoogleSignInClient(context);
-        }
-        return googleSignInClient.getSignInIntent();
+    public GoogleSignInClient getGoogleSignInClient() {
+        return googleSignInClient;
+    }
+
+    public void setGoogleSignInClient(GoogleSignInClient googleSignInClient) {
+        this.googleSignInClient = googleSignInClient;
     }
 
     @Override
     public boolean isSignedIn(Context context) {
-        return GoogleSignIn.getLastSignedInAccount(context) != null && credential != null;
+        return GoogleSignIn.getLastSignedInAccount(context) != null;
     }
 
     @Override
