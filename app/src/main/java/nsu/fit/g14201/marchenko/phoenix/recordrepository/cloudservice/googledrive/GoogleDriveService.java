@@ -11,10 +11,16 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -61,19 +67,36 @@ public class GoogleDriveService implements CloudService{
                                 .setApplicationName("Phoenix")
                                 .build();
                         //rootFolder = service.files().get("root").setFields("id").execute().getId();
-                        URL url = new URL("https://www.googleapis.com/drive/v3/root?fields=id");
+                        //Log.i(App.getTag(),rootFolder);
+                        URL url = new URL("https://www.googleapis.com/drive/v3/files/root?fields=id");
                         HttpURLConnection request = (HttpURLConnection) url.openConnection();
                         request.setRequestMethod("GET");
                         request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
-                        //request.setRequestProperty("Accept", "application/json");
+                        request.setRequestProperty("Accept", "application/json");
                         request.setDoInput(true);
                         request.connect();
 
+                        String jsonString;
                         if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                            rootFolder = request.getHeaderField("id");
+                            InputStream response = request.getInputStream();
+                            jsonString = convertStreamToString(response);
+                            JsonObject obj = new JsonParser().parse(jsonString).getAsJsonObject();
+                            rootFolder = obj.get("id").getAsString();
+                            //rootFolder = request.getHeaderField("id");
                             //emitter.onComplete();
-                            Log.i(App.getTag(), rootFolder);
-                            return;
+                            //Log.i(App.getTag(), rootFolder);
+
+                            URL url1 = new URL("https://www.googleapis.com/drive/v3/files?fields=files&q=mimeType='application/vnd.google-apps.folder'&name="+App.getAppName());
+                            HttpURLConnection request1 = (HttpURLConnection) url1.openConnection();
+                            request1.setRequestMethod("GET");
+                            request1.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                            request1.setRequestProperty("Accept", "application/json");
+                            request1.setDoInput(true);
+                            request1.connect();
+                            if(request1.getResponseCode() == HttpURLConnection.HTTP_OK){
+                                String fileId = request1.getHeaderField("files");
+                            }
+                            Log.i(App.getTag(), request1.getResponseCode()+ " " + request1.getResponseMessage());
                         }
                         Log.i(App.getTag(), request.getResponseCode()+" "+request.getResponseMessage());
                     } catch (GoogleAuthException | IOException e) {
@@ -84,6 +107,28 @@ public class GoogleDriveService implements CloudService{
                         createAppFolder();
         });
 
+    }
+
+    private static String convertStreamToString(InputStream is) {
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+
+        String line = null;
+        try {
+            while ((line = reader.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return sb.toString();
     }
 
     private File createAppFolder() {

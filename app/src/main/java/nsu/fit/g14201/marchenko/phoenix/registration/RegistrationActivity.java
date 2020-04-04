@@ -56,7 +56,7 @@ public class RegistrationActivity extends AppCompatActivity {
             GoogleSignIn.getSignedInAccountFromIntent(data)
                     .addOnSuccessListener(googleSignInAccount -> {
                         GoogleAccountCredential credential = GoogleAccountCredential
-                                .usingOAuth2(RegistrationActivity.this, Collections.singleton(DriveScopes.DRIVE_FILE));
+                                .usingOAuth2(RegistrationActivity.this, Collections.singleton(DriveScopes.DRIVE));
                         credential.setSelectedAccount(googleSignInAccount.getAccount());
                         credential.setBackOff(new ExponentialBackOff());
                         GoogleUserConnection.getInstance().setCredential(credential);
