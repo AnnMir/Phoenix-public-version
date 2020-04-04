@@ -4,11 +4,16 @@ package nsu.fit.g14201.marchenko.phoenix.registration;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.drive.DriveScopes;
+
+import java.util.Collections;
 
 import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
@@ -58,35 +63,37 @@ class AuthorizationPresenter implements AuthorizationContract.Presenter, Coordin
     public void handleSignInResult(int resultCode, Intent data) {
         Log.i(App.getTag(), "Handling sign in result");
         Log.i(App.getTag(), String.valueOf(RESULT_OK));
-        if (resultCode == RESULT_OK) {
-            GoogleSignInAccount googleSignInAccount =
-                    GoogleSignIn.getLastSignedInAccount(context);
-            String displayedName = googleSignInAccount == null ?
-                    "null" :
-                    googleSignInAccount.getDisplayName();
-            authView.showSnack(context.getString(R.string.signed_in_as, displayedName));
-            coordinator.next();
-        } else if(resultCode == GoogleSignInStatusCodes.SUCCESS){
-            coordinator.next();
-        }else {
-            Log.e(App.getTag(), "FAILED TO SIGN IN");
-            int resultStatusCode = Auth.GoogleSignInApi
-                    .getSignInResultFromIntent(data)
-                    .getStatus()
-                    .getStatusCode();
-            switch (resultStatusCode) {
-                case GoogleSignInStatusCodes.NETWORK_ERROR:
-                    authView.showSnack("Network error");
-                    break;
-                case GoogleSignInStatusCodes.SIGN_IN_CURRENTLY_IN_PROGRESS:
-                    authView.showSnack("Sign in is in process already");
-                    break;
-                case GoogleSignInStatusCodes.SIGN_IN_FAILED:
-                    authView.showSnack("Sign in failed");
-                default:
-                    Log.e(App.getTag(), "Failure code: " + resultStatusCode);
-            }
-        }
+
+        GoogleSignIn.getSignedInAccountFromIntent(data)
+                .addOnSuccessListener(googleSignInAccount -> {
+                    Log.i(App.getTag(), "success sign in");
+
+                    GoogleAccountCredential credential = GoogleAccountCredential
+                            .usingOAuth2(context, Collections.singleton(DriveScopes.DRIVE_FILE));
+                    credential.setSelectedAccount(googleSignInAccount.getAccount());
+                    credential.setBackOff(new ExponentialBackOff());
+                    GoogleUserConnection.getInstance().setCredential(credential);
+                    coordinator.next();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(App.getTag(), "FAILED TO SIGN IN");
+                    int resultStatusCode = Auth.GoogleSignInApi
+                            .getSignInResultFromIntent(data)
+                            .getStatus()
+                            .getStatusCode();
+                    switch (resultStatusCode) {
+                        case GoogleSignInStatusCodes.NETWORK_ERROR:
+                            Toast.makeText(context, "Network error", Toast.LENGTH_LONG).show();
+                            break;
+                        case GoogleSignInStatusCodes.SIGN_IN_CURRENTLY_IN_PROGRESS:
+                            Toast.makeText(context, "Sign in is in process already", Toast.LENGTH_LONG).show();
+                            break;
+                        case GoogleSignInStatusCodes.SIGN_IN_FAILED:
+                            Toast.makeText(context, "Sign in failed", Toast.LENGTH_LONG).show();
+                        default:
+                            Log.e(App.getTag(), "Failure code: " + resultStatusCode);
+                    }
+                });
     }
 
     @Override

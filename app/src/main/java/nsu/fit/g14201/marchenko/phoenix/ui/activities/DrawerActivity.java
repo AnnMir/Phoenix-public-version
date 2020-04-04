@@ -15,6 +15,7 @@ public abstract class DrawerActivity extends BaseActivity implements
         NavigationView.OnNavigationItemSelectedListener{
     protected DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
+    protected NavigationView navigationView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -28,7 +29,7 @@ public abstract class DrawerActivity extends BaseActivity implements
                 this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
 
-        NavigationView navigationView = findViewById(R.id.navigation_view);
+        navigationView = findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
 

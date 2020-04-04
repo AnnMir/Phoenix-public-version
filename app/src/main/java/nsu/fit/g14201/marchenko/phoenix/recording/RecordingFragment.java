@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
+import nsu.fit.g14201.marchenko.phoenix.ui.activities.MainActivity;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.CorrigibleErrorDialog;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.FatalErrorDialog;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.IncorrigibleErrorDialog;

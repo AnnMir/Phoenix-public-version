@@ -4,6 +4,7 @@ package nsu.fit.g14201.marchenko.phoenix.registration;
 import android.content.Intent;
 import android.os.Bundle;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -11,6 +12,7 @@ import com.google.android.gms.common.SignInButton;
 
 import androidx.annotation.Nullable;
 import butterknife.OnClick;
+import nsu.fit.g14201.marchenko.phoenix.App;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.ui.fragments.BaseFragment;
 
@@ -38,6 +40,7 @@ public class AuthorizationFragment extends BaseFragment implements
         if (requestCode == REQUEST_CODE_SIGN_IN) {
             presenter.handleSignInResult(resultCode, data);
         }
+        Log.i(App.getTag(), "onActivityResult in AuthorizationFragment "+requestCode+" "+resultCode);
     }
 
     @Override

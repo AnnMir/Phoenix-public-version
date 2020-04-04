@@ -1,7 +1,9 @@
 package nsu.fit.g14201.marchenko.phoenix.recording;
 
 
+import android.app.Activity;
 import android.content.Context;
+import android.drm.DrmStore;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;

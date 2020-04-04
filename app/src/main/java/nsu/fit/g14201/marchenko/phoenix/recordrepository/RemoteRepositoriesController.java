@@ -45,7 +45,6 @@ public class RemoteRepositoriesController implements RemoteReposControllerProvid
 
     @Override
     public void createAppFolderIfNotExists() {
-        /*
         final Disposable disposable = cloudServices.get(0).createAppFolderIfNotExists()
                 .subscribeOn(scheduler)
                 .observeOn(scheduler)
@@ -57,7 +56,6 @@ public class RemoteRepositoriesController implements RemoteReposControllerProvid
                     throwable.printStackTrace();
                     remoteRepoListener.onFailedToCreateAppRepository();
                 });
-         */
     }
 
     @Override

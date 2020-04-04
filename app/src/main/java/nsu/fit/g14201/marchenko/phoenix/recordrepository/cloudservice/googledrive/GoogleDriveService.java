@@ -3,16 +3,24 @@ package nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.googledri
 import android.content.Context;
 import android.util.Log;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.GoogleAuthException;
+import com.google.android.gms.tasks.Task;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
+import com.google.api.services.drive.model.File;
+
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import io.reactivex.Completable;
@@ -21,14 +29,20 @@ import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import nsu.fit.g14201.marchenko.phoenix.App;
-import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
+import nsu.fit.g14201.marchenko.phoenix.connection.GoogleUserConnection;
 import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.CloudService;
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
 
 public class GoogleDriveService implements CloudService{
+    private static final String FOLDER_NAME = App.getAppName();
+    private GoogleAccountCredential credential;
+    private String rootFolder;
+    private Drive service;
 
-    public GoogleDriveService(Context context){}
+    public GoogleDriveService(Context context){
+        credential = GoogleUserConnection.getInstance().getCredential();
+    }
 
     @Override
     public String getName() {
@@ -37,8 +51,108 @@ public class GoogleDriveService implements CloudService{
 
     @Override
     public Completable createAppFolderIfNotExists() {
+        //mime-type of folder application/vnd.google-apps.folder
+       // return Completable.create((CompletableEmitter emitter) -> {
+                    //try {
+                       /* service = new Drive.Builder(
+                                AndroidHttp.newCompatibleTransport(),
+                                new GsonFactory(),
+                                credential)
+                                .setApplicationName("Phoenix")
+                                .build();
+                        rootFolder = service.files().get("root").setFields("id").execute().getId();*/
+        /*               try{
+                        URL url = new URL("https://www.googleapis.com/drive/v3?fileId=root&fields=id");
+                        HttpURLConnection request = (HttpURLConnection) url.openConnection();
+                        request.setRequestMethod("GET");
+                        request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                        //request.setRequestProperty("Accept", "application/json");
+
+                        request.connect();
+                        if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                            rootFolder = request.getHeaderField("id");
+                            //rootFolder = request.getResponseMessage();
+                            emitter.onComplete();
+                            Log.i(App.getTag(), rootFolder);
+                            return;
+                        }
+                        Log.i(App.getTag(), request.getResponseCode()+" "+request.getResponseMessage());
+                    } catch (GoogleAuthException | IOException e) {
+                           emitter.onError(e);
+                           e.printStackTrace();
+                       }
+                        //System.out.println("Folder ID: " + file.getId());
+                        //Log.i(App.getTag(), rootFolder);
+                        createAppFolder();
+                        if(rootFolder != null)
+                            emitter.onComplete();
+
+        });*/
         return null;
     }
+
+    private File createAppFolder() {
+        File file = null;
+        try {
+            File fileMetadata = new File();
+            fileMetadata.setName(App.getAppName());
+            fileMetadata.setMimeType("application/vnd.google-apps.folder");
+            file = service.files().create(fileMetadata)
+                    .setFields("id")
+                    .execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    /*@Override
+    public Completable createAppFolderIfNotExists() {
+        return Completable.create((CompletableEmitter emitter) -> {
+            driveResourceClient
+                    .getRootFolder()
+                    .continueWithTask(Runnable::run, task -> {
+                        Query query = new Query.Builder()
+                                .addFilter(Filters.and(
+                                        Filters.eq(SearchableField.MIME_TYPE, "application/vnd.google-apps.folder"),
+                                        Filters.eq(SearchableField.TITLE, FOLDER_NAME),
+                                        Filters.eq(SearchableField.TRASHED, false)))
+                                .build();
+                        rootFolder = task.getResult();
+                        return driveResourceClient.queryChildren(rootFolder, query);
+
+                    })
+                    .addOnSuccessListener(Runnable::run, metadataBuffer -> {
+                        for (Metadata metadata : metadataBuffer) {
+                            if (metadata.getTitle().equals(FOLDER_NAME)) {
+                                Log.d(App.getTag(), "Folder already exists");
+                                appFolderId = metadata.getDriveId();
+                                emitter.onComplete();
+                                return;
+                            }
+                        }
+                        createAppFolder()
+                                .addOnSuccessListener(Runnable::run, buffer -> emitter.onComplete())
+                                .addOnFailureListener(Runnable::run, e -> {
+                                    Log.e(App.getTag(), "Failed to create app folder");
+                                    emitter.onError(e);
+                                });
+                    })
+                    .addOnFailureListener(Runnable::run, e -> {
+                        Log.e(App.getTag(), "Failed to create app folder");
+                        emitter.onError(e);
+                    });
+        });
+    }*/
+/*
+    private Task<DriveFolder> createAppFolder() {
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                .setTitle(App.getAppName())
+                .setMimeType(DriveFolder.MIME_TYPE)
+                .build();
+        return driveResourceClient.createFolder(rootFolder, changeSet);
+    }
+}*/
 
     @Override
     public Single<RecordFolder> createVideoRepository(@NonNull String name) {
@@ -47,6 +161,75 @@ public class GoogleDriveService implements CloudService{
 
     @Override
     public Completable transmitFragment(@NonNull RecordFolder folder, @NonNull FileInputStream inputStream, @NonNull String name) {
+        HttpURLConnection request = null;
+        String sessionUri = "";
+        try {
+            //String request = "POST /upload/drive/v3/files?uploadType=resumable HTTP/1.1 Host: www.googleapis.com Authorization: Bearer your_auth_token Content-Length: 38 Content-Type: application/json; charset=UTF-8 X-Upload-Content-Type: image/jpeg X-Upload-Content-Length: 2000000 { \"name\": \"My File\" }";
+            URL url = new URL("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable");
+            request = (HttpURLConnection) url.openConnection();
+            request.setRequestMethod("POST");
+            request.setDoInput(true);
+            request.setDoOutput(true);
+            request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+            request.setRequestProperty("X-Upload-Content-Type", "video/mp4");
+            //request.setRequestProperty("X-Upload-Content-Length", String.format(Locale.ENGLISH, "%d", inputStream.length()));
+            //Log.i(App.getTag(), String.format(Locale.ENGLISH, "%d", file.length()));
+            request.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            String body = "{\"name\": \"" + name + "\"}";
+            request.setRequestProperty("Content-Length", String.format(Locale.ENGLISH, "%d", body.getBytes().length));
+            OutputStream outputStream = request.getOutputStream();
+            outputStream.write(body.getBytes());
+
+            outputStream.flush();
+            outputStream.close();
+            request.connect();
+            if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                sessionUri = request.getHeaderField("location");
+                Log.i(App.getTag(), sessionUri);
+            }
+
+
+            //simple resumable upload
+            URL url1 = new URL(sessionUri);
+            request = (HttpURLConnection) url1.openConnection();
+            request.setRequestMethod("PUT");
+            request.setDoOutput(true);
+            //String len = Long.toString(file.length());
+            //Log.i("GDProj", "length:" + len);
+            //request.setRequestProperty("Content-Length", len);
+            request.setRequestProperty("Content-Type", "video/mp4");
+
+            DataOutputStream output = new DataOutputStream(request.getOutputStream());
+            //FileInputStream inputFile = new FileInputStream(file);
+            byte[] buffer = new byte[64 * 1024];
+            int counter;
+            while ((counter = inputStream.read(buffer)) != -1) {
+                output.write(buffer, 0, counter);
+            }
+
+            output.flush();
+            request.connect();
+            int response = request.getResponseCode();
+            String code = "" + response;
+            Log.i(App.getTag(), code);
+            if (response == HttpURLConnection.HTTP_OK) {
+                Log.i(App.getTag(), "Success send");
+            }else{
+                String s = response + " " + request.getResponseMessage();
+                Log.e(App.getTag(), s);
+            }
+        } catch (IOException | GoogleAuthException e) {
+            e.printStackTrace();
+        } finally {
+            if (request != null)
+                request.disconnect();
+        }
+        return null;
+    }
+
+    @Override
+    public Single<FileInputStream> getRecord(@NonNull String name) {
+        // TODO
         return null;
     }
 
@@ -66,18 +249,13 @@ public class GoogleDriveService implements CloudService{
     }
 
     @Override
-    public Completable downloadFragment(@NonNull RecordFolder recordFolder, @NonNull File file) {
-        return null;
-    }
-
-    @Override
-    public Single<FileInputStream> getRecord(@NonNull String name) {
+    public Completable downloadFragment(@NonNull RecordFolder recordFolder, @NonNull java.io.File file) {
         return null;
     }
 }
 
 /*public class GoogleDriveService implements CloudService {
-    private static final String FOLDER_NAME = App.getAppName();
+
 
     private DriveClient driveClient;
     private DriveResourceClient driveResourceClient;
@@ -95,11 +273,7 @@ public class GoogleDriveService implements CloudService{
         driveResourceClient = Drive.getDriveResourceClient(context, signInAccount);
     }
 
-    @Override
-    public Single<FileInputStream> getRecord(@NonNull String name) {
-        // TODO
-        return null;
-    }
+
 
     @Override
     public Observable<Record> getRecords() {

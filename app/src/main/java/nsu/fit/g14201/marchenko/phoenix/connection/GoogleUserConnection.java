@@ -8,11 +8,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.api.services.drive.Drive;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.services.drive.DriveScopes;
 
 public class GoogleUserConnection implements UserConnection {
     private GoogleSignInClient googleSignInClient;
+    private GoogleAccountCredential credential;
 
     private GoogleUserConnection() {}
 
@@ -22,6 +25,14 @@ public class GoogleUserConnection implements UserConnection {
 
     public static GoogleUserConnection getInstance(){
         return SingletonHelper.INSTANCE;
+    }
+
+    public void setCredential(GoogleAccountCredential credential) {
+        this.credential = credential;
+    }
+
+    public GoogleAccountCredential getCredential(){
+        return credential;
     }
 
     @Override
@@ -37,7 +48,7 @@ public class GoogleUserConnection implements UserConnection {
 
     @Override
     public boolean isSignedIn(Context context) {
-        return GoogleSignIn.getLastSignedInAccount(context) != null;
+        return GoogleSignIn.getLastSignedInAccount(context) != null && credential != null;
     }
 
     @Override
@@ -51,11 +62,11 @@ public class GoogleUserConnection implements UserConnection {
     }
 
     private void setGoogleSignInClient(Context context) {
-        //TODO setGoogleSignInClient
-        /*GoogleSignInOptions signInOptions =
+        GoogleSignInOptions signInOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestScopes(Drive.SCOPE_FILE)
+                        .requestEmail()
+                        .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
                         .build();
-        googleSignInClient = GoogleSignIn.getClient(context, signInOptions);*/
+        googleSignInClient = GoogleSignIn.getClient(context, signInOptions);
     }
 }
