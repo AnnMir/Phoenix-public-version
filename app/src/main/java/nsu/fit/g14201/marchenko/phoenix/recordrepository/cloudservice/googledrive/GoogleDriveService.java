@@ -4,28 +4,27 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.android.gms.auth.GoogleAuthException;
-import com.google.android.gms.tasks.Task;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 
 import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
@@ -44,6 +43,7 @@ public class GoogleDriveService implements CloudService{
     private static final String FOLDER_NAME = App.getAppName();
     private GoogleAccountCredential credential;
     private String rootFolder;
+    private String appFolder;
     private Drive service;
 
     public GoogleDriveService(Context context){
@@ -52,59 +52,70 @@ public class GoogleDriveService implements CloudService{
 
     @Override
     public String getName() {
-        return null;
+        return "Google Drive";
     }
 
     @Override
     public Completable createAppFolderIfNotExists() {
         //mime-type of folder application/vnd.google-apps.folder
         return Completable.create((CompletableEmitter emitter) -> {
-                    try {
-                        service = new Drive.Builder(
-                                AndroidHttp.newCompatibleTransport(),
-                                new GsonFactory(),
-                                credential)
-                                .setApplicationName("Phoenix")
-                                .build();
-                        //rootFolder = service.files().get("root").setFields("id").execute().getId();
-                        //Log.i(App.getTag(),rootFolder);
-                        URL url = new URL("https://www.googleapis.com/drive/v3/files/root?fields=id");
-                        HttpURLConnection request = (HttpURLConnection) url.openConnection();
-                        request.setRequestMethod("GET");
-                        request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
-                        request.setRequestProperty("Accept", "application/json");
-                        request.setDoInput(true);
-                        request.connect();
+            new Thread(() -> {
+                try {
+                    service = new Drive.Builder(
+                            AndroidHttp.newCompatibleTransport(),
+                            new GsonFactory(),
+                            credential)
+                            .setApplicationName("Phoenix")
+                            .build();
+                    //rootFolder = service.files().get("root").setFields("id").execute().getId();
+                    //Log.i(App.getTag(),rootFolder);
+                    URL url = new URL("https://www.googleapis.com/drive/v3/files/root?fields=id");
+                    HttpURLConnection request = (HttpURLConnection) url.openConnection();
+                    request.setRequestMethod("GET");
+                    request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                    request.setRequestProperty("Accept", "application/json");
+                    request.setDoInput(true);
+                    request.connect();
 
-                        String jsonString;
-                        if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                            InputStream response = request.getInputStream();
-                            jsonString = convertStreamToString(response);
-                            JsonObject obj = new JsonParser().parse(jsonString).getAsJsonObject();
-                            rootFolder = obj.get("id").getAsString();
-                            //rootFolder = request.getHeaderField("id");
-                            //emitter.onComplete();
-                            //Log.i(App.getTag(), rootFolder);
+                    String jsonString;
+                    if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        InputStream response = request.getInputStream();
+                        jsonString = convertStreamToString(response);
+                        JsonObject obj = new JsonParser().parse(jsonString).getAsJsonObject();
+                        rootFolder = obj.get("id").getAsString();
 
-                            URL url1 = new URL("https://www.googleapis.com/drive/v3/files?fields=files&q=mimeType='application/vnd.google-apps.folder'&name="+App.getAppName());
-                            HttpURLConnection request1 = (HttpURLConnection) url1.openConnection();
-                            request1.setRequestMethod("GET");
-                            request1.setRequestProperty("Authorization", "Bearer " + credential.getToken());
-                            request1.setRequestProperty("Accept", "application/json");
-                            request1.setDoInput(true);
-                            request1.connect();
-                            if(request1.getResponseCode() == HttpURLConnection.HTTP_OK){
-                                String fileId = request1.getHeaderField("files");
+                        URL url1 = new URL("https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder' and name='"+App.getAppName()+"' and trashed=false and 'root' in parents");
+                        HttpURLConnection request1 = (HttpURLConnection) url1.openConnection();
+                        request1.setRequestMethod("GET");
+                        request1.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                        request1.setRequestProperty("Accept", "application/json");
+                        request1.setDoInput(true);
+                        request1.connect();
+                        if(request1.getResponseCode() == HttpURLConnection.HTTP_OK){
+                            InputStream response1 = request1.getInputStream();
+                            jsonString = convertStreamToString(response1);
+                            JsonObject obj1 = new JsonParser().parse(jsonString).getAsJsonObject();
+                            JsonElement folders = obj1.get("files");
+                            for (JsonElement folder :folders.getAsJsonArray()) {
+                                if(folder.getAsJsonObject().get("name").getAsString().equals(App.getAppName())){
+                                    appFolder = folder.getAsJsonObject().get("id").getAsString();
+                                    emitter.onComplete();
+                                    return;
+                                }
                             }
-                            Log.i(App.getTag(), request1.getResponseCode()+ " " + request1.getResponseMessage());
+                            createAppFolder();
+                            appFolder = getFolderId(App.getAppName(),rootFolder);
+                            emitter.onComplete();
                         }
-                        Log.i(App.getTag(), request.getResponseCode()+" "+request.getResponseMessage());
-                    } catch (GoogleAuthException | IOException e) {
-                           emitter.onError(e);
-                           e.printStackTrace();
-                       }
+                        Log.i(App.getTag(), request1.getResponseCode()+ " " + request1.getResponseMessage());
+                    }
+                    Log.i(App.getTag(), request.getResponseCode()+" "+request.getResponseMessage());
+                } catch (GoogleAuthException | IOException e) {
+                    emitter.onError(e);
+                    e.printStackTrace();
+                }
+            }).start();
 
-                        createAppFolder();
         });
 
     }
@@ -137,6 +148,7 @@ public class GoogleDriveService implements CloudService{
             File fileMetadata = new File();
             fileMetadata.setName(App.getAppName());
             fileMetadata.setMimeType("application/vnd.google-apps.folder");
+            fileMetadata.setParents(Collections.singletonList(rootFolder));
             file = service.files().create(fileMetadata)
                     .setFields("id")
                     .execute();
@@ -146,56 +158,52 @@ public class GoogleDriveService implements CloudService{
         return file;
     }
 
-    /*Completable createAppFolderIfNotExists() {
-        return Completable.create((CompletableEmitter emitter) -> {
-            driveResourceClient
-                    .getRootFolder()
-                    .continueWithTask(Runnable::run, task -> {
-                        Query query = new Query.Builder()
-                                .addFilter(Filters.and(
-                                        Filters.eq(SearchableField.MIME_TYPE, "application/vnd.google-apps.folder"),
-                                        Filters.eq(SearchableField.TITLE, FOLDER_NAME),
-                                        Filters.eq(SearchableField.TRASHED, false)))
-                                .build();
-                        rootFolder = task.getResult();
-                        return driveResourceClient.queryChildren(rootFolder, query);
-
-                    })
-                    .addOnSuccessListener(Runnable::run, metadataBuffer -> {
-                        for (Metadata metadata : metadataBuffer) {
-                            if (metadata.getTitle().equals(FOLDER_NAME)) {
-                                Log.d(App.getTag(), "Folder already exists");
-                                appFolderId = metadata.getDriveId();
-                                emitter.onComplete();
-                                return;
-                            }
-                        }
-                        createAppFolder()
-                                .addOnSuccessListener(Runnable::run, buffer -> emitter.onComplete())
-                                .addOnFailureListener(Runnable::run, e -> {
-                                    Log.e(App.getTag(), "Failed to create app folder");
-                                    emitter.onError(e);
-                                });
-                    })
-                    .addOnFailureListener(Runnable::run, e -> {
-                        Log.e(App.getTag(), "Failed to create app folder");
-                        emitter.onError(e);
-                    });
-        });
-    }*/
-/*
-    private Task<DriveFolder> createAppFolder() {
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle(App.getAppName())
-                .setMimeType(DriveFolder.MIME_TYPE)
-                .build();
-        return driveResourceClient.createFolder(rootFolder, changeSet);
+    private String getFolderId(String name, String parentName){
+        String jsonString;
+        HttpURLConnection request;
+        try {
+            URL url = new URL("https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder' and name='" + name + "' and trashed=false and "+parentName+" in parents");
+            request = (HttpURLConnection) url.openConnection();
+            request.setRequestMethod("GET");
+            request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+            request.setRequestProperty("Accept", "application/json");
+            request.setDoInput(true);
+            request.connect();
+            if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                InputStream response1 = request.getInputStream();
+                jsonString = convertStreamToString(response1);
+                JsonObject obj1 = new JsonParser().parse(jsonString).getAsJsonObject();
+                JsonElement folders = obj1.get("files");
+                for (JsonElement folder : folders.getAsJsonArray()) {
+                    if (folder.getAsJsonObject().get("name").getAsString().equals(name)) {
+                        return folder.getAsJsonObject().get("id").getAsString();
+                    }
+                }
+            }
+        } catch (GoogleAuthException | IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
-}*/
 
     @Override
     public Single<RecordFolder> createVideoRepository(@NonNull String name) {
-        return null;
+        return Single.create(emitter -> {
+                try {
+                    File file = null;
+                    File fileMetadata = new File();
+                    fileMetadata.setName(name);
+                    fileMetadata.setMimeType("application/vnd.google-apps.folder");
+                    fileMetadata.setParents(Collections.singletonList(appFolder));
+                        file = service.files().create(fileMetadata)
+                                .setFields("id")
+                                .execute();
+                    emitter.onSuccess(new GoogleDriveRecordFolder(getFolderId(name, App.getAppName())));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    emitter.onError(e);
+                }
+        });
     }
 
     @Override
@@ -274,22 +282,149 @@ public class GoogleDriveService implements CloudService{
 
     @Override
     public Observable<Record> getRecords() {
-        return null;
+        return Observable.create(emitter -> {
+            new Thread(() -> {
+                String jsonString;
+                HttpURLConnection request;
+                try {
+                    URL url = new URL("https://www.googleapis.com/drive/v3/files?q=trashed=false and "+appFolder+" in parents");
+                    request = (HttpURLConnection) url.openConnection();
+                    request.setRequestMethod("GET");
+                    request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                    request.setRequestProperty("Accept", "application/json");
+                    request.setDoInput(true);
+                    request.connect();
+                    if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        InputStream response1 = request.getInputStream();
+                        jsonString = convertStreamToString(response1);
+                        JsonObject obj1 = new JsonParser().parse(jsonString).getAsJsonObject();
+                        JsonElement records = obj1.get("files");
+                        if (records.getAsJsonArray().size() == 0) {
+                            emitter.onComplete();
+                            return;
+                        }
+                        for (JsonElement record : records.getAsJsonArray()) {
+                            emitter.onNext(new Record(record.getAsJsonObject().get("name").getAsString()));
+                        }
+                        emitter.onComplete();
+                    }
+                } catch (GoogleAuthException | IOException e) {
+                    e.printStackTrace();
+                    emitter.onError(e);
+                }
+            }).start();
+        });
     }
 
     @Override
     public Maybe<RecordFolder> getRecordFolder(@NonNull Record record) {
-        return null;
+        return Maybe.create(emitter -> {
+            String folderId = getFolderId(record.getTitle(),App.getAppName());
+            if(folderId.equals("")){
+                emitter.onComplete();
+                return;
+            }
+            emitter.onSuccess(new GoogleDriveRecordFolder(folderId));
+        });
     }
 
     @Override
     public Observable<String> getFragments(@NonNull RecordFolder recordFolder) {
-        return null;
+        return Observable.create(emitter -> {
+            new Thread(() -> {
+                if(!(recordFolder instanceof GoogleDriveRecordFolder)){
+                    emitter.onError(new IllegalArgumentException());
+                    return;
+                }
+                GoogleDriveRecordFolder googleDriveRecordFolder = (GoogleDriveRecordFolder) recordFolder;
+                String id = googleDriveRecordFolder.getDriveId();
+                String jsonString;
+                HttpURLConnection request;
+                try {
+                    URL url = new URL("https://www.googleapis.com/drive/v3/files?q=trashed=false and "+id+" in parents");
+                    request = (HttpURLConnection) url.openConnection();
+                    request.setRequestMethod("GET");
+                    request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                    request.setRequestProperty("Accept", "application/json");
+                    request.setDoInput(true);
+                    request.connect();
+                    if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        InputStream response1 = request.getInputStream();
+                        jsonString = convertStreamToString(response1);
+                        JsonObject obj1 = new JsonParser().parse(jsonString).getAsJsonObject();
+                        JsonElement files = obj1.get("files");
+                        if (files.getAsJsonArray().size() == 0) {
+                            emitter.onComplete();
+                            return;
+                        }
+                        for (JsonElement file : files.getAsJsonArray()) {
+                            emitter.onNext(file.getAsJsonObject().get("name").getAsString());
+                        }
+                        emitter.onComplete();
+                    }
+                } catch (GoogleAuthException | IOException e) {
+                    e.printStackTrace();
+                    emitter.onError(e);
+                }
+            }).start();
+        });
     }
 
     @Override
     public Completable downloadFragment(@NonNull RecordFolder recordFolder, @NonNull java.io.File file) {
-        return null;
+        return Completable.create(emitter -> {
+            new Thread(() -> {
+                if (!(recordFolder instanceof GoogleDriveRecordFolder)) {
+                    emitter.onError(new IllegalArgumentException());
+                    return;
+                }
+                GoogleDriveRecordFolder googleDriveRecordFolder = (GoogleDriveRecordFolder) recordFolder;
+
+                String id = googleDriveRecordFolder.getDriveId();
+                String jsonString;
+                HttpURLConnection request;
+                try {
+                    URL url = new URL("https://www.googleapis.com/drive/v3/files?q=trashed=false and "+id+" in parents and name='"+file.getName()+"'");
+                    request = (HttpURLConnection) url.openConnection();
+                    request.setRequestMethod("GET");
+                    request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                    request.setRequestProperty("Accept", "application/json");
+                    request.setDoInput(true);
+                    request.connect();
+                    if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        InputStream response1 = request.getInputStream();
+                        jsonString = convertStreamToString(response1);
+                        JsonObject obj1 = new JsonParser().parse(jsonString).getAsJsonObject();
+                        JsonElement files = obj1.get("files");
+                        if (files.getAsJsonArray().size() != 1) {
+                            throw new Exception("Google Drive returned info about more than one fragment");
+                        }
+                        JsonElement fragment = files.getAsJsonArray().get(0);
+                        String fragmentId = fragment.getAsJsonObject().get("id").getAsString();
+                        HttpURLConnection fragmentRequest;
+                        URL url1 = new URL("https://www.googleapis.com/drive/v3/files/"+fragmentId);
+                        fragmentRequest = (HttpURLConnection) url1.openConnection();
+                        fragmentRequest.setRequestMethod("GET");
+                        fragmentRequest.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                        //fragmentRequest.setRequestProperty("Accept", "application/json");
+                        fragmentRequest.setDoInput(true);
+                        fragmentRequest.connect();
+
+                        InputStream inputStream = fragmentRequest.getInputStream();
+                        FileOutputStream output = new FileOutputStream(file);
+                        byte[] buffer = new byte[64 * 1024];
+                        int counter;
+                        while ((counter = inputStream.read(buffer)) != -1) {
+                            output.write(buffer, 0, counter);
+                        }
+                        emitter.onComplete();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    emitter.onError(e);
+                }
+            }).start();
+        });
     }
 }
 
@@ -300,160 +435,6 @@ public class GoogleDriveService implements CloudService{
     private DriveResourceClient driveResourceClient;
     private DriveId appFolderId;
     private DriveFolder rootFolder;
-
-    public GoogleDriveService(Context context) throws SignInException {
-        GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(context);
-        if (signInAccount == null) {
-            throw new SignInException("User has not logged in");
-        }
-        // Use the last signed in account here since it already have a Drive scope.
-        driveClient = Drive.getDriveClient(context, signInAccount);
-        // Build a drive resource client.
-        driveResourceClient = Drive.getDriveResourceClient(context, signInAccount);
-    }
-
-
-
-    @Override
-    public Observable<Record> getRecords() {
-        return Observable.create(emitter -> {
-            SortOrder sortOrder = new SortOrder.Builder().addSortDescending(SortableField.CREATED_DATE).build();
-            Query query = new Query.Builder()
-                    .setSortOrder(sortOrder)
-                    .addFilter(Filters.eq(SearchableField.TRASHED, false))
-                    .build();
-            Task<MetadataBuffer> queryTask = driveResourceClient.queryChildren(appFolderId.asDriveFolder(), query);
-            queryTask
-                    .addOnSuccessListener(Runnable::run, metadataBuffer -> {
-                        for (Metadata metadata : metadataBuffer) {
-                            String title = metadata.getTitle();
-                            emitter.onNext(new Record(title));
-                        }
-                        metadataBuffer.release();
-                        emitter.onComplete();
-                    })
-                    .addOnFailureListener(Runnable::run, e -> emitter.onError(e));
-        });
-    }
-
-    @Override
-    public Maybe<RecordFolder> getRecordFolder(@NonNull Record record) {
-        return Maybe.create(emitter -> {
-            Query recordQuery = new Query.Builder()
-                    .addFilter(Filters.eq(SearchableField.TITLE, record.getTitle()))
-                    .addFilter(Filters.eq(SearchableField.TRASHED, false))
-                    .build();
-            Task<MetadataBuffer> recordTask = driveResourceClient.queryChildren(
-                    appFolderId.asDriveFolder(), recordQuery)
-                    .addOnSuccessListener(Runnable::run, metadataBuffer -> {
-                        try {
-                            if (metadataBuffer.getCount() == 0) {
-                                emitter.onComplete();
-                            }
-
-                            Metadata metadata = metadataBuffer.get(0);
-                            emitter.onSuccess(new GoogleDriveRecordFolder(metadata.getDriveId()));
-                        } finally {
-                            metadataBuffer.release();
-                        }
-                    })
-                    .addOnFailureListener(Runnable::run, e -> emitter.onError(e) );
-        });
-    }
-
-    @Override
-    public Observable<String> getFragments(@NonNull RecordFolder recordFolder) {
-        return Observable.create(emitter -> {
-            if (!(recordFolder instanceof GoogleDriveRecordFolder)) {
-                emitter.onError(new IllegalArgumentException());
-                return;
-            }
-            GoogleDriveRecordFolder googleDriveRecordFolder = (GoogleDriveRecordFolder) recordFolder;
-
-            Query fragmentsQuery = new Query.Builder()
-                    .addFilter(Filters.eq(SearchableField.TRASHED, false))
-                    .build();
-            Task<MetadataBuffer> fragmentsTask = driveResourceClient.queryChildren(
-                    googleDriveRecordFolder.getDriveId().asDriveFolder(), fragmentsQuery)
-                    .addOnSuccessListener(Runnable::run, metadataBuffer -> {
-                        try {
-                            if (metadataBuffer.getCount() == 0) {
-                                emitter.onComplete();
-                                return;
-                            }
-
-                            for (Metadata metadata : metadataBuffer) {
-                                emitter.onNext(metadata.getTitle());
-                            }
-                        } finally {
-                            metadataBuffer.release();
-                        }
-                        emitter.onComplete();
-                    })
-                    .addOnFailureListener(Runnable::run, e -> emitter.onError(e) );
-        });
-    }
-
-    @Override
-    public Single<RecordFolder> createVideoRepository(@NonNull String name) {
-        return Single.create(emitter -> {
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                    .setTitle(name)
-                    .setMimeType(DriveFolder.MIME_TYPE)
-                    .build();
-            driveResourceClient.createFolder(appFolderId.asDriveFolder(), changeSet)
-                    .addOnSuccessListener(Runnable::run,
-                            driveFolder -> {
-                                emitter.onSuccess(new GoogleDriveRecordFolder(driveFolder.getDriveId()));
-                            }
-                    )
-                    .addOnFailureListener(Runnable::run, emitter::onError);
-        });
-    }
-
-    @Override
-    public String getName() {
-        return "Google Drive";
-    }
-
-    @Override
-    public Completable createAppFolderIfNotExists() {
-        return Completable.create((CompletableEmitter emitter) -> {
-            driveResourceClient
-                    .getRootFolder()
-                    .continueWithTask(Runnable::run, task -> {
-                        Query query = new Query.Builder()
-                                .addFilter(Filters.and(
-                                        Filters.eq(SearchableField.MIME_TYPE, "application/vnd.google-apps.folder"),
-                                        Filters.eq(SearchableField.TITLE, FOLDER_NAME),
-                                        Filters.eq(SearchableField.TRASHED, false)))
-                                .build();
-                        rootFolder = task.getResult();
-                        return driveResourceClient.queryChildren(rootFolder, query);
-
-                    })
-                    .addOnSuccessListener(Runnable::run, metadataBuffer -> {
-                        for (Metadata metadata : metadataBuffer) {
-                            if (metadata.getTitle().equals(FOLDER_NAME)) {
-                                Log.d(App.getTag(), "Folder already exists");
-                                appFolderId = metadata.getDriveId();
-                                emitter.onComplete();
-                                return;
-                            }
-                        }
-                        createAppFolder()
-                                .addOnSuccessListener(Runnable::run, buffer -> emitter.onComplete())
-                                .addOnFailureListener(Runnable::run, e -> {
-                                    Log.e(App.getTag(), "Failed to create app folder");
-                                    emitter.onError(e);
-                                });
-                    })
-                    .addOnFailureListener(Runnable::run, e -> {
-                        Log.e(App.getTag(), "Failed to create app folder");
-                        emitter.onError(e);
-                    });
-        });
-    }
 
     @Override
     public Completable transmitFragment(@NonNull RecordFolder folder,
@@ -491,62 +472,4 @@ public class GoogleDriveService implements CloudService{
                     .addOnFailureListener(Runnable::run, emitter::onError);
         });
     }
-
-    @Override
-    public Completable downloadFragment(@NonNull RecordFolder recordFolder, @NonNull File file) {
-        return Completable.create(emitter -> {
-            if (!(recordFolder instanceof GoogleDriveRecordFolder)) {
-                emitter.onError(new IllegalArgumentException());
-                return;
-            }
-            GoogleDriveRecordFolder googleDriveRecordFolder = (GoogleDriveRecordFolder) recordFolder;
-
-            Query fragmentsQuery = new Query.Builder()
-                    .addFilter(Filters.and(
-                            Filters.eq(SearchableField.TRASHED, false),
-                            Filters.eq(SearchableField.TITLE, file.getName())))
-                    .build();
-            Task<MetadataBuffer> fragmentsTask = driveResourceClient.queryChildren(
-                    googleDriveRecordFolder.getDriveId().asDriveFolder(), fragmentsQuery);
-
-            fragmentsTask.continueWithTask(Runnable::run, task -> {
-                MetadataBuffer metadataBuffer = task.getResult();
-                try {
-                    if (metadataBuffer.getCount() != 1) {
-                        throw new Exception("Google Drive returned info about more than one fragment");
-                    }
-                    Metadata metadata = metadataBuffer.get(0);
-                    DriveFile driveFile = metadata.getDriveId().asDriveFile();
-
-                    return driveResourceClient.openFile(driveFile, DriveFile.MODE_READ_ONLY);
-                } finally {
-                    metadataBuffer.release();
-                }
-            }).continueWithTask(Runnable::run, task -> {
-                DriveContents contents = task.getResult();
-
-                InputStream inputStream = contents.getInputStream();
-                try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-                    byte[] buffer = new byte[1024];
-                    int bufferLength;
-                    while ( (bufferLength = inputStream.read(buffer)) != -1 ) {
-                        fileOutputStream.write(buffer, 0, bufferLength);
-                    }
-                }
-
-                return driveResourceClient.discardContents(contents);
-            })
-                    .addOnSuccessListener(Runnable::run, s -> emitter.onComplete())
-                    .addOnFailureListener(Runnable::run, emitter::onError);
-        });
-    }
-
-    private Task<DriveFolder> createAppFolder() {
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle(App.getAppName())
-                .setMimeType(DriveFolder.MIME_TYPE)
-                .build();
-        return driveResourceClient.createFolder(rootFolder, changeSet);
-    }
-}
 */

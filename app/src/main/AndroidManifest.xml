@@ -49,6 +49,12 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info" />
         </receiver>
+
+        <receiver android:name=".KeyReciever">
+            <intent-filter>
+                <action android:name="KEYCODE_BACK"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

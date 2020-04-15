@@ -4,16 +4,14 @@ package nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.googledri
 
 import nsu.fit.g14201.marchenko.phoenix.recordrepository.cloudservice.RecordFolder;
 
-//TODO понять, зачем этот класс
+public class GoogleDriveRecordFolder implements RecordFolder {
+    private String driveId;
 
-public class GoogleDriveRecordFolder implements RecordFolder {/*
-    private DriveId driveId;
-
-    public GoogleDriveRecordFolder(DriveId driveId) {
+    public GoogleDriveRecordFolder(String driveId) {
         this.driveId = driveId;
     }
 
-    public DriveId getDriveId() {
+    public String getDriveId() {
         return driveId;
-    }*/
+    }
 }

@@ -63,33 +63,34 @@ public class MainActivity extends DrawerActivity implements
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        try {
-            appContext = Context.createContext(this.getApplicationContext());
-            configureRecordingBlock();
             NavigationView navigationView = findViewById(R.id.navigation_view);
             View header = navigationView.getHeaderView(0);
             TextView email = header.findViewById(R.id.user_email);
             email.setText(GoogleUserConnection.getInstance().getCredential().getSelectedAccountName());
-            }catch (SignInException e) {
-            showSnack(getString(R.string.some_error));
-            e.printStackTrace();
-        }
     }
 
     @Override
     protected void onStart() {
+        try {
+            appContext = Context.createContext(this.getApplicationContext());
+            configureRecordingBlock();
+        }catch (SignInException e){
+            showSnack(getString(R.string.some_error));
+            e.printStackTrace();
+        }
         recordingPresenter.start();
         super.onStart();
     }
 
     @Override
     protected void onResume() {
-        super.onResume();
+        recordingPresenter.setRecordingListener(this);
         String action = getIntent().getAction();
         getIntent().setAction(null);
         if (action != null && action.equalsIgnoreCase(MainActivity.ACTION_START_RECORDING)) {
             recordingPresenter.changeRecordingState();
         }
+        super.onResume();
     }
 
 
@@ -221,7 +222,6 @@ public class MainActivity extends DrawerActivity implements
 
         recordingPresenter = new RecordingPresenter(getApplicationContext(), recordingFragment);
         recordingPresenter.setContext(appContext);
-        recordingPresenter.setRecordingListener(this);
     }
 
     private void runRecordManagementBlock() {

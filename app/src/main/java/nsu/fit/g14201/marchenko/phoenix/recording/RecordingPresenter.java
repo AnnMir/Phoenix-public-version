@@ -281,6 +281,7 @@ public class RecordingPresenter implements RecordingContract.Presenter,
                     new RecordPath(videoTitleHandler.getNewVideoTitle()),
                     videoTitleHandler.getExtension()
             );
+            Log.i(App.getTag(), videoFragmentPath.getDirectoryName());
             createLocalVideoRepository(videoFragmentPath);
             recordingListener.recordWillStart(videoFragmentPath);
             fragmentRecorder.start(this, this, videoFragmentPath);

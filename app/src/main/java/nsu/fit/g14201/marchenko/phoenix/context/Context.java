@@ -47,13 +47,12 @@ public class Context {
         PrivateExternalStorage localStorage = new PrivateExternalStorage(context, videoTitleHandler);
         RemoteReposControllerProviding remoteReposController =
                 new RemoteRepositoriesController();
-        Context newContext = new Context(localStorage, remoteReposController, videoTitleHandler);
-        localStorage.setListener(remoteReposController);
 
+        localStorage.setListener(remoteReposController);
         GoogleDriveService googleDriveService = new GoogleDriveService(context);
         remoteReposController.addCloudService(googleDriveService);
         remoteReposController.createAppFolderIfNotExists();
 
-        return newContext;
+        return new Context(localStorage, remoteReposController, videoTitleHandler);
     }
 }
