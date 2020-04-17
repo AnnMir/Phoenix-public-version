@@ -49,4 +49,6 @@
     <string name="assembly_completed">Сборка завершена</string>
     <string name="loading_missing_fragments">Загрузка недостающих фрагментов</string>
     <string name="missing_fragments_downloaded">Недостающие фрагменты загружены</string>
+    <string name="trustees">Список доверенных лиц</string>
+    <string name="add_contact">Добавить контакт</string>
 </resources>

@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <!-- Tell the system this app requires OpenGL ES 2.0. -->
     <uses-feature
@@ -36,6 +37,8 @@
 
         <activity android:name=".camerapermission.RequiredPermissionsActivity">
         </activity>
+        <activity android:name=".contacts.ContactsActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".contacts.ChooseContacts" android:screenOrientation="portrait"/>
         <activity android:name=".ui.activities.MainActivity"
             android:screenOrientation="portrait">
         </activity>

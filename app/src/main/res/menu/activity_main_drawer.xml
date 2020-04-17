@@ -14,6 +14,15 @@
     </group>
 
     <group
+        android:id="@+id/contacts_group"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/contacts"
+            android:icon="@drawable/ic_phone"
+            android:title="Выбрать контакты"/>
+    </group>
+
+    <group
         android:id="@+id/logout_group"
         android:checkableBehavior="single">
         <item

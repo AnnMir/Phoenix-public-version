@@ -25,6 +25,7 @@ import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.connection.GoogleUserConnection;
 import nsu.fit.g14201.marchenko.phoenix.connection.SignInException;
 import nsu.fit.g14201.marchenko.phoenix.connection.UserConnection;
+import nsu.fit.g14201.marchenko.phoenix.contacts.ContactsActivity;
 import nsu.fit.g14201.marchenko.phoenix.context.Context;
 import nsu.fit.g14201.marchenko.phoenix.model.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
@@ -109,6 +110,9 @@ public class MainActivity extends DrawerActivity implements
                 break;
             case R.id.nav_records_management:
                 runRecordManagementBlock();
+                break;
+            case R.id.contacts:
+                contacts();
                 break;
             case R.id.nav_logout:
                 signOut();
@@ -241,6 +245,12 @@ public class MainActivity extends DrawerActivity implements
                 .replace(R.id.main_content, recordManagementFragment, RECORDS_MANAGMEENT_FRAGMENT_TAG)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    private void contacts(){
+        Intent intent = new Intent(this, ContactsActivity.class);
+        intent.putExtra("Class", "MainActivity");
+        startActivity(intent);
     }
 
     private void signOut() {

@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -59,63 +60,60 @@ public class GoogleDriveService implements CloudService{
     public Completable createAppFolderIfNotExists() {
         //mime-type of folder application/vnd.google-apps.folder
         return Completable.create((CompletableEmitter emitter) -> {
-            new Thread(() -> {
-                try {
-                    service = new Drive.Builder(
-                            AndroidHttp.newCompatibleTransport(),
-                            new GsonFactory(),
-                            credential)
-                            .setApplicationName("Phoenix")
-                            .build();
-                    //rootFolder = service.files().get("root").setFields("id").execute().getId();
-                    //Log.i(App.getTag(),rootFolder);
-                    URL url = new URL("https://www.googleapis.com/drive/v3/files/root?fields=id");
-                    HttpURLConnection request = (HttpURLConnection) url.openConnection();
-                    request.setRequestMethod("GET");
-                    request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
-                    request.setRequestProperty("Accept", "application/json");
-                    request.setDoInput(true);
-                    request.connect();
+            try {
+                service = new Drive.Builder(
+                        AndroidHttp.newCompatibleTransport(),
+                        new GsonFactory(),
+                        credential)
+                        .setApplicationName("Phoenix")
+                        .build();
+                //rootFolder = service.files().get("root").setFields("id").execute().getId();
+                //Log.i(App.getTag(),rootFolder);
+                URL url = new URL("https://www.googleapis.com/drive/v3/files/root?fields=id");
+                HttpURLConnection request = (HttpURLConnection) url.openConnection();
+                request.setRequestMethod("GET");
+                request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                request.setRequestProperty("Accept", "application/json");
+                request.setDoInput(true);
+                request.connect();
 
-                    String jsonString;
-                    if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                        InputStream response = request.getInputStream();
-                        jsonString = convertStreamToString(response);
-                        JsonObject obj = new JsonParser().parse(jsonString).getAsJsonObject();
-                        rootFolder = obj.get("id").getAsString();
+                String jsonString;
+                if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    InputStream response = request.getInputStream();
+                    jsonString = convertStreamToString(response);
+                    JsonObject obj = new JsonParser().parse(jsonString).getAsJsonObject();
+                    rootFolder = obj.get("id").getAsString();
 
-                        URL url1 = new URL("https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder' and name='"+App.getAppName()+"' and trashed=false and 'root' in parents");
-                        HttpURLConnection request1 = (HttpURLConnection) url1.openConnection();
-                        request1.setRequestMethod("GET");
-                        request1.setRequestProperty("Authorization", "Bearer " + credential.getToken());
-                        request1.setRequestProperty("Accept", "application/json");
-                        request1.setDoInput(true);
-                        request1.connect();
-                        if(request1.getResponseCode() == HttpURLConnection.HTTP_OK){
-                            InputStream response1 = request1.getInputStream();
-                            jsonString = convertStreamToString(response1);
-                            JsonObject obj1 = new JsonParser().parse(jsonString).getAsJsonObject();
-                            JsonElement folders = obj1.get("files");
-                            for (JsonElement folder :folders.getAsJsonArray()) {
-                                if(folder.getAsJsonObject().get("name").getAsString().equals(App.getAppName())){
-                                    appFolder = folder.getAsJsonObject().get("id").getAsString();
-                                    emitter.onComplete();
-                                    return;
-                                }
+                    URL url1 = new URL("https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder' and name='" + App.getAppName() + "' and trashed=false and 'root' in parents");
+                    HttpURLConnection request1 = (HttpURLConnection) url1.openConnection();
+                    request1.setRequestMethod("GET");
+                    request1.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                    request1.setRequestProperty("Accept", "application/json");
+                    request1.setDoInput(true);
+                    request1.connect();
+                    if (request1.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        InputStream response1 = request1.getInputStream();
+                        jsonString = convertStreamToString(response1);
+                        JsonObject obj1 = new JsonParser().parse(jsonString).getAsJsonObject();
+                        JsonElement folders = obj1.get("files");
+                        for (JsonElement folder : folders.getAsJsonArray()) {
+                            if (folder.getAsJsonObject().get("name").getAsString().equals(App.getAppName())) {
+                                appFolder = folder.getAsJsonObject().get("id").getAsString();
+                                emitter.onComplete();
+                                return;
                             }
-                            createAppFolder();
-                            appFolder = getFolderId(App.getAppName(),rootFolder);
-                            emitter.onComplete();
                         }
-                        Log.i(App.getTag(), request1.getResponseCode()+ " " + request1.getResponseMessage());
+                        createAppFolder();
+                        appFolder = getFolderId(App.getAppName(), rootFolder);
+                        emitter.onComplete();
                     }
-                    Log.i(App.getTag(), request.getResponseCode()+" "+request.getResponseMessage());
-                } catch (GoogleAuthException | IOException e) {
-                    emitter.onError(e);
-                    e.printStackTrace();
+                    Log.i(App.getTag(), request1.getResponseCode() + " " + request1.getResponseMessage());
                 }
-            }).start();
-
+                Log.i(App.getTag(), request.getResponseCode() + " " + request.getResponseMessage());
+            } catch (GoogleAuthException | IOException e) {
+                emitter.onError(e);
+                e.printStackTrace();
+            }
         });
 
     }
@@ -189,17 +187,27 @@ public class GoogleDriveService implements CloudService{
     @Override
     public Single<RecordFolder> createVideoRepository(@NonNull String name) {
         return Single.create(emitter -> {
-                try {
-                    File file = null;
-                    File fileMetadata = new File();
-                    fileMetadata.setName(name);
-                    fileMetadata.setMimeType("application/vnd.google-apps.folder");
-                    fileMetadata.setParents(Collections.singletonList(appFolder));
-                        file = service.files().create(fileMetadata)
-                                .setFields("id")
-                                .execute();
-                    emitter.onSuccess(new GoogleDriveRecordFolder(getFolderId(name, App.getAppName())));
-                } catch (IOException e) {
+            HttpURLConnection request;
+               try {
+                    URL url = new URL("https://www.googleapis.com/drive/v3/files");
+                    request = (HttpURLConnection) url.openConnection();
+                    request.setRequestMethod("POST");
+                    request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                    request.setDoOutput(true);
+                    String body = "{\"name\": \"" + name + "\",\n\"mimeType\": \"application/vnd.google-apps.folder\",\n\"parents\":["+appFolder+"]}";
+                    OutputStream outputStream = request.getOutputStream();
+                    outputStream.write(body.getBytes());
+
+                    outputStream.flush();
+                    request.connect();
+                    outputStream.close();
+                    if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        emitter.onSuccess(new GoogleDriveRecordFolder(getFolderId(name, App.getAppName())));
+                        return;
+                    }
+                    Log.i(App.getTag(), "createVideoRepository"+request.getResponseCode()+" "+request.getResponseMessage());
+                   request.disconnect();
+                } catch (IOException | GoogleAuthException e) {
                     e.printStackTrace();
                     emitter.onError(e);
                 }
@@ -208,70 +216,80 @@ public class GoogleDriveService implements CloudService{
 
     @Override
     public Completable transmitFragment(@NonNull RecordFolder folder, @NonNull FileInputStream inputStream, @NonNull String name) {
-        HttpURLConnection request = null;
-        String sessionUri = "";
-        try {
-            //String request = "POST /upload/drive/v3/files?uploadType=resumable HTTP/1.1 Host: www.googleapis.com Authorization: Bearer your_auth_token Content-Length: 38 Content-Type: application/json; charset=UTF-8 X-Upload-Content-Type: image/jpeg X-Upload-Content-Length: 2000000 { \"name\": \"My File\" }";
-            URL url = new URL("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable");
-            request = (HttpURLConnection) url.openConnection();
-            request.setRequestMethod("POST");
-            request.setDoInput(true);
-            request.setDoOutput(true);
-            request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
-            request.setRequestProperty("X-Upload-Content-Type", "video/mp4");
-            //request.setRequestProperty("X-Upload-Content-Length", String.format(Locale.ENGLISH, "%d", inputStream.length()));
-            //Log.i(App.getTag(), String.format(Locale.ENGLISH, "%d", file.length()));
-            request.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            String body = "{\"name\": \"" + name + "\"}";
-            request.setRequestProperty("Content-Length", String.format(Locale.ENGLISH, "%d", body.getBytes().length));
-            OutputStream outputStream = request.getOutputStream();
-            outputStream.write(body.getBytes());
+        return Completable.create((CompletableEmitter emitter) -> {
+            Log.e(App.getTag(), "Transmission 1 " + Thread.currentThread().getName());
+            GoogleDriveRecordFolder videoFolder = (GoogleDriveRecordFolder)folder;
+            String videoFolderId = videoFolder.getDriveId();
+            HttpURLConnection request = null;
+            String sessionUri = "";
+            try{
+                URL url = new URL("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable");
+                request = (HttpURLConnection) url.openConnection();
+                request.setRequestMethod("POST");
+                request.setDoInput(true);
+                request.setDoOutput(true);
+                request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                request.setRequestProperty("X-Upload-Content-Type", "video/mp4");
+                //request.setRequestProperty("X-Upload-Content-Length", String.format(Locale.ENGLISH, "%d", inputStream.length()));
+                //Log.i(App.getTag(), String.format(Locale.ENGLISH, "%d", file.length()));
+                request.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                String body = "{\"name\": \"" + name + "\",\n\"parents\":[\""+videoFolderId+"\"]}";
+                request.setRequestProperty("Content-Length", String.format(Locale.ENGLISH, "%d", body.getBytes().length));
+                OutputStream outputStream = request.getOutputStream();
+                outputStream.write(body.getBytes());
 
-            outputStream.flush();
-            outputStream.close();
-            request.connect();
-            if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                sessionUri = request.getHeaderField("location");
-                Log.i(App.getTag(), sessionUri);
+                outputStream.flush();
+                outputStream.close();
+                request.connect();
+                if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    sessionUri = request.getHeaderField("location");
+                    Log.i(App.getTag(), sessionUri);
+                }
+
+
+                //simple resumable upload
+                URL url1 = new URL(sessionUri);
+                request = (HttpURLConnection) url1.openConnection();
+                request.setRequestMethod("PUT");
+                request.setDoOutput(true);
+                //String len = Long.toString(file.length());
+                //Log.i("GDProj", "length:" + len);
+                //request.setRequestProperty("Content-Length", len);
+                request.setRequestProperty("Content-Type", "video/mp4");
+
+                DataOutputStream output = new DataOutputStream(request.getOutputStream());
+                try(ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+                    byte[] buffer = new byte[64 * 1024];
+                    int counter;
+                    while ((counter = inputStream.read(buffer)) != -1) {
+                        baos.write(buffer, 0, counter);
+                    }
+                    output.write(baos.toByteArray());
+                }finally{
+                    inputStream.close();
+                }
+                Log.e(App.getTag(), "Transmission 2 " + Thread.currentThread().getName());
+
+                request.connect();
+                int response = request.getResponseCode();
+                String code = "" + response;
+                Log.i(App.getTag(), code);
+                if (response == HttpURLConnection.HTTP_OK) {
+                    emitter.onComplete();
+                    Log.i(App.getTag(), "Success send");
+                }else{
+                    String s = response + " " + request.getResponseMessage();
+                    Log.e(App.getTag(), s);
+                }
+            }catch (IOException | GoogleAuthException e){
+                emitter.onError(e);
+                e.printStackTrace();
+            } finally {
+                if(request != null){
+                    request.disconnect();
+                }
             }
-
-
-            //simple resumable upload
-            URL url1 = new URL(sessionUri);
-            request = (HttpURLConnection) url1.openConnection();
-            request.setRequestMethod("PUT");
-            request.setDoOutput(true);
-            //String len = Long.toString(file.length());
-            //Log.i("GDProj", "length:" + len);
-            //request.setRequestProperty("Content-Length", len);
-            request.setRequestProperty("Content-Type", "video/mp4");
-
-            DataOutputStream output = new DataOutputStream(request.getOutputStream());
-            //FileInputStream inputFile = new FileInputStream(file);
-            byte[] buffer = new byte[64 * 1024];
-            int counter;
-            while ((counter = inputStream.read(buffer)) != -1) {
-                output.write(buffer, 0, counter);
-            }
-
-            output.flush();
-            request.connect();
-            int response = request.getResponseCode();
-            String code = "" + response;
-            Log.i(App.getTag(), code);
-            if (response == HttpURLConnection.HTTP_OK) {
-                Log.i(App.getTag(), "Success send");
-            }else{
-                String s = response + " " + request.getResponseMessage();
-                Log.e(App.getTag(), s);
-            }
-        } catch (IOException | GoogleAuthException e) {
-            e.printStackTrace();
-        } finally {
-            if (request != null)
-                request.disconnect();
-        }
-        return null;
+        });
     }
 
     @Override
@@ -283,7 +301,6 @@ public class GoogleDriveService implements CloudService{
     @Override
     public Observable<Record> getRecords() {
         return Observable.create(emitter -> {
-            new Thread(() -> {
                 String jsonString;
                 HttpURLConnection request;
                 try {
@@ -312,7 +329,6 @@ public class GoogleDriveService implements CloudService{
                     e.printStackTrace();
                     emitter.onError(e);
                 }
-            }).start();
         });
     }
 
@@ -331,7 +347,6 @@ public class GoogleDriveService implements CloudService{
     @Override
     public Observable<String> getFragments(@NonNull RecordFolder recordFolder) {
         return Observable.create(emitter -> {
-            new Thread(() -> {
                 if(!(recordFolder instanceof GoogleDriveRecordFolder)){
                     emitter.onError(new IllegalArgumentException());
                     return;
@@ -366,14 +381,12 @@ public class GoogleDriveService implements CloudService{
                     e.printStackTrace();
                     emitter.onError(e);
                 }
-            }).start();
         });
     }
 
     @Override
     public Completable downloadFragment(@NonNull RecordFolder recordFolder, @NonNull java.io.File file) {
         return Completable.create(emitter -> {
-            new Thread(() -> {
                 if (!(recordFolder instanceof GoogleDriveRecordFolder)) {
                     emitter.onError(new IllegalArgumentException());
                     return;
@@ -423,7 +436,6 @@ public class GoogleDriveService implements CloudService{
                     e.printStackTrace();
                     emitter.onError(e);
                 }
-            }).start();
         });
     }
 }
