@@ -1,6 +1,8 @@
 package nsu.fit.g14201.marchenko.phoenix.ui.activities;
 import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import android.util.Log;
@@ -23,6 +25,7 @@ import nsu.fit.g14201.marchenko.phoenix.contacts.ContactsActivity;
 import nsu.fit.g14201.marchenko.phoenix.context.Context;
 import nsu.fit.g14201.marchenko.phoenix.model.VideoFragmentPath;
 import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
+import nsu.fit.g14201.marchenko.phoenix.notifications.SendSmsCheck;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingContract;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingFragment;
 import nsu.fit.g14201.marchenko.phoenix.recording.RecordingListener;
@@ -50,6 +53,8 @@ public class MainActivity extends DrawerActivity implements
     private Context appContext;
     private RecordingContract.Presenter recordingPresenter;
     private TransmissionContract.Presenter transmissionPresenter;
+    private SendSmsCheck sendSmsCheck;
+    private final static String SENT = "SENT_SMS_ACTION";
 
     public final static String ACTION_START_RECORDING = "nsu.fit.g14201.marchenko.phoenix.ui.activities.start_recording";
     private final static String RECORDING_FRAGMENT_TAG = "nsu.fit.g14201.marchenko.phoenix.ui.activities.recording_fragment";
@@ -62,6 +67,8 @@ public class MainActivity extends DrawerActivity implements
             View header = navigationView.getHeaderView(0);
             TextView email = header.findViewById(R.id.user_email);
             email.setText(GoogleUserConnection.getInstance().getCredential().getSelectedAccountName());
+        sendSmsCheck = new SendSmsCheck();
+        registerReceiver(sendSmsCheck, new IntentFilter(SENT));
     }
 
     @Override
@@ -121,7 +128,7 @@ public class MainActivity extends DrawerActivity implements
     protected void onStop() {
         recordingPresenter.removeRecordingListener();
         recordingPresenter.stop();
-
+        unregisterReceiver(sendSmsCheck);
         super.onStop();
     }
 
