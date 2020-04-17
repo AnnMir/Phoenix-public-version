@@ -22,9 +22,11 @@ public class RequiredPermissionsActivity extends BaseActivity {
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
     private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 2;
     private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 3;
+    private static final int PERMISSIONS_SEND_SMS = 4;
     private static final String NO_CAMERA_ACCESS_TAG = "NO_CAMERA_ACCESS_TAG";
     private static final String NO_WRITE_EXTERNAL_ACCESS_TAG = "NO_WRITE_EXTERNAL_ACCESS_TAG";
     private static final String NO_READ_CONTACTS_ACCESS_TAG = "NO_READ_CONTACTS_ACCESS_TAG";
+    private static final String NO_SEND_SMS_ACCESS_TAG = "NO_SEND_SMS_ACCESS_TAG";
 
     private boolean permissionIsBeingRequested = false;
     private boolean determinedToGoToNextView = false;
@@ -92,6 +94,17 @@ public class RequiredPermissionsActivity extends BaseActivity {
                     );
                     return;
                 }
+            case PERMISSIONS_SEND_SMS:
+                if(grantResults[0] == PackageManager.PERMISSION_DENIED){
+                    ActivityUtils.addFragmentToActivity(
+                            getSupportFragmentManager(),
+                            NoRequiredPermissionFragment.newInstance(
+                                    Manifest.permission.SEND_SMS),
+                            R.id.content,
+                            NO_SEND_SMS_ACCESS_TAG
+                    );
+                    return;
+                }
         }
         requestPermissions();
     }
@@ -139,7 +152,9 @@ public class RequiredPermissionsActivity extends BaseActivity {
                 }
             }else if(!ifReadContactsGranted()){
                 recuestContactsPermission();
-            } else {
+            } else if(!ifSendSmsGranted()){
+                requestSendSmsPermission();
+            }else {
                 goToNextView();
             }
         }
@@ -177,6 +192,11 @@ public class RequiredPermissionsActivity extends BaseActivity {
                 Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED;
     }
 
+    private boolean ifSendSmsGranted(){
+        return ContextCompat.checkSelfPermission(this,
+                Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED;
+    }
+
     private void requestCameraPermission() {
         requestPermission(Manifest.permission.CAMERA, PERMISSIONS_REQUEST_CAMERA);
     }
@@ -192,6 +212,10 @@ public class RequiredPermissionsActivity extends BaseActivity {
 
     private void recuestContactsPermission(){
         requestPermission(Manifest.permission.READ_CONTACTS, PERMISSIONS_REQUEST_READ_CONTACTS);
+    }
+
+    private void requestSendSmsPermission(){
+        requestPermission(Manifest.permission.SEND_SMS, PERMISSIONS_SEND_SMS);
     }
 
     private void requestPermission(String permission, int tag) {

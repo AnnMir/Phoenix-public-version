@@ -17,6 +17,14 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true">
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/call"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:src="@drawable/ic_bell"
+            android:layout_gravity="top|end"
+            android:layout_margin="5dp"/>
+
         <Button
             android:id="@+id/record_video_button"
             android:layout_width="wrap_content"

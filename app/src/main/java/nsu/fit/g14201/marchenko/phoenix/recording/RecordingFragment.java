@@ -5,11 +5,15 @@ import android.os.Bundle;
 
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import butterknife.OnClick;
 import nsu.fit.g14201.marchenko.phoenix.R;
+import nsu.fit.g14201.marchenko.phoenix.notifications.NotificationsPresenter;
 import nsu.fit.g14201.marchenko.phoenix.recording.gl.CameraGLView;
 import nsu.fit.g14201.marchenko.phoenix.ui.activities.MainActivity;
 import nsu.fit.g14201.marchenko.phoenix.ui.dialogs.CorrigibleErrorDialog;
@@ -20,6 +24,8 @@ import nsu.fit.g14201.marchenko.phoenix.ui.fragments.BaseFragment;
 public class RecordingFragment extends BaseFragment implements RecordingContract.View {
     private RecordingContract.Presenter presenter;
     private Button recordingButton;
+    private FloatingActionButton call;
+    private NotificationsPresenter notificationsPresenter;
 
     public static RecordingFragment newInstance() {
         return new RecordingFragment();
@@ -29,6 +35,8 @@ public class RecordingFragment extends BaseFragment implements RecordingContract
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         recordingButton = view.findViewById(R.id.record_video_button);
+        call = view.findViewById(R.id.call);
+
     }
 
     @Override
@@ -37,6 +45,7 @@ public class RecordingFragment extends BaseFragment implements RecordingContract
         CameraGLView cameraView = getView().findViewById(R.id.texture);
 //        cameraView.setVideoSize(1280, 720); // Entry point for video size parameters
         presenter.setOutputForVideo(cameraView);
+        notificationsPresenter = new NotificationsPresenter(getView().getContext());
     }
 
     @Override
@@ -49,6 +58,11 @@ public class RecordingFragment extends BaseFragment implements RecordingContract
     public void onPause() {
         presenter.doOnPauseActions();
         super.onPause();
+    }
+
+    @OnClick(R.id.call)
+    public void call(View v){
+        notificationsPresenter.call(v);
     }
 
     @OnClick(R.id.record_video_button)
