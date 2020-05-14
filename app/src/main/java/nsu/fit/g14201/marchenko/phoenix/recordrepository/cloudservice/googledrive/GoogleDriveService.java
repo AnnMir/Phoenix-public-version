@@ -10,6 +10,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 
 import com.google.api.services.drive.model.File;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -195,20 +196,34 @@ public class GoogleDriveService implements CloudService{
                     request = (HttpURLConnection) url.openConnection();
                     request.setRequestMethod("POST");
                     request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
+                    request.setRequestProperty("Accept", "application/json");
+                    request.setRequestProperty("Content-Type","application/json");
+                    request.setDoInput(true);
                     request.setDoOutput(true);
-                    String body = "{\"name\": \"" + name + "\",\n\"mimeType\": \"application/vnd.google-apps.folder\",\n\"parents\":["+appFolder+"]}";
+                    JsonObject object = new JsonObject();
+                    object.addProperty("name",name);
+                    object.addProperty("mimeType", "application/vnd.google-apps.folder");
+                    JsonArray parents = new JsonArray();
+                    parents.add(appFolder);
+                    object.add("parents", parents);
+                    Log.i(App.getTag(), object.toString());
                     OutputStream outputStream = request.getOutputStream();
-                    outputStream.write(body.getBytes());
+                    outputStream.write(object.toString().getBytes());
 
                     outputStream.flush();
                     request.connect();
                     outputStream.close();
+                   String jsonString;
                     if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                        emitter.onSuccess(new GoogleDriveRecordFolder(getFolderId(name, App.getAppName())));
-                        return;
+                        InputStream response1 = request.getInputStream();
+                        jsonString = convertStreamToString(response1);
+                        JsonObject obj1 = new JsonParser().parse(jsonString).getAsJsonObject();
+                        String id = obj1.get("id").getAsString();
+                        Log.i(App.getTag(), id);
+                        emitter.onSuccess(new GoogleDriveRecordFolder(id));
                     }
-                    Log.i(App.getTag(), "createVideoRepository"+request.getResponseCode()+" "+request.getResponseMessage());
-                   request.disconnect();
+                    Log.i(App.getTag(), "createVideoRepository "+request.getResponseCode()+" "+request.getResponseMessage());
+                    request.disconnect();
                 } catch (IOException | GoogleAuthException e) {
                     e.printStackTrace();
                     emitter.onError(e);
