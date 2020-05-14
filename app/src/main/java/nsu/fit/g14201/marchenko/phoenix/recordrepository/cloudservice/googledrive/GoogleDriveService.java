@@ -99,12 +99,14 @@ public class GoogleDriveService implements CloudService{
                         for (JsonElement folder : folders.getAsJsonArray()) {
                             if (folder.getAsJsonObject().get("name").getAsString().equals(App.getAppName())) {
                                 appFolder = folder.getAsJsonObject().get("id").getAsString();
+                                App.setAppFolderId(appFolder);
                                 emitter.onComplete();
                                 return;
                             }
                         }
                         createAppFolder();
                         appFolder = getFolderId(App.getAppName(), rootFolder);
+                        App.setAppFolderId(appFolder);
                         emitter.onComplete();
                     }
                     Log.i(App.getTag(), request1.getResponseCode() + " " + request1.getResponseMessage());

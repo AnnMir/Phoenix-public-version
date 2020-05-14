@@ -22,6 +22,8 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.MyView
 
     public void setItems(Map<String, String> c) {
         contacts = new TreeMap<String, String>(c);
+        names.clear();
+        numbers.clear();
         if(contacts.size()!=0){
             for (Map.Entry e: contacts.entrySet()) {
                 names.add(e.getKey().toString());

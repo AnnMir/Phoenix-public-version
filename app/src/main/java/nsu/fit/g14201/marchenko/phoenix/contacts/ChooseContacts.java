@@ -33,7 +33,7 @@ import nsu.fit.g14201.marchenko.phoenix.connection.GoogleUserConnection;
 import nsu.fit.g14201.marchenko.phoenix.contacts.adapter.ContactsAdapter;
 import nsu.fit.g14201.marchenko.phoenix.utils.ItemClickSupport;
 
-public class ChooseContacts extends AppCompatActivity {
+public class ChooseContacts extends AppCompatActivity implements ContactsInterface{
     private Map<String, String> contacts;
     private ArrayList<String> names;
     private ArrayList<String> numbers;
@@ -76,7 +76,7 @@ public class ChooseContacts extends AppCompatActivity {
         }));
     }
 
-    private void loadContacts() {
+    public void loadContacts() {
         //получить номера
         getContacts();
         adapter.setItems(contacts);
@@ -124,5 +124,14 @@ public class ChooseContacts extends AppCompatActivity {
             }
 
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(this.getApplicationContext(), ContactsActivity.class);
+        intent.putExtra("Class", "ChooseContacts");
+        intent.putExtra("Name", "");
+        intent.putExtra("Number", "");
+        startActivity(intent);
     }
 }

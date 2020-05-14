@@ -10,7 +10,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Map;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -18,9 +17,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import nsu.fit.g14201.marchenko.phoenix.R;
 import nsu.fit.g14201.marchenko.phoenix.connection.GoogleUserConnection;
 import nsu.fit.g14201.marchenko.phoenix.contacts.adapter.ContactsAdapter;
+import nsu.fit.g14201.marchenko.phoenix.ui.activities.MainActivity;
 
 
-public class ContactsActivity extends AppCompatActivity {
+public class ContactsActivity extends AppCompatActivity implements ContactsInterface{
     private static Map<String, String> contacts;
     private static ContactsDBController controller;
     private RecyclerView recyclerView;
@@ -77,7 +77,7 @@ public class ContactsActivity extends AppCompatActivity {
         }));
     }
 
-    private void loadContacts() {
+    public void loadContacts() {
         //получить номера
         contacts = controller.getContacts(GoogleUserConnection.getInstance().getCredential().getSelectedAccountName());
         adapter.setItems(contacts);
@@ -85,12 +85,18 @@ public class ContactsActivity extends AppCompatActivity {
 
     public void deleteContact(String email, String number){
         controller.deleteContact(email, number);
-        contacts = controller.getContacts(email);
+        contacts.clear();
         loadContacts();
     }
 
     public void choose(View view){
         Intent intent = new Intent(this, ChooseContacts.class);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
 }

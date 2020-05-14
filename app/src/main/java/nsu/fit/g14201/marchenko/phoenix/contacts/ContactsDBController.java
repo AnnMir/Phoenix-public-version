@@ -56,11 +56,13 @@ public class ContactsDBController {
      */
 
     public void addContact(String email, String name, String number){
-        if(name != "" && number != "" && email != "")
+        if(name.equals("") || number.equals("") || email.equals(""))
+            return;
+        else
             doInsert(email, name, number);
     }
 
-    public void deleteContact(String email, String number){
+    void deleteContact(String email, String number){
         if(!email.equals("") && !number.equals(""))
             delete(number, email);
     }

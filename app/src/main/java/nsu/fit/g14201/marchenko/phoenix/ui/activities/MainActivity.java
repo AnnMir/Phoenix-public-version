@@ -1,5 +1,6 @@
 package nsu.fit.g14201.marchenko.phoenix.ui.activities;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -41,6 +42,8 @@ import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionDetailedProblem
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionListener;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionPresenter;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem;
+import nsu.fit.g14201.marchenko.phoenix.voicelauncher.SpeechActivationService;
+import nsu.fit.g14201.marchenko.phoenix.voicelauncher.VoiceRecognizerService;
 
 import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.FAILED_TO_CREATE_VIDEO_FOLDER;
 import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.RECORD_NOT_FOUND_LOCALLY;
@@ -54,6 +57,7 @@ public class MainActivity extends DrawerActivity implements
     private RecordingContract.Presenter recordingPresenter;
     private TransmissionContract.Presenter transmissionPresenter;
     private SendSmsCheck sendSmsCheck;
+    private Intent intentService;
     private final static String SENT = "SENT_SMS_ACTION";
 
     public final static String ACTION_START_RECORDING = "nsu.fit.g14201.marchenko.phoenix.ui.activities.start_recording";
@@ -69,6 +73,7 @@ public class MainActivity extends DrawerActivity implements
             email.setText(GoogleUserConnection.getInstance().getCredential().getSelectedAccountName());
         sendSmsCheck = new SendSmsCheck();
         registerReceiver(sendSmsCheck, new IntentFilter(SENT));
+        //intentService = new Intent(this, VoiceRecognizerService.class);
     }
 
     @Override
@@ -128,15 +133,31 @@ public class MainActivity extends DrawerActivity implements
     protected void onStop() {
         recordingPresenter.removeRecordingListener();
         recordingPresenter.stop();
-        unregisterReceiver(sendSmsCheck);
+        if(!isMyServiceRunning(SpeechActivationService.class)){
+            String activationTypeName = this.getApplicationContext().getString(R.string.speech_activation_speak);
+            Intent i = SpeechActivationService.makeStartServiceIntent(this.getApplicationContext(),
+                    activationTypeName);
+            startService(i);
+        }
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
         recordingPresenter.removeRecordingListener();
-
+        unregisterReceiver(sendSmsCheck);
         super.onDestroy();
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

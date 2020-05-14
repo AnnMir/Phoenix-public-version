@@ -8,6 +8,7 @@
         android:name="android.hardware.camera"
         android:required="true" />
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETE"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -29,7 +30,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".registration.RegistrationActivity">
+        <activity android:name=".registration.RegistrationActivity" android:label="Phoenix">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -53,12 +54,27 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_info" />
         </receiver>
-
-        <receiver android:name=".KeyReciever">
+        <receiver android:name=".voicelauncher.VoiceServiceLauncher"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
-                <action android:name="KEYCODE_BACK"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.REBOOT"/>
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+        <service
+            android:enabled="true"
+            android:exported="true"
+            android:name=".voicelauncher.VoiceRecognizerService">
+        </service>
+        <service
+            android:enabled="true"
+            android:exported="true"
+            android:name=".voicelauncher.SpeechActivationService">
+        </service>
     </application>
 
 </manifest>
