@@ -25,6 +25,9 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 
+import nsu.fit.g14201.marchenko.phoenix.App;
+import nsu.fit.g14201.marchenko.phoenix.model.record.Record;
+
 /**
  * Uses direct speech recognition to activate when the user speaks
  * one of the target words
@@ -33,7 +36,7 @@ import android.util.Log;
  */
 public class WordActivator implements SpeechActivator, RecognitionListener
 {
-    private static final String TAG = "WordActivator";
+    private static final String TAG = App.getTag();
 
     private Context context;
     private SpeechRecognizer recognizer;
@@ -63,6 +66,7 @@ public class WordActivator implements SpeechActivator, RecognitionListener
                 RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
         // accept partial results if they come
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.getPackageName());
         SpeechRecognitionUtil.recognizeSpeechDirectly(context,
                 recognizerIntent, this, getSpeechRecognizer());
     }
@@ -117,6 +121,7 @@ public class WordActivator implements SpeechActivator, RecognitionListener
         // find the target word
         for (String possible : heard)
         {
+            Log.i(TAG, possible);
             WordList wordList = new WordList(possible);
             if (matcher.isIn(wordList.getWords()))
             {
@@ -154,6 +159,8 @@ public class WordActivator implements SpeechActivator, RecognitionListener
                     "FAILED "
                             + SpeechRecognitionUtil
                             .diagnoseErrorCode(errorCode));
+            //stop();
+            //recognizeSpeechDirectly();
         }
     }
 

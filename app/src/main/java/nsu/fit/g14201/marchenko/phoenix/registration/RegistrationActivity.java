@@ -60,7 +60,6 @@ public class RegistrationActivity extends AppCompatActivity {
                         credential.setSelectedAccount(googleSignInAccount.getAccount());
                         credential.setBackOff(new ExponentialBackOff());
                         GoogleUserConnection.getInstance().setCredential(credential);
-                        Log.i(App.getTag(), "Before Next");
                         next();
                     })
                     .addOnFailureListener(e -> {

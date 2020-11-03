@@ -68,12 +68,7 @@
         <service
             android:enabled="true"
             android:exported="true"
-            android:name=".voicelauncher.VoiceRecognizerService">
-        </service>
-        <service
-            android:enabled="true"
-            android:exported="true"
-            android:name=".voicelauncher.SpeechActivationService">
+            android:name=".voicelauncher.VoiceActivationService">
         </service>
     </application>
 

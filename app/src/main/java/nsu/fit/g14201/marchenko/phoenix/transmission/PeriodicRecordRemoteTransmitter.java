@@ -51,7 +51,7 @@ public class PeriodicRecordRemoteTransmitter implements RecordRemoteRepoStateLis
                         recordRepositoriesController.transmitVideo(
                                 record, videoFragmentPath.getFragmentFileNameByNumber(fragmentNum)
                         ))
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(scheduler) //AndroidSchedulers.mainThread()
                 .subscribe(() -> {
                     Log.d(App.getTag(), "Fragment " + fragmentNum + " upload started");
                 }, throwable -> {

@@ -47,9 +47,11 @@ public class GoogleDriveService implements CloudService{
     private String rootFolder;
     private String appFolder;
     private Drive service;
+    private Context context;
 
     public GoogleDriveService(Context context){
         credential = GoogleUserConnection.getInstance().getCredential();
+        this.context = context;
     }
 
     @Override
@@ -110,7 +112,7 @@ public class GoogleDriveService implements CloudService{
                         App.setAppFolderId(appFolder);
                         emitter.onComplete();
                     }
-                    Log.i(App.getTag(), request1.getResponseCode() + " " + request1.getResponseMessage());
+                    Log.i(App.getTag(), "createAppFolderIfNotExists() " + request1.getResponseCode() + " " + request1.getResponseMessage());
                 }
                 Log.i(App.getTag(), request.getResponseCode() + " " + request.getResponseMessage());
             } catch (GoogleAuthException | IOException e) {
@@ -163,7 +165,7 @@ public class GoogleDriveService implements CloudService{
         String jsonString;
         HttpURLConnection request;
         try {
-            URL url = new URL("https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder' and name='" + name + "' and trashed=false and "+parentName+" in parents");
+            URL url = new URL("https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder' and name='" + name + "' and trashed=false and '"+parentName+"' in parents");
             request = (HttpURLConnection) url.openConnection();
             request.setRequestMethod("GET");
             request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
@@ -181,6 +183,7 @@ public class GoogleDriveService implements CloudService{
                     }
                 }
             }
+            Log.e(App.getTag(), "getFolderId " + request.getResponseCode() + " " + request.getResponseMessage());
         } catch (GoogleAuthException | IOException e) {
             e.printStackTrace();
         }
@@ -213,7 +216,7 @@ public class GoogleDriveService implements CloudService{
                     outputStream.flush();
                     request.connect();
                     outputStream.close();
-                   String jsonString;
+                    String jsonString;
                     if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
                         InputStream response1 = request.getInputStream();
                         jsonString = convertStreamToString(response1);
@@ -260,7 +263,7 @@ public class GoogleDriveService implements CloudService{
                 request.connect();
                 if (request.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     sessionUri = request.getHeaderField("location");
-                    Log.i(App.getTag(), sessionUri);
+                    Log.i(App.getTag(), "session key " + sessionUri);
                 }
 
 
@@ -311,7 +314,7 @@ public class GoogleDriveService implements CloudService{
 
     @Override
     public Single<FileInputStream> getRecord(@NonNull String name) {
-        // TODO
+        //TODO
         return null;
     }
 
@@ -321,7 +324,7 @@ public class GoogleDriveService implements CloudService{
                 String jsonString;
                 HttpURLConnection request;
                 try {
-                    URL url = new URL("https://www.googleapis.com/drive/v3/files?q=trashed=false and "+appFolder+" in parents");
+                    URL url = new URL("https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.folder' and trashed=false and '"+appFolder+"' in parents");
                     request = (HttpURLConnection) url.openConnection();
                     request.setRequestMethod("GET");
                     request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
@@ -342,6 +345,7 @@ public class GoogleDriveService implements CloudService{
                         }
                         emitter.onComplete();
                     }
+                    Log.e(App.getTag(), "getRecords " + request.getResponseCode() + " " + request.getResponseMessage());
                 } catch (GoogleAuthException | IOException e) {
                     e.printStackTrace();
                     emitter.onError(e);
@@ -352,7 +356,7 @@ public class GoogleDriveService implements CloudService{
     @Override
     public Maybe<RecordFolder> getRecordFolder(@NonNull Record record) {
         return Maybe.create(emitter -> {
-            String folderId = getFolderId(record.getTitle(),App.getAppName());
+            String folderId = getFolderId(record.getTitle(),appFolder);
             if(folderId.equals("")){
                 emitter.onComplete();
                 return;
@@ -370,10 +374,11 @@ public class GoogleDriveService implements CloudService{
                 }
                 GoogleDriveRecordFolder googleDriveRecordFolder = (GoogleDriveRecordFolder) recordFolder;
                 String id = googleDriveRecordFolder.getDriveId();
+                Log.i(App.getTag(),"id "+id);
                 String jsonString;
                 HttpURLConnection request;
                 try {
-                    URL url = new URL("https://www.googleapis.com/drive/v3/files?q=trashed=false and "+id+" in parents");
+                    URL url = new URL("https://www.googleapis.com/drive/v3/files?q=trashed=false and '"+id+"' in parents");
                     request = (HttpURLConnection) url.openConnection();
                     request.setRequestMethod("GET");
                     request.setRequestProperty("Authorization", "Bearer " + credential.getToken());
@@ -394,6 +399,7 @@ public class GoogleDriveService implements CloudService{
                         }
                         emitter.onComplete();
                     }
+                    Log.e(App.getTag(),"getFragments " + request.getResponseCode() + " " + request.getResponseMessage());
                 } catch (GoogleAuthException | IOException e) {
                     e.printStackTrace();
                     emitter.onError(e);
@@ -449,6 +455,7 @@ public class GoogleDriveService implements CloudService{
                         }
                         emitter.onComplete();
                     }
+                    Log.e(App.getTag(),"downloadFragment " + request.getResponseCode() + " " + request.getResponseMessage());
                 } catch (Exception e) {
                     e.printStackTrace();
                     emitter.onError(e);
@@ -456,49 +463,3 @@ public class GoogleDriveService implements CloudService{
         });
     }
 }
-
-/*public class GoogleDriveService implements CloudService {
-
-
-    private DriveClient driveClient;
-    private DriveResourceClient driveResourceClient;
-    private DriveId appFolderId;
-    private DriveFolder rootFolder;
-
-    @Override
-    public Completable transmitFragment(@NonNull RecordFolder folder,
-                                        @NonNull FileInputStream inputStream,
-                                        @NonNull String name) {
-        return Completable.create((CompletableEmitter emitter) -> {
-//            Log.e(App.getTag(), "Transmission 1 " + Thread.currentThread().getName());
-            Task<DriveContents> createContentsTask = driveResourceClient.createContents();
-            createContentsTask.continueWithTask(Runnable::run, task -> {
-                DriveFolder videoFolder = ((GoogleDriveRecordFolder) folder)
-                        .getDriveId().asDriveFolder();
-                DriveContents contents = createContentsTask.getResult();
-                OutputStream outputStream = contents.getOutputStream();
-
-                try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                    byte[] buffer = new byte[1024];
-                    int num;
-                    while ((num = inputStream.read(buffer)) != -1) {
-                        baos.write(buffer, 0, num);
-                    }
-                    outputStream.write(baos.toByteArray());
-                } finally {
-                    inputStream.close();
-                }
-//                Log.e(App.getTag(), "Transmission 2 " + Thread.currentThread().getName());
-
-                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                        .setTitle(name)
-                        .setMimeType("video/mp4")
-                        .build();
-
-                return driveResourceClient.createFile(videoFolder, changeSet, contents);
-            })
-                    .addOnSuccessListener(Runnable::run, driveFile -> emitter.onComplete())
-                    .addOnFailureListener(Runnable::run, emitter::onError);
-        });
-    }
-*/

@@ -1,7 +1,6 @@
 package nsu.fit.g14201.marchenko.phoenix.ui.activities;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -42,8 +41,7 @@ import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionDetailedProblem
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionListener;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionPresenter;
 import nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem;
-import nsu.fit.g14201.marchenko.phoenix.voicelauncher.SpeechActivationService;
-import nsu.fit.g14201.marchenko.phoenix.voicelauncher.VoiceRecognizerService;
+import nsu.fit.g14201.marchenko.phoenix.voicelauncher.VoiceActivationService;
 
 import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.FAILED_TO_CREATE_VIDEO_FOLDER;
 import static nsu.fit.g14201.marchenko.phoenix.transmission.TransmissionProblem.RECORD_NOT_FOUND_LOCALLY;
@@ -81,6 +79,10 @@ public class MainActivity extends DrawerActivity implements
         try {
             appContext = Context.createContext(this.getApplicationContext());
             configureRecordingBlock();
+            if(isMyServiceRunning(VoiceActivationService.class)) {
+                Intent i = VoiceActivationService.makeServiceStopIntent(this.getApplicationContext());
+                startService(i);
+            }
         }catch (SignInException e){
             showSnack(getString(R.string.some_error));
             e.printStackTrace();
@@ -133,10 +135,8 @@ public class MainActivity extends DrawerActivity implements
     protected void onStop() {
         recordingPresenter.removeRecordingListener();
         recordingPresenter.stop();
-        if(!isMyServiceRunning(SpeechActivationService.class)){
-            String activationTypeName = this.getApplicationContext().getString(R.string.speech_activation_speak);
-            Intent i = SpeechActivationService.makeStartServiceIntent(this.getApplicationContext(),
-                    activationTypeName);
+        if(!isMyServiceRunning(VoiceActivationService.class)){
+            Intent i =VoiceActivationService.makeStartServiceIntent(this.getApplicationContext());
             startService(i);
         }
         super.onStop();

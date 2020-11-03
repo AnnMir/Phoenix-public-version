@@ -118,6 +118,7 @@ public class RemoteRepositoriesController implements RemoteReposControllerProvid
                 } catch (InterruptedException e) {}
             }
             CloudService currentCloudService = cloudServices.get(0);
+            Log.i(App.getTag(), "transmitVideo");
             return currentCloudService.transmitFragment(
                     recordFolders.get(currentCloudService), inputStream, name
             );

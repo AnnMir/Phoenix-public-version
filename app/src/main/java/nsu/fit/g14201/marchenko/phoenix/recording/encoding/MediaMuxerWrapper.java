@@ -84,7 +84,7 @@ public class MediaMuxerWrapper {
 
         if (oldVideoRecorderTrackIndex == trackIndex) {
             muxer.writeSampleData(videoEncoder.trackIndex, byteBuffer, bufferInfo);
-            Log.d(App.getTag2(), "Muxer stopped");
+            Log.d(App.getTag2(), "Muxer writeSampleData");
         }
     }
 
